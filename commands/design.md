@@ -1,5 +1,5 @@
 ---
-description: "Design mode: quick sketch, variants, flow, full pipeline, system tokens, sync — visual and interaction design"
+description: "Design mode: quick sketch, variants, flow, full pipeline, render to code, system tokens, sync — visual and interaction design"
 ---
 
 # Design Mode — Visual + Interaction Design -> outputs/think/design/ -> specs/
@@ -14,6 +14,7 @@ description: "Design mode: quick sketch, variants, flow, full pipeline, system t
 | `variants` | `outputs/think/design/{slug}-variants.md` | Suggest: "Refine winner with full swarm?" |
 | `flow` | `outputs/think/design/{slug}-flow.md` | Suggest: "Promote to `specs/Arx_4-1-X`?" |
 | `full` / default | `outputs/think/design/{slug}.md` | Suggest: "Promote to `specs/Arx_4-1-X_{Slug}.md`?" |
+| `render` | Code scaffold in `apps/` | Ready for `/build feature` |
 | `system` | Direct update to `specs/Arx_4-2_Design_System.md` | No staging |
 | `sync` | Bidirectional sync | No output file |
 
@@ -232,5 +233,99 @@ Sync Report:
 4. Propose resolution for each discrepancy (spec is source of truth)
 5. On approval, update all downstream sources
 6. Uses design-sync skill if available
+
+---
+
+## render <screen-ref> [--target web|mobile|both]
+
+**Purpose:** Translate a design output into platform-ready code scaffolds. Bridges the gap between "what it looks like" and "what you build it with." No more manual translation from design specs to components.
+
+**Input:** A screen reference — either a design output file path, a screen name from a previous `/design` session, or a spec reference (e.g., `Arx_4-1-1-3`).
+
+**Default target:** `mobile` (React Native + Tailwind). Use `--target web` for HTML/CSS, `--target both` for both.
+
+**Before rendering (always):**
+1. Load the `arx-ui-stack` skill for package versions, CDNs, and usage patterns
+2. Read `specs/Arx_4-2_Design_System.md` for token-to-code mappings
+3. Read the design output being rendered (from `outputs/think/design/` or Stitch screen)
+
+**Process:**
+
+### For `--target web` (HTML/CSS for `apps/web-prototype/`)
+
+1. Extract design specs: colors, typography, spacing, layout, states
+2. Map design tokens to CSS variables:
+   ```
+   Design spec: "Stone-600 border"  → var(--color-stone-600)
+   Design spec: "8px padding"       → var(--spacing-2)
+   Design spec: "Geist Mono"        → var(--font-mono)
+   ```
+3. Generate single-file HTML with:
+   - CSS variables from design system
+   - Semantic HTML structure
+   - All states (loading, empty, error, populated, disabled)
+   - Mobile-first layout (390x844)
+   - No inline styles for state toggles (use CSS classes)
+4. Output to `apps/web-prototype/drafts/{screen-name}-v1.html`
+5. Anti-slop check before saving
+
+### For `--target mobile` (React Native for `apps/mobile/`)
+
+1. Extract design specs: colors, typography, spacing, layout, states, interactions
+2. Map design tokens to the mobile stack:
+   ```
+   Design spec: "Stone-600 border"  → className="border-stone-600" (NativeWind/Tailwind)
+   Design spec: "8px padding"       → className="p-2"
+   Design spec: "Geist Mono"        → fontFamily: "GeistMono" (pre-loaded in app)
+   Design spec: "slide-in from right" → Framer Motion: { initial: {x: 100}, animate: {x: 0} }
+   ```
+3. Generate component scaffold:
+   ```
+   apps/mobile/src/screens/{ScreenName}.tsx     ← Screen component
+   apps/mobile/src/components/{Feature}/         ← Extracted sub-components
+   ```
+4. Include:
+   - Correct imports (React Native, NativeWind, Framer Motion, Zustand)
+   - TypeScript types for props and state
+   - All visual states as separate render branches
+   - Placeholder hooks (e.g., `useCopyTradeLeaders()`) with TODO comments
+   - Accessibility labels
+5. Do NOT include business logic — only the visual scaffold. `/build feature` fills in logic.
+
+### For `--target both`
+
+Run web and mobile in sequence. Web first (faster to verify visually), then mobile.
+
+**Token mapping table (auto-applied):**
+
+| Design Token | CSS Variable | Tailwind Class | React Native |
+|-------------|-------------|----------------|-------------|
+| Stone-50 | `--color-stone-50` | `stone-50` | `colors.stone[50]` |
+| Stone-600 | `--color-stone-600` | `stone-600` | `colors.stone[600]` |
+| spacing-1 (4px) | `--spacing-1` | `p-1` / `m-1` | `4` |
+| spacing-2 (8px) | `--spacing-2` | `p-2` / `m-2` | `8` |
+| font-mono | `--font-mono` | `font-mono` | `"GeistMono"` |
+| font-sans | `--font-sans` | `font-sans` | `"GeistSans"` |
+| radius-sm | `--radius-sm` | `rounded-sm` | `borderRadius: 4` |
+| radius-md | `--radius-md` | `rounded-md` | `borderRadius: 8` |
+
+Extend this table from `specs/Arx_4-2_Design_System.md` on each render.
+
+**Output:**
+
+```
+Render: {screen-name} → mobile
+  Created: apps/mobile/src/screens/CopyTradeLeaderboard.tsx (scaffold)
+  Created: apps/mobile/src/components/CopyTrade/LeaderCard.tsx
+  Created: apps/mobile/src/components/CopyTrade/index.ts (exports)
+
+  Tokens mapped: 14 design tokens → Tailwind classes
+  States covered: loading, empty, populated, error
+  Placeholders: useCopyTradeLeaders() hook (TODO)
+
+  Next: /build feature "copy trading leaderboard" to fill in logic and tests
+```
+
+**Exit gate:** The scaffold must compile without errors (no missing imports, no type errors). It should render a static version of the design with placeholder data. If it doesn't compile, fix before outputting.
 
 **Output:** Sync report + updated files.
