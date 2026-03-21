@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sudo npm:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(npx firecrawl*:*)",
+      "Bash(firecrawl:*)",
+      "Bash(yt-dlp:*)",
+      "Bash(whisper:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(mkdir -p:*)",
+      "Bash(wc -l:*)",
+      "Bash(head:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(cat:*)"
+    ]
+  }
+}
