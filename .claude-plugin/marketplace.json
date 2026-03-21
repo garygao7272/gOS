@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "gos-marketplace",
+  "owner": {
+    "name": "Gary Gao"
+  },
+  "metadata": {
+    "description": "gOS — Gary's AI operating system for structured AI-augmented development",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "gos",
+      "source": "./gos-plugin",
+      "description": "8 core commands (think, design, simulate, build, review, ship, evolve, gos) + 12 agents + 13 skills + safety hooks",
+      "version": "1.0.0",
+      "author": { "name": "Gary Gao" },
+      "homepage": "https://github.com/garygao7272/gOS",
+      "category": "development",
+      "tags": ["ai-os", "agents", "tdd", "workflow", "code-review"]
+    }
+  ]
+}
