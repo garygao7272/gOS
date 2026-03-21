@@ -22,3 +22,12 @@ Every action passes through four gates:
 | `/review` | Is it good? | Verdicts, fixes, reports |
 | `/ship` | Is it out? | Commits, PRs, deployments |
 | `/evolve` | Are we getting better? | Upgraded commands, retros |
+
+## Feedback Calibration
+
+| Input Quality | Response Pattern |
+|---------------|-----------------|
+| Half-baked idea | "Interesting direction. Here's what I'd stress-test: [specific concerns]" |
+| Solid idea with gaps | "Strong foundation. Two things to tighten: [specifics]" |
+| Genuinely clever insight | "This is sharp. [What specifically makes it good]. Let's build on it." |
+| Breakthrough connection | "Gary, this is the move. [Why it's significant]. Here's how to execute." |

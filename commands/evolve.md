@@ -141,6 +141,50 @@ This is lightweight. One line per signal. Takes 5 seconds to append. But over we
 
 9. **After audit:** Log audit results to `memory/evolve_audit_{date}.md`. Mark signal log with `--- AUDITED {date} ---` separator.
 
+### Auto-Optimization Mode (scheduled)
+
+When audit runs on a schedule (weekly cron), it operates autonomously:
+
+1. Run the full audit process above
+2. **If any command is below 70% health:**
+   - Auto-generate an upgrade proposal
+   - Save to `~/.claude/evolve/proposals/{command}-{date}.md`
+   - Format:
+     ```markdown
+     # Upgrade Proposal: /{command}
+     Date: {date}
+     Health: {score}% (threshold: 70%)
+
+     ## Evidence
+     {signal summary — what got reworked/rejected and why}
+
+     ## Proposed Changes
+     {specific before/after diffs}
+
+     ## Expected Impact
+     {what should improve}
+     ```
+3. **Do NOT apply changes automatically.** Proposals wait for human approval.
+4. **Next `/gos` session briefing** surfaces pending proposals:
+   ```
+   Pending: 1 evolve proposal for /review (health 62%, 3 reworks in 5 uses).
+   Run /evolve proposals to review.
+   ```
+
+### Proposals sub-command
+
+`/evolve proposals` — List and act on pending upgrade proposals:
+- Show all proposals in `~/.claude/evolve/proposals/`
+- For each: show summary, evidence, proposed changes
+- Actions: `accept` (apply + delete), `reject` (delete), `defer` (keep for next audit)
+
+### Setup: Schedule the weekly auto-audit
+
+```
+/gos schedule add "evolve audit" --cron "0 9 * * 1"
+```
+This runs audit every Monday 9am. If commands are unhealthy, proposals are generated automatically.
+
 ---
 
 ## upgrade <command>
@@ -169,6 +213,35 @@ This is lightweight. One line per signal. Takes 5 seconds to append. But over we
 7. If approved: rewrite the command file
 8. Commit: `evolve: upgrade /{command} — {reason}`
 9. Log the upgrade in `sessions/evolve_signals.md` with context
+
+### A/B Testing Mode: `upgrade --test <command>`
+
+Instead of one-shot rewriting, fork the command and compare versions empirically:
+
+1. **Fork:** Copy `commands/{command}.md` → `commands/{command}.v2.md`
+2. **Generate variant:** Apply the proposed changes to v2 only. v1 stays unchanged.
+3. **Announce:** "A/B test started for /{command}. Next {N} invocations (default: 5) will alternate between v1 and v2."
+4. **Track:** Create `sessions/ab-test-{command}.md`:
+   ```markdown
+   # A/B Test: /{command}
+   Started: {date}
+   Target: {N} invocations
+
+   | # | Version | Signal | Notes |
+   |---|---------|--------|-------|
+   | 1 | v1 | accept | |
+   | 2 | v2 | rework | output format unclear |
+   | 3 | v1 | accept | |
+   | 4 | v2 | accept | |
+   | 5 | v2 | love | better structure |
+   ```
+5. **On each invocation of the tested command:** Check if an A/B test is active. If so, select the version not yet used the least (balanced assignment). Log result.
+6. **After N invocations:** Compare:
+   - v1 health: `(accepts + 2*loves) / total * 100`
+   - v2 health: same formula
+   - Report: "v1: 75% health (3 accept, 0 love, 1 rework). v2: 90% health (3 accept, 1 love, 1 rework). v2 wins."
+7. **Ask:** "Promote v2 to main? Run another round? Or discard v2?"
+8. **If promoted:** Replace v1 with v2, delete v2 file, log in evolve_signals.md.
 
 ---
 

@@ -197,7 +197,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 1. Parse the strategy description from remaining `$ARGUMENTS`
 2. Update scratchpad: `Simulate > backtest`, strategy description
 3. **Check for Dux engine:**
-   - If `$HOME/Documents/Claude\ Working\ Folder/Dux/` exists, prefer Dux's backtesting engine
+   - If `/Users/garyg/Documents/Claude Working Folder/Dux/` exists, prefer Dux's backtesting engine
    - Otherwise, simulate using available Hyperliquid MCP data
 4. **Define strategy parameters:**
    - Entry rules (what triggers a trade)
@@ -268,7 +268,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **If Dux available, run via:**
 ```bash
-cd "$HOME/Documents/Claude\ Working\ Folder/Dux" && PYTHONPATH=. python -m backend.main backtest --strategy "{strategy}" --output json
+cd "/Users/garyg/Documents/Claude Working Folder/Dux" && PYTHONPATH=. python -m backend.main backtest --strategy "{strategy}" --output json
 ```
 
 ---
@@ -282,7 +282,7 @@ cd "$HOME/Documents/Claude\ Working\ Folder/Dux" && PYTHONPATH=. python -m backe
 1. Parse config from remaining `$ARGUMENTS`
 2. Update scratchpad: `Simulate > dux`, config description
 3. **Check Dux availability:**
-   - Check if `$HOME/Documents/Claude\ Working\ Folder/Dux/` exists
+   - Check if `/Users/garyg/Documents/Claude Working Folder/Dux/` exists
    - If yes, proceed with engine invocation
    - If no, explain setup requirements (see Setup section below)
 4. **If Dux exists, run the simulation pipeline:**
@@ -301,7 +301,7 @@ cd "$HOME/Documents/Claude\ Working\ Folder/Dux" && PYTHONPATH=. python -m backe
 
    **Invocation:**
    ```bash
-   cd "$HOME/Documents/Claude\ Working\ Folder/Dux" && PYTHONPATH=. python -m backend.main simulate --config "{config}" --output json
+   cd "/Users/garyg/Documents/Claude Working Folder/Dux" && PYTHONPATH=. python -m backend.main simulate --config "{config}" --output json
    ```
 
 5. **If Dux does not exist, explain what's needed:**
@@ -310,7 +310,7 @@ cd "$HOME/Documents/Claude\ Working\ Folder/Dux" && PYTHONPATH=. python -m backe
    >
    > Dux is the simulation engine that powers deep scenario analysis. To set it up:
    >
-   > 1. Clone or create the Dux project at `$HOME/Documents/Claude\ Working\ Folder/Dux/`
+   > 1. Clone or create the Dux project at `/Users/garyg/Documents/Claude Working Folder/Dux/`
    > 2. Install dependencies: `pip install -r requirements.txt`
    > 3. Configure the backend: `cp .env.example .env` and set API keys
    > 4. Verify: `PYTHONPATH=. python -m backend.main --help`

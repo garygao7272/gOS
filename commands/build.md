@@ -156,7 +156,15 @@ If any check fails, fix before proceeding. Do NOT bump with known issues.
 
 **Process (strictly sequential — each step must complete before the next):**
 
-1. **Read spec/plan** if available
+1. **Read spec/plan** if available. If the spec contains an `<!-- AGENT: -->` block, extract it and load ONLY the referenced key files, dependencies, and test paths — not the full spec tree. This is the **focused context protocol** (from GSD's `<files_to_read>`).
+   ```html
+   <!-- AGENT: This spec defines [feature].
+        Key files: [paths to implementation files]
+        Key decisions: [spec refs for design decisions]
+        Dependencies: [other specs this depends on]
+        Test: [path to test directory]
+   -->
+   ```
 2. **Comprehension check:** "Here's what I understand... correct?" — present restated requirements and wait for confirmation
 3. **Write tests first (RED):** Use tdd-guide agent. Tests MUST fail before proceeding.
 4. **Implement to pass tests (GREEN):** Write minimal code to make tests pass. Follow existing patterns in `apps/mobile/src/`.

@@ -93,6 +93,7 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 > **Specs:** [total count, any recently modified]
 > **Prototype:** [current version from apps/web-prototype/version.json if exists]
 > **Scheduled:** [any task results since last session, or "all clean"]
+> **Evolve:** [check ~/.claude/evolve/proposals/ — if any pending, show: "N upgrade proposals pending. Run /evolve proposals to review."]
 > **Open items:** [unresolved review concerns, dead ends from scratchpad, pending decisions]
 >
 > **What mode?** think, design, simulate, build, review, ship, evolve
