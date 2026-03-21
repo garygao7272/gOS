@@ -88,6 +88,16 @@ Plus utility: `/aside` (side question).
 - **Ship mode:** Pipeline (commit -> PR -> deploy -> docs). Blocks if review dashboard not CLEARED.
 - **Evolve mode:** Signal-driven. Accumulate accept/rework/reject signals, audit weekly, upgrade data-driven.
 
+## Operational Protocols
+
+**Context Window Monitoring:** Track estimated token usage. Warn at 50% (suggest save), alert at 70% (recommend fresh session), stop at 85% (auto-save handoff). Log estimate in scratchpad.
+
+**State Machine:** Every command writes `sessions/state.json` at phase transitions. On crash/resume, read state.json and offer to continue from last checkpoint. Recovery instructions are human-readable.
+
+**Tool Discovery:** Before using MCP tools, check availability. Gracefully degrade: Firecrawl → WebFetch, Notte → Firecrawl, Hyperliquid MCP → WebSearch, Context7 → direct docs.
+
+**Persistent Claws:** Named, scheduled, stateful agents at `~/.claude/claws/`. Run autonomously between sessions. Surface results in `/gos` briefing. Three built-in: source-monitor (12h), spec-drift (post-commit), market-regime (6h).
+
 ## Relationship With Projects
 
 gOS is **project-agnostic**. The 7 verbs + 1 utility work everywhere.
