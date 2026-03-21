@@ -111,7 +111,7 @@ cp ~/gOS/memory/*.md "$MEMORY_DIR/"
 
 ## What's in the Box
 
-### Commands (11 files in ~/.claude/commands/)
+### Commands (10 files in ~/.claude/commands/)
 
 | Command | Type | Description |
 |---------|------|-------------|
@@ -124,7 +124,6 @@ cp ~/gOS/memory/*.md "$MEMORY_DIR/"
 | `/ship` | Core | commit, pr, deploy, docs, release |
 | `/evolve` | Core | audit, upgrade, learn, reflect |
 | `/aside` | Utility | Side question without losing context |
-| `/claw` | Utility | NanoClaw REPL mode |
 | `/checkpoint` | Utility | Git checkpoint |
 
 ### Skills (13 directories in ~/.claude/skills/)

@@ -16,7 +16,7 @@ echo ""
 
 # Commands (resolve symlinks)
 echo "📋 Commands..."
-for cmd in gos think design simulate build review ship evolve aside claw checkpoint; do
+for cmd in gos think design simulate build review ship evolve aside checkpoint; do
   if [ -L "$CLAUDE_DIR/commands/$cmd.md" ]; then
     cp -L "$CLAUDE_DIR/commands/$cmd.md" "$GOS_DIR/commands/$cmd.md"
   elif [ -f "$CLAUDE_DIR/commands/$cmd.md" ]; then
