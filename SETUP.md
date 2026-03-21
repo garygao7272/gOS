@@ -115,7 +115,7 @@ cp ~/gOS/memory/*.md "$MEMORY_DIR/"
 
 | Command | Type | Description |
 |---------|------|-------------|
-| `/gos` | Core | Session entry, safety, save/resume, schedule, loop |
+| `/gos` | Core | Session entry, safety, save/resume, schedule, loop, claw, context, state, tools |
 | `/think` | Core | discover, research, decide, spec, intake |
 | `/design` | Core | quick, variants, flow, full, system, sync |
 | `/simulate` | Core | market, scenario, backtest, dux |
@@ -147,6 +147,16 @@ cp ~/gOS/memory/*.md "$MEMORY_DIR/"
 ### Agents (12 files in ~/.claude/agents/)
 
 architect, build-error-resolver, code-reviewer, doc-updater, e2e-runner, harness-optimizer, loop-operator, planner, python-reviewer, refactor-cleaner, security-reviewer, tdd-guide
+
+### Claws (3 persistent background monitors in ~/.claude/claws/)
+
+| Claw | Purpose |
+|------|---------|
+| source-monitor | Watches data sources for changes and alerts |
+| spec-drift | Detects when implementation drifts from spec |
+| market-regime | Monitors market regime shifts for trading systems |
+
+Claws are persistent background processes managed via `/gos claw`. Each claw has a `claw.md` (definition) and `state.json` (runtime state). Use `/gos claw list` to see active claws, `/gos claw arm <name>` to activate, and `/gos claw disarm <name>` to deactivate.
 
 ### Rules (45 files in ~/.claude/rules/)
 

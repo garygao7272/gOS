@@ -23,6 +23,7 @@ Parse the first word of `$ARGUMENTS` to route. If no arguments, run the full ses
 | `schedule` | Sub-commands: list, add, pause, resume, remove |
 | `loop <interval> <command>` | Start recurring command execution |
 | `session` | Sub-commands: list, claim, handoff, close |
+| `claw` | Sub-commands: list, start, stop, log, resolve |
 | `last` | Show last session's key decisions |
 | `diff` | Show uncommitted changes |
 | `pulse` | One-line status: branch, uncommitted count, last commit |
@@ -385,6 +386,163 @@ End the current session without merging.
 3. Save session memory via claude-mem
 4. Release file ownership claims
 5. Show summary of what was done
+
+---
+
+## claw
+
+Sub-command router for Persistent Claws — named, scheduled, stateful agents that run autonomously between sessions.
+
+Claws live at `~/.claude/claws/{name}/` with `claw.md` (instructions) and `state.json` (persistent state).
+
+### claw list
+
+List all claws and their status:
+
+```
+| Claw | Schedule | Last Run | Status | Summary |
+|------|----------|----------|--------|---------|
+| source-monitor | Every 12h | 2h ago | 3 new items | Top: Karpathy on agents |
+| spec-drift | Post-commit | 4h ago | 1 stale spec | Arx_4-1-1-3 |
+| market-regime | Every 6h | 1h ago | risk-on (85%) | BTC +4.2% 7d |
+```
+
+Read each `~/.claude/claws/*/state.json` and format.
+
+### claw start <name>
+
+Activate a claw by registering its schedule:
+
+1. Read `~/.claude/claws/{name}/claw.md` for schedule/trigger config
+2. If `trigger: cron`: create scheduled task via `mcp__scheduled-tasks__create_scheduled_task` with the claw's prompt
+3. If `trigger: post-commit`: note that this requires a PostToolUse hook (advise user to add manually if not already configured)
+4. Confirm: "Claw `{name}` started. Schedule: {schedule}. Next run: {time}."
+
+### claw stop <name>
+
+Deactivate a claw:
+
+1. If cron-based: pause the scheduled task
+2. State is preserved — stopping doesn't clear state.json
+3. Confirm: "Claw `{name}` stopped. State preserved. `/gos claw start {name}` to resume."
+
+### claw log <name>
+
+Show the last 5 runs and their results:
+
+1. Read `~/.claude/claws/{name}/state.json`
+2. Show `run_count`, `last_run`, and key findings from `last_digest`
+3. For source-monitor: show `pending_items`
+4. For spec-drift: show `stale_specs`
+5. For market-regime: show `regime_history` last 5 entries
+
+### claw resolve <name> <item>
+
+Mark an item as resolved in a claw's state:
+
+- For spec-drift: mark a stale spec as resolved
+- For source-monitor: mark a pending item as absorbed
+
+---
+
+## Context Window Monitoring
+
+**Always active. No sub-command needed.**
+
+Track context usage throughout the session using these heuristics:
+
+| Event | Estimated Tokens |
+|-------|-----------------|
+| File read | lines / 4 |
+| Tool call result | ~500 average |
+| Message exchange | ~200-500 |
+| Agent spawn result | ~1,000-3,000 |
+| Large file read (>500 lines) | lines / 3 |
+
+**Checkpoints:**
+
+- **At 50% estimated capacity:** Log to scratchpad: "Context at ~50%. Consider `/gos save` if this is a good stopping point."
+- **At 70% estimated capacity:** Warn user: "Context at ~70%. Recommend saving and starting fresh session for remaining work. Complex operations may degrade."
+- **At 85% estimated capacity:** STOP complex work. Write handoff doc to `sessions/handoff-auto-{date}.md`. Tell user: "Context near limit. Session state saved. Start fresh session and run `/gos resume`."
+
+Track cumulative estimate in scratchpad under `Working State` as: `Context: ~{N}% ({reason for last jump})`.
+
+---
+
+## State Machine with Recovery
+
+Session state is tracked in `sessions/state.json` alongside the scratchpad. Updated at every phase transition.
+
+**State format:**
+
+```json
+{
+  "current_command": "/build feature",
+  "phase": "GREEN (implementing)",
+  "step": 3,
+  "total_steps": 7,
+  "started_at": "ISO timestamp",
+  "last_checkpoint": "ISO timestamp",
+  "files_modified": ["src/screens/Trade.tsx"],
+  "recovery_instructions": "Resume at step 3: implement useTrade hook. Tests from step 2 written and failing."
+}
+```
+
+**Write state.json at these moments:**
+- On command entry (new command started)
+- On phase transition (RED → GREEN, planning → building)
+- On step completion within a phase
+- Before any operation that might fail (large agent spawn, network call)
+
+**Recovery flow (on `/gos` or `/gos resume`):**
+1. Read `sessions/state.json`
+2. If `current_command` is set and `phase` is not "completed":
+   - Show: "Incomplete work detected: {current_command} was at {phase}, step {step}/{total_steps}."
+   - Show: `recovery_instructions`
+   - Ask: "Resume from step {step}, or start fresh?"
+3. If user resumes: reload the relevant files listed in `files_modified`, re-read scratchpad, continue from the checkpoint.
+
+---
+
+## Tool Discovery
+
+**Runs as part of `/gos status` and session briefing.**
+
+Check which MCP tools are available by attempting lightweight calls:
+
+```
+Tool Discovery:
+  Hyperliquid  ✅  (get_instruments responsive)
+  Firecrawl    ✅  (search responsive)
+  Figma        ✅  (whoami responsive)
+  Context7     ✅  (resolve-library-id responsive)
+  Notte        ❌  (not responding — fall back to Firecrawl for scraping)
+  Firebase     ⚠️  (not logged in — run firebase_login if needed)
+```
+
+**Fallback rules (add to each command's preamble):**
+- If Firecrawl down → use WebFetch + WebSearch
+- If Notte down → use Firecrawl for scraping
+- If Hyperliquid MCP down → use WebSearch for market data
+- If Context7 down → use WebFetch on docs directly
+- If Figma down → use Stitch only for design work
+
+Commands should check tool availability before using MCP tools and gracefully degrade.
+
+---
+
+## Claw Surfacing in Briefing
+
+When running the full session briefing (no arguments), add after "Scheduled:" and before "Open items:":
+
+```
+> **Claws:**
+> - source-monitor: {N} new items ({time since last run}). Top: {title} — /think intake {url}
+> - spec-drift: {N} stale specs. {spec_path} → {changed_file}
+> - market-regime: {regime} ({confidence}%, {duration}). {alert or "stable"}
+```
+
+Read each `~/.claude/claws/*/state.json` to populate. Skip claws that haven't run yet (`last_run: null`).
 
 ---
 
