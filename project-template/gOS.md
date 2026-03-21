@@ -76,7 +76,7 @@ Rules:
 | `/ship` | Is it out? | Commits, PRs, deployments |
 | `/evolve` | Are we getting better? | Upgraded commands, retros |
 
-Plus utility: `/aside` (side question).
+Plus utilities: `/aside` (side question), `/eval` (command quality measurement), `/dispatch` (multi-session orchestration).
 
 ## Execution Patterns
 

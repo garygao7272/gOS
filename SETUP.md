@@ -1,7 +1,7 @@
 # gOS Setup Guide
 
 > Gary's Operating System for Claude Code.
-> 8 verbs, 41 sub-commands, 12 agents, 13 skills, 45 rules.
+> 10 verbs, 41+ sub-commands, 12 agents, 13 skills, 45 rules.
 
 ## Prerequisites
 
@@ -111,7 +111,7 @@ cp ~/gOS/memory/*.md "$MEMORY_DIR/"
 
 ## What's in the Box
 
-### Commands (10 files in ~/.claude/commands/)
+### Commands (12 files in ~/.claude/commands/)
 
 | Command | Type | Description |
 |---------|------|-------------|
@@ -123,6 +123,8 @@ cp ~/gOS/memory/*.md "$MEMORY_DIR/"
 | `/review` | Core | code, test, design, gate, prove, e2e, coverage, council, dashboard |
 | `/ship` | Core | commit, pr, deploy, docs, release |
 | `/evolve` | Core | audit, upgrade, learn, reflect |
+| `/eval` | Core | Measure command quality against rubrics with synthetic inputs |
+| `/dispatch` | Core | Multi-session orchestration: spawn workers, monitor, synthesize |
 | `/aside` | Utility | Side question without losing context |
 | `/checkpoint` | Utility | Git checkpoint |
 
