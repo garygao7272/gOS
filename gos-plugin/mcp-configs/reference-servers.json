@@ -1,0 +1,40 @@
+{
+  "_comment": "Reference MCP server configurations for gOS. Copy needed servers to your project .mcp.json or ~/.claude.json. These are NOT auto-loaded by the plugin.",
+  "servers": {
+    "hyperliquid": {
+      "used_by": ["/gos:simulate market"],
+      "required": false,
+      "note": "Crypto market data for MiroFish simulations"
+    },
+    "exa": {
+      "used_by": ["/gos:think research"],
+      "required": false,
+      "note": "Neural web search for research tasks"
+    },
+    "firecrawl": {
+      "used_by": ["/gos:think intake", "/gos:think research"],
+      "required": false,
+      "note": "Web scraping and content extraction"
+    },
+    "context7": {
+      "used_by": ["/gos:build"],
+      "required": false,
+      "note": "Library documentation lookup"
+    },
+    "vercel": {
+      "used_by": ["/gos:ship deploy"],
+      "required": false,
+      "note": "Deployment to Vercel"
+    },
+    "figma": {
+      "used_by": ["/gos:design sync"],
+      "required": false,
+      "note": "Design system sync with Figma"
+    },
+    "scheduled-tasks": {
+      "used_by": ["/gos:gos schedule"],
+      "required": false,
+      "note": "Recurring task management"
+    }
+  }
+}

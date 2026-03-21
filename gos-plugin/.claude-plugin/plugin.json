@@ -1,0 +1,36 @@
+{
+  "name": "gos",
+  "version": "1.0.0",
+  "description": "gOS — Gary's AI operating system. 8 core commands (think, design, simulate, build, review, ship, evolve, gos) + 12 agents + 13 skills + safety hooks for structured AI-augmented development across Code, Cowork, and Chat.",
+  "author": {
+    "name": "Gary Gao"
+  },
+  "homepage": "https://github.com/garygao33/gOS",
+  "repository": "https://github.com/garygao33/gOS",
+  "license": "MIT",
+  "keywords": [
+    "gos",
+    "ai-os",
+    "agents",
+    "tdd",
+    "code-review",
+    "simulation",
+    "product-strategy",
+    "workflow",
+    "safety-hooks"
+  ],
+  "agents": [
+    "./agents/planner.md",
+    "./agents/architect.md",
+    "./agents/tdd-guide.md",
+    "./agents/code-reviewer.md",
+    "./agents/security-reviewer.md",
+    "./agents/build-error-resolver.md",
+    "./agents/e2e-runner.md",
+    "./agents/doc-updater.md",
+    "./agents/refactor-cleaner.md",
+    "./agents/python-reviewer.md",
+    "./agents/harness-optimizer.md",
+    "./agents/loop-operator.md"
+  ]
+}
