@@ -3,3 +3,10 @@
 *.swo
 *~
 .firecrawl/
+.vercel
+.lancedb/
+tools/spec-rag-env/
+tools/notte-env/
+node_modules/
+tools/sources-env/
+sessions/scratchpad.md
