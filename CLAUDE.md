@@ -27,6 +27,7 @@ Naming: `Arx_{Group}-{Artifact}_{Slug}.md` — IDs are permanent, no version num
 Cascade: changes flow downward only. Lower-altitude changes inform upstream but don't override.
 
 **Agent consumption tags:** Specs should include an `<!-- AGENT: -->` HTML comment at the top with key files, dependencies, and test paths. This lets `/build feature` load only what's needed instead of the full spec tree. Format:
+
 ```html
 <!-- AGENT: This spec defines [feature].
      Key files: [implementation paths]
@@ -93,16 +94,17 @@ On compaction: re-read `sessions/scratchpad.md` to restore lost context.
 
 Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 
-| Command     | Question              | Output                      |
-| ----------- | --------------------- | --------------------------- |
-| `/gos`      | Am I set up?          | Session state, safety hooks |
-| `/think`    | What and why?         | `outputs/think/` → `specs/` |
-| `/design`   | What does it look like? | `outputs/think/design/` → `specs/` |
-| `/simulate` | What could happen?    | `outputs/briefings/`        |
-| `/build`    | How do we make it?    | `apps/`                     |
-| `/review`   | Is it good?           | Verdicts, fixes, reports    |
-| `/ship`     | Is it out?            | Commits, PRs, deployments   |
-| `/evolve`   | Are we getting better? | gOS upgrades               |
+| Command       | Question                   | Output                                                    |
+| ------------- | -------------------------- | --------------------------------------------------------- |
+| `/gos`        | Am I set up?               | Session state, safety hooks                               |
+| `/gos <goal>` | What do you need? (Jarvis) | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
+| `/think`      | What and why?              | `outputs/think/` → `specs/`                               |
+| `/design`     | What does it look like?    | `outputs/think/design/` → `specs/`                        |
+| `/simulate`   | What could happen?         | `outputs/briefings/`                                      |
+| `/build`      | How do we make it?         | `apps/`                                                   |
+| `/review`     | Is it good?                | Verdicts, fixes, reports                                  |
+| `/ship`       | Is it out?                 | Commits, PRs, deployments                                 |
+| `/evolve`     | Are we getting better?     | gOS upgrades                                              |
 
 Plus utility: `/aside` (side question).
 
