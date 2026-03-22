@@ -699,12 +699,33 @@ Save plan to `outputs/gos-jobs/{job-id}/plan.md`. Wait for approval before execu
 
 ### Phase 4 — Execution
 
-Run the task graph using existing gOS primitives:
+**Team decision (see gOS.md > Agent Teams Protocol):**
+
+- If decomposition produces 3+ tasks: Create team `gos-job-{job-id}` with named teammates
+- If 1-2 tasks: Use ad-hoc subagents (cheaper)
+
+**If team mode:**
+
+```
+TeamCreate(team_name="gos-job-{job-id}")
+```
+
+- Create TaskCreate per task from the graph, with `blockedBy` for dependencies
+- Spawn named teammates per task, model-routed (opus for review/synthesis, sonnet for implementation, haiku for formatting/docs)
+- Parallel tasks run as concurrent teammates claiming from the task board
+- Sequential tasks auto-unblock when upstream completes
+- If a teammate reports a blocker via `SendMessage`, route to the appropriate peer or resolve directly
+- Shutdown all teammates after last task completes: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+
+**If subagent mode (1-2 tasks):**
 
 1. **Parallel tasks** → Launch via Agent tool (parallel subagents), each embedding the relevant `/review` or `/build` command prompt
 2. **Sequential tasks** → Execute inline after dependencies complete
-3. **Conditional tasks** → Evaluate the condition from previous task output, skip or execute accordingly
-4. **Long-running jobs** → If the task graph will outlast a single session, use `mcp__scheduled-tasks` to persist execution across sessions
+
+**For both modes:**
+
+- **Conditional tasks** → Evaluate the condition from previous task output, skip or execute accordingly
+- **Long-running jobs** → If the task graph will outlast a single session, use `mcp__scheduled-tasks` to persist execution across sessions
 
 **Progress tracking** in `outputs/gos-jobs/{job-id}/status.md`:
 

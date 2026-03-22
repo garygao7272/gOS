@@ -8,14 +8,14 @@ Dispatch splits a plan into independent phases, spawns worker agents per phase, 
 
 Parse the first word of `$ARGUMENTS` to route:
 
-| Argument | Action |
-|----------|--------|
-| `<plan-file>` | Start a new dispatch job from a plan file |
-| `status` | List all active dispatch jobs |
-| `status <job-id>` | Detailed view of a specific job |
-| `cancel <job-id>` | Cancel a running job |
-| `retry <job-id> <worker-id>` | Retry a failed worker |
-| `synthesize <job-id>` | Manually trigger synthesis |
+| Argument                     | Action                                    |
+| ---------------------------- | ----------------------------------------- |
+| `<plan-file>`                | Start a new dispatch job from a plan file |
+| `status`                     | List all active dispatch jobs             |
+| `status <job-id>`            | Detailed view of a specific job           |
+| `cancel <job-id>`            | Cancel a running job                      |
+| `retry <job-id> <worker-id>` | Retry a failed worker                     |
+| `synthesize <job-id>`        | Manually trigger synthesis                |
 
 ---
 
@@ -29,19 +29,23 @@ Read the plan file. Plans use this format:
 # Plan: {title}
 
 ## Shared Context
+
 {context that all workers need — spec references, design decisions, constraints}
 
 ## Phase 1: {name} [no-deps]
+
 - repo: {optional, defaults to current project directory}
 - files: {file paths this phase touches}
 - instructions: {what to do — be specific, each worker gets fresh context}
 
 ## Phase 2: {name} [depends: Phase 1]
+
 - repo: {optional}
 - files: {file paths}
 - instructions: {what to do}
 
 ## Phase 3: {name} [depends: Phase 1, Phase 2]
+
 - repo: {optional}
 - files: {file paths}
 - instructions: {what to do}
@@ -97,6 +101,7 @@ Parse `[depends: ...]` tags from each phase header.
 - `[depends: Phase 1, Phase 2]` → waits for both
 
 Group into batches:
+
 - **Batch 1:** All phases with `[no-deps]` or no dependency tag (run in parallel)
 - **Batch 2:** Phases whose dependencies are all in Batch 1
 - **Batch 3:** Phases whose dependencies include Batch 2 items
@@ -125,44 +130,65 @@ Start? (yes/no)
 
 Wait for explicit approval.
 
-### Step 5: Execute Batches
+### Step 5: Execute via Agent Team
 
-For each batch:
+Uses native Agent Teams (see `gOS.md > Agent Teams Protocol`).
 
-1. Update `config.json`: `current_batch = N`, `status = "running"`
-2. For each phase in the batch:
-   a. Update `workers/worker-{N}/status.json`: `status = "running"`, `started_at = now`
-   b. Spawn agent:
+**Create the team:**
+
+```
+TeamCreate(team_name="dispatch-{job-id}")
+```
+
+**Create tasks from phases** (each phase becomes a task with dependency tracking):
+
+```
+TaskCreate(
+  description="Phase {N}: {name}",
+  details="{phase instructions}\n\nShared context:\n{context.md contents}",
+  blockedBy=[task IDs of dependency phases]  // from [depends: ...] tags
+)
+```
+
+Phases with `[no-deps]` have no blockedBy — immediately claimable.
+
+**Spawn named teammates** (one per independent phase, 3-4 max per batch):
+
+```
+Agent(
+  team_name="dispatch-{job-id}",
+  name="{phase-slug}",        // e.g., "api-endpoint", "ui-screen"
+  model="sonnet",             // or "haiku" for test/doc phases
+  isolation="worktree",       // if phase touches code files
+  prompt="You are a dispatch worker on team dispatch-{job-id}.
+
+          1. Check TaskList to find your assigned task
+          2. Execute the task instructions
+          3. When done, mark task complete via TaskUpdate
+          4. If blocked, SendMessage(to='lead') with the blocker
+          5. If you need info from another teammate, use SendMessage(to='{name}')
+
+          RULES:
+          - Do NOT push to remote. Local commits only.
+          - Do NOT modify files outside your task's listed file paths.
+          - Mark task complete with TaskUpdate when done."
+)
+```
+
+**Lead orchestration (stay thin — orchestrate, don't implement):**
+
+1. Wait for idle notifications from teammates as they complete tasks
+2. When a task completes, blocked downstream tasks auto-unblock — next teammates claim them
+3. If a teammate reports a blocker via SendMessage:
+   - Route the blocker to the appropriate teammate: `SendMessage(to="{other}", message="...")`
+   - Or resolve it yourself if it's a coordination issue
+4. If a teammate fails: ask Gary — retry (spawn new teammate for that task) / skip / abort
+5. When all tasks show complete in TaskList → proceed to Step 6
+6. Shut down all teammates:
    ```
-   Agent(
-     prompt = "You are a dispatch worker. Read your input file and execute the task.
-               Write your results to output.md when done.
-               Input: {input.md contents}
-               Shared context: {context.md contents}
-
-               When complete, write output.md with:
-               - What you did (summary)
-               - Files changed (list)
-               - Tests run and results
-               - Any issues or blockers encountered
-
-               RULES:
-               - Do NOT push to remote. Local commits only.
-               - Do NOT modify files outside your listed file paths.
-               - If blocked, write the blocker to output.md and stop.",
-     subagent_type = "general-purpose",
-     isolation = "worktree",  # if phase touches code
-     run_in_background = true,
-     name = "dispatch-worker-{N}"
-   )
+   SendMessage(to="*", message={type: "shutdown_request"})
    ```
-3. Monitor: check worker status files periodically
-4. When all workers in batch complete:
-   a. Read each worker's output.md
-   b. Check for failures — if any worker failed, offer: retry / skip / abort
-   c. Update batch status in config.json
-   d. If more batches remain, pass relevant outputs as shared context to next batch
-   e. Spawn next batch
+   After all approve: `TeamDelete`
 
 ### Step 6: Synthesize (automatic after all batches complete, or manual via `/dispatch synthesize`)
 
@@ -173,31 +199,39 @@ For each batch:
 
 ```markdown
 # Synthesis: {title}
+
 Generated: {timestamp}
 
 ## Summary
+
 {1-3 sentence overview of what was accomplished}
 
 ## Workers
-| Worker | Phase | Status | Duration | Files Changed |
-|--------|-------|--------|----------|---------------|
-| worker-1 | API endpoint | done | 12 min | 3 files |
-| worker-2 | UI screen | done | 18 min | 5 files |
-| worker-3 | Tests | done | 8 min | 2 files |
+
+| Worker   | Phase        | Status | Duration | Files Changed |
+| -------- | ------------ | ------ | -------- | ------------- |
+| worker-1 | API endpoint | done   | 12 min   | 3 files       |
+| worker-2 | UI screen    | done   | 18 min   | 5 files       |
+| worker-3 | Tests        | done   | 8 min    | 2 files       |
 
 ## Combined Changes
+
 {aggregate list of all files changed across all workers}
 
 ## Conflicts
+
 {list any files modified by multiple workers, or "None"}
 
 ## Worktree Branches
+
 {list branches to merge, or "N/A — no worktrees used"}
 
 ## Quality Gate
+
 Run `/review gate` on the combined result before merging.
 
 ## Next Steps
+
 - [ ] Review each worker's output.md for quality
 - [ ] Resolve any conflicts listed above
 - [ ] Merge worktree branches
@@ -284,17 +318,20 @@ Plans can specify different repos per phase:
 
 ```markdown
 ## Phase 1: API endpoint [no-deps]
+
 - repo: ~/Projects/Arx-api
 - files: routes/copy-trade.ts, services/copy-trade.ts
 - instructions: Build the /copy-trade endpoint
 
 ## Phase 2: UI screen [depends: Phase 1]
+
 - repo: ~/Projects/Arx
 - files: apps/mobile/src/screens/CopyTrade.tsx
 - instructions: Build the copy trade screen using types from Phase 1
 ```
 
 When spawning workers with different repos:
+
 - Each worker's agent prompt includes `cd {repo}` as the first instruction
 - Shared context is passed via the dispatch directory (accessible from any repo)
 - Cross-repo dependencies are passed via `shared/context.md` (updated between batches with relevant type definitions, API contracts, etc.)
@@ -307,24 +344,29 @@ When spawning workers with different repos:
 # Plan: Add Copy Trading Feature
 
 ## Shared Context
+
 Spec: specs/Arx_4-1-1-3_Copy_Trading.md
 Design: specs/Arx_4-1-1-3_Copy_Trading_Design.md
 The copy trading feature allows users to follow top traders and automatically mirror their positions.
 Key constraint: must use Hyperliquid's vault system for fund isolation.
 
 ## Phase 1: Data layer [no-deps]
+
 - files: src/services/copy-trade.ts, src/types/copy-trade.ts, src/hooks/useCopyTrade.ts
 - instructions: Build the data layer for copy trading. Define types for Leader, Follower, CopyPosition. Create a service that fetches leader data from Hyperliquid MCP. Create a React hook that exposes leader list, follow/unfollow actions, and position mirroring state.
 
 ## Phase 2: Leaderboard screen [no-deps]
+
 - files: src/screens/CopyTradeLeaderboard.tsx, src/components/LeaderCard.tsx
 - instructions: Build the leaderboard screen showing top traders. Use the LeaderCard component for each leader. Show: name, 30d PnL, win rate, followers, copy button. Mobile-first, dark theme. Use design tokens from specs/Arx_4-2.
 
 ## Phase 3: Copy management screen [depends: Phase 1]
+
 - files: src/screens/CopyTradeManage.tsx, src/components/ActiveCopy.tsx
 - instructions: Build the copy management screen. Show active copies with P&L, allocation, stop-loss settings. Allow adjusting allocation and stopping copies. Uses the data layer from Phase 1.
 
 ## Phase 4: Integration tests [depends: Phase 1, Phase 2, Phase 3]
+
 - files: tests/copy-trade.test.ts, tests/e2e/copy-trade.spec.ts
 - instructions: Write unit tests for the copy-trade service and integration tests for the screens. Use React Testing Library for component tests. Target 80%+ coverage.
 ```

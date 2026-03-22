@@ -128,6 +128,12 @@ Then ask: "Want to refine the winner with the full design swarm?"
 
 **Purpose:** Complete design pipeline from sketch to production-ready specs. This is the default if no sub-command matches.
 
+**Team decision:**
+- If design touches high-stakes screens (trading, copy trading, payments): Create team `design-full-{slug}` with 3 specialist teammates
+- Otherwise: Use ad-hoc subagents (current behavior)
+
+**If team mode:** After Stitch phases complete, create team for synthesis. Named teammates: `mobile-ux` (sonnet), `visual-design` (sonnet), `interaction-spec` (haiku). Lead adjudicates conflicts: "mobile-ux says card density HIGH, visual-design says MEDIUM. Which for S7 persona?" via `SendMessage`.
+
 If `$ARGUMENTS` doesn't start with a recognized sub-command (quick, variants, flow, system, sync), treat the entire argument as a design brief and run the full pipeline.
 
 ### Phase 0: Stitch Quick Sketch
