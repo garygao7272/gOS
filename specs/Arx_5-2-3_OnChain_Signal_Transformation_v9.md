@@ -162,7 +162,7 @@ Jake has $10K–$100K and trades his own ideas. He's T3–T4 skill — competent
 | Rising   | >0%    | any    | 10–49      | Yellow |
 | Unranked | any    | any    | <10        | Hidden |
 
-Return = (closed P&L + net funding) ÷ arithmetic mean of daily equity snapshots. Phase 1.1 upgrades to time-weighted return.
+Return includes closed P&L and net funding payments. Phase 1.1 upgrades to time-weighted return.
 
 ## Key Trader Metrics
 
@@ -348,11 +348,7 @@ Blind         < 0.30   no observable relationship to regime shifts
 
 Track Record is Dimension 3. It determines the badge displayed on every trader card.
 
-**Realized Return** = sum of all closed P&L plus net funding payments, divided by average account equity over the period. Funding payments are real cash flows in perpetual futures and must be included. All-time is the default; the Trader Card also supports toggling to 7d, 30d, or 90d views.
-
-**Average account equity:** arithmetic mean of daily equity snapshots. Snapshot taken at 00:00 UTC from the Hyperliquid account state API (cross-margin balance + unrealized P&L).
-
-**Calculation roadmap:** At launch, uses realized return (closed P&L + net funding / avg equity) from public Hyperliquid API. V1.1 upgrades to Time-Weighted Return (TWR) — sub-period returns chained at deposit/withdrawal boundaries. V2 adds Sharpe-on-TWR.
+**Realized Return:** Closed P&L + net funding ÷ average equity. Includes funding payments. All-time default; toggles to 7d / 30d / 90d. V1.1 upgrades to time-weighted return.
 
 **Sharpe** = annualized return divided by annualized volatility of daily equity changes. Above 1.5 is excellent.
 
@@ -595,9 +591,9 @@ Per-asset classification. Portfolio regime = worst-case across all assets this l
 
 ### Implementation Constraints
 
-**Execution channel:** HIP-3 builder codes. Each copy relationship uses an Arx-managed sub-account. Latency target: <2s from leader fill to copy order submission. 2.5bps builder fee per copied trade flows to Arx revenue.
+**Execution:** HIP-3 builder codes. One Arx-managed sub-account per copy relationship. Latency target: <2s. 2.5bps builder fee per copied trade.
 
-**Margin scaling:** If the sub-account cannot hold full proportional notional at leader's leverage, scale down to maximum supportable notional at same leverage. If scaled-down notional is <$10 (HL minimum order size), skip and log. Do not fill partial.
+**Margin:** Scale down proportionally if sub-account margin is insufficient. Skip if notional falls below $10 minimum.
 
 **Full copy architecture spec:** `Arx_5-2-3_OnChain_Signal_Transformation_v6.md` § Copy Engine.
 
@@ -1058,14 +1054,14 @@ Jake's pre-trade analysis rarely starts cold. A feed card in Story 5 creates the
 
 Jake's question: "What's the market doing right now?"
 
-| Signal               | Display             | How It's Built                                                                                                                                                                                        |
-| -------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **24h Price Change** | `+2.3%`             | Mark price vs previous day price                                                                                                                                                                      |
-| **Funding Rate**     | `+5.5% APR`         | `hourly_rate × 8,760 = APR`. HL settles every hour. Positive = longs paying shorts. Source: `fundingHistory` endpoint.                                                                                |
-| **Open Interest**    | `26,394 BTC`        | Total open contracts in base asset. Rising OI + rising price = trend conviction; rising OI + falling price = short pressure.                                                                          |
-| **24h Volume**       | `$2.1B`             | Total traded notional in USD. Low volume = thin liquidity, higher slippage risk.                                                                                                                      |
-| **Premium**          | `-0.03%`            | `(mid_price − oracle_price) / oracle_price`. On HL, mark price = oracle price for funding calculations; premium reflects order book imbalance. Negative = asks pulling below oracle = short pressure. |
-| **Impact Prices**    | `$69,018 / $69,019` | Estimated fill price for $5K order long / $5K order short. Direct from L2 book. Shows real execution cost, not just mid.                                                                              |
+| Signal               | Display             | How It's Built                                                                                                               |
+| -------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **24h Price Change** | `+2.3%`             | Mark price vs previous day price                                                                                             |
+| **Funding Rate**     | `+5.5% APR`         | Annualized hourly funding rate. Positive = longs paying shorts.                                                              |
+| **Open Interest**    | `26,394 BTC`        | Total open contracts in base asset. Rising OI + rising price = trend conviction; rising OI + falling price = short pressure. |
+| **24h Volume**       | `$2.1B`             | Total traded notional in USD. Low volume = thin liquidity, higher slippage risk.                                             |
+| **Premium**          | `-0.03%`            | Mark-to-oracle divergence. Negative = order book pulling below oracle price.                                                 |
+| **Impact Prices**    | `$69,018 / $69,019` | Estimated fill price for $5K order long / $5K order short. Direct from L2 book. Shows real execution cost, not just mid.     |
 
 ### Clusters — Group Consensus
 
@@ -1076,7 +1072,7 @@ Jake's question: "What's the market doing right now?"
 
 Enrichments: weighted avg entry price ("entered at $68,200, +1.9%"), liquidation heatmap (shown when nearest concentration is <15% from mark price).
 
-**Liquidation heatmap data source:** Arx-indexed on-chain HL data. Group liquidation prices into $100 bins. Display as bar chart beneath cluster consensus when the densest bin is <15% from current mark price.
+**Liquidation heatmap:** Arx on-chain indexer. Shown when nearest concentration is <15% from mark price.
 
 Consensus detected every 5 min. Breaking when strength drops below 55% (5% hysteresis).
 
