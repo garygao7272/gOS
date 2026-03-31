@@ -422,16 +422,16 @@ View controls change how data is **displayed** on cards. They do not classify wa
 
 All 8 sorts are available at MVP. Each answers a different question. Time-window-aware sorts update when Sarah changes the Time Window toggle.
 
-| Sort | Ranks By | Question It Answers | Time-Window? | Notes |
-| ---- | -------- | ------------------- | ------------ | ----- |
-| **Follower's Return** *(default)* | What copiers earned in selected window (C13.2) | "Who actually made people money?" | ✅ Yes | Day-1 fallback: leader's own return labeled "Leader's Return" |
-| **Win Rate** | % profitable closings in selected window (C3.5) | "Who wins most consistently?" | ✅ Yes | Hides traders with <5 trades in window (`—`) |
-| **Worst Month** | Worst 30d return, all-time (C13.3) | "Who keeps drawdowns small?" | No — always all-time | Lets Sarah compare return and risk without opening profiles |
-| **Sharpe Ratio** | Risk-adjusted return, 90d (C3.2) | "Who earns most per unit of risk?" | No — 90d only | Best for final comparison of 2–3 finalists; noisy at shorter windows |
-| **Consistency Score** | Count of 4 windows profitable (D10) | "Who makes money in every time frame?" | No — always all 4 windows | ~10–15% of active wallets score 4/4 at any time |
-| **Spots Remaining** | Copy capacity remaining, ascending | "Who is in high demand?" | No — live | Low spots = scarcity signal. Surfaces leaders near capacity first. |
-| **Capital Scale** | Total account equity, descending (D1) | "Who has the most skin in the game?" | No — daily snapshot | Large wallets less likely to self-destruct; alignment signal |
-| **Recent Activity** | Days since last trade, ascending (D9) | "Who is actively trading right now?" | No — live | Dormant wallets hidden by default. Sort reveals most recently active first. |
+| Sort                              | Ranks By                                        | Question It Answers                    | Time-Window?              | Notes                                                                       |
+| --------------------------------- | ----------------------------------------------- | -------------------------------------- | ------------------------- | --------------------------------------------------------------------------- |
+| **Follower's Return** _(default)_ | What copiers earned in selected window (C13.2)  | "Who actually made people money?"      | ✅ Yes                    | Day-1 fallback: leader's own return labeled "Leader's Return"               |
+| **Win Rate**                      | % profitable closings in selected window (C3.5) | "Who wins most consistently?"          | ✅ Yes                    | Hides traders with <5 trades in window (`—`)                                |
+| **Worst Month**                   | Worst 30d return, all-time (C13.3)              | "Who keeps drawdowns small?"           | No — always all-time      | Lets Sarah compare return and risk without opening profiles                 |
+| **Sharpe Ratio**                  | Risk-adjusted return, 90d (C3.2)                | "Who earns most per unit of risk?"     | No — 90d only             | Best for final comparison of 2–3 finalists; noisy at shorter windows        |
+| **Consistency Score**             | Count of 4 windows profitable (D10)             | "Who makes money in every time frame?" | No — always all 4 windows | ~10–15% of active wallets score 4/4 at any time                             |
+| **Spots Remaining**               | Copy capacity remaining, ascending              | "Who is in high demand?"               | No — live                 | Low spots = scarcity signal. Surfaces leaders near capacity first.          |
+| **Capital Scale**                 | Total account equity, descending (D1)           | "Who has the most skin in the game?"   | No — daily snapshot       | Large wallets less likely to self-destruct; alignment signal                |
+| **Recent Activity**               | Days since last trade, ascending (D9)           | "Who is actively trading right now?"   | No — live                 | Dormant wallets hidden by default. Sort reveals most recently active first. |
 
 ## Edge Cases
 
@@ -657,23 +657,23 @@ Sarah's need: "Tell me when something matters so I don't have to check constantl
 
 The top strip is a single-glance market dashboard. Loads on Discover open, refreshes every 5 min.
 
-| Signal | Display | How It's Built |
-| ------ | ------- | --------------- |
-| **Regime per asset** | `BTC TRENDING 12d` `ETH RANGE_BOUND 4d` | C5.1 per top 3 assets by OI. Duration since last transition. |
-| **Elite cluster direction** | `72% of Elite traders long BTC` | C10.1 Performance Elite cluster. Shown only when ≥60% consensus exists. |
-| **Active alerts count** | `2 funding alerts active` | Count of active Funding Alert cards in current feed session. |
+| Signal                      | Display                                 | How It's Built                                                          |
+| --------------------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| **Regime per asset**        | `BTC TRENDING 12d` `ETH RANGE_BOUND 4d` | C5.1 per top 3 assets by OI. Duration since last transition.            |
+| **Elite cluster direction** | `72% of Elite traders long BTC`         | C10.1 Performance Elite cluster. Shown only when ≥60% consensus exists. |
+| **Active alerts count**     | `2 funding alerts active`               | Count of active Funding Alert cards in current feed session.            |
 
 ### §Discover Feed Cards — What Surfaces in Discover Mode
 
 Discover mode shows only cards relevant to market intelligence and trader discovery — not personal portfolio cards. Sarah sees CTAs oriented toward traders; Jake sees CTAs oriented toward analysis.
 
-| Card | Alt | Trigger | S7 CTA | S2 CTA |
-| ---- | --- | ------- | ------ | ------ |
-| **Regime Shift** (#1) | A1 | Regime transition | Passive — read for context | `[Analyze →]` opens asset with regime pre-loaded |
-| **Funding Alert** (#2) | A1 | Rate extreme | Passive — market awareness | `[Analyze →]` opens asset; funding shown as cost/opportunity |
-| **Smart Money** (#5) | A2 | Elite ≥60% consensus | `[View all →]` filters Traders tab to Elite cluster | `[Analyze →]` opens asset with consensus data pre-loaded |
-| **Regime Specialist** (#6) | A2 | Regime Winners ≥60% agree | `[View all →]` filters Traders tab to Regime Winners | `[Analyze →]` same as Smart Money |
-| **Recommended Move** (#9) | A3 | Elite/Proven trader action | `[Follow]` / `[Copy]` — opens trader profile | `[Watch]` — adds trader to Jake's watched list |
+| Card                       | Alt | Trigger                    | S7 CTA                                               | S2 CTA                                                       |
+| -------------------------- | --- | -------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| **Regime Shift** (#1)      | A1  | Regime transition          | Passive — read for context                           | `[Analyze →]` opens asset with regime pre-loaded             |
+| **Funding Alert** (#2)     | A1  | Rate extreme               | Passive — market awareness                           | `[Analyze →]` opens asset; funding shown as cost/opportunity |
+| **Smart Money** (#5)       | A2  | Elite ≥60% consensus       | `[View all →]` filters Traders tab to Elite cluster  | `[Analyze →]` opens asset with consensus data pre-loaded     |
+| **Regime Specialist** (#6) | A2  | Regime Winners ≥60% agree  | `[View all →]` filters Traders tab to Regime Winners | `[Analyze →]` same as Smart Money                            |
+| **Recommended Move** (#9)  | A3  | Elite/Proven trader action | `[Follow]` / `[Copy]` — opens trader profile         | `[Watch]` — adds trader to Jake's watched list               |
 
 **Card ordering in Discover feed:** Regime Shift and Funding Alerts first (time-sensitive), then Smart Money and Regime Specialist (consensus intelligence), then Recommended Move cards (individual trader actions). Dedup: same asset+direction within 5 min → merge into one card.
 
@@ -681,13 +681,12 @@ Discover mode shows only cards relevant to market intelligence and trader discov
 
 ## Edge Cases
 
-| Condition | Behavior |
-| --------- | --------- |
-| No active clusters (market too thin) | Smart Money card not shown. Strip shows "No cluster consensus today." |
-| Regime = TRANSITION across all assets | Show "Markets in flux — no clear regime signal" in strip |
-| No Elite/Proven traders active in 30d | Recommended Move cards suppressed. Show "Discover more traders" banner pointing to Traders tab. |
-| Jake taps [Analyze →] with no asset detail spec loaded | Opens asset overview with regime + market signals from §Market Overview (Story 7 context) |
-
+| Condition                                              | Behavior                                                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| No active clusters (market too thin)                   | Smart Money card not shown. Strip shows "No cluster consensus today."                           |
+| Regime = TRANSITION across all assets                  | Show "Markets in flux — no clear regime signal" in strip                                        |
+| No Elite/Proven traders active in 30d                  | Recommended Move cards suppressed. Show "Discover more traders" banner pointing to Traders tab. |
+| Jake taps [Analyze →] with no asset detail spec loaded | Opens asset overview with regime + market signals from §Market Overview (Story 7 context)       |
 
 ---
 
@@ -695,40 +694,99 @@ Discover mode shows only cards relevant to market intelligence and trader discov
 
 **Persona:** Sarah (S7) | **Stage:** S3w — Warning | **JTBD:** Recover after loss
 
-**Pre:** Safety limit reached for one leader. System auto-paused copies (server-side). Critical push sent.
-**Post:** Resumed with cooldown, or stopped and recovered capital.
+**Pre:** Safety limit reached for one or more leaders. System auto-paused copies (server-side). Critical push sent.
+**Post:** Resumed with cooldown (open positions stay open), or stopped with capital returned (~2 min).
 
 ## Steps
 
-1. Receive **push notification**: "Safety limit reached for @AlphaTrader. Copies paused. -$420."
-2. Tap notification -> app opens to **Radar > Feed** -> **Recovery card** pinned at top (red)
-3. Read card: who (@AlphaTrader), what ("Safety limit reached"), returned amount ("$2,250 of $2,500")
-4. Read **explanation line**: "BTC dropped 15% in 4 hours. Hit your 50% safety limit."
-5. Check **correlation context** (if shown): "Both leaders long BTC — combined $4,200 exposure" -> §Warning Signals
-6. Check **regime mismatch** (if shown): "@Alpha wins only 52% in choppy markets"
-7. Choose: **[Resume]** (4h cooldown, then safety re-arms) or **[Stop & Return Capital]** (copy ends, capital returned)
+1. **Receive push notification** (lock screen):
+   `"@AlphaTrader hit your 50% loss limit. Copies paused. -$420."`
+   Format: `"@{leader} hit your {limit}% loss limit. Copies paused. {net_pnl}."`
 
-## Signal Matrix
+2. **Tap notification** → app opens to **Radar > Feed > My** → **Recovery Card** pinned at top, red border, above all other cards
 
-### §Warning Signals — What Sarah needs to make a decision under stress
+3. **Recovery Card** shows current state (see §Recovery Card States below):
+   - Leader name + avatar: "@AlphaTrader"
+   - Loss amount: "-$420 (52% of safety limit)"
+   - Capital secured: "$2,250 of $2,500 returned to balance"
+   - Trigger reason: "BTC dropped 15% in 4h. Hit 50% limit."
+   - Card state: **LIMIT HIT**
 
-Sarah's state: scared, confused, possibly angry. Every signal here must be dead simple and actionable. No jargon, no ambiguity.
+4. **Read contextual signals** (if present, shown below the trigger reason):
+   - **Correlation alert**: "Both @Alpha and @SwingMaster are long BTC — combined $4,200 exposure still open"
+   - **Regime mismatch**: "@Alpha wins only 52% in choppy markets (current regime: RANGE_BOUND)"
 
-| Signal                | Display                             | How It's Built                                                            |
-| --------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
-| **Safety Alert**      | "@Alpha hit limit. -$420. Paused."  | Circuit breaker triggers -> auto-pause -> push notification. Server-side. |
-| **Recovery Card**     | Returned amount + options           | Equity at pause, loss amount, [Resume] / [Stop & Return]                  |
-| **Resume Cooldown**   | "Safety resumes in 3h 42m"          | 4h cooldown prevents Resume -> re-trigger loops                           |
-| **Correlation Alert** | "Both long BTC — $4,200 combined"   | 2+ leaders same position detected                                         |
-| **Regime Mismatch**   | "@Alpha wins 52% in choppy markets" | Leader WR in current regime < 50% (MVP: overall WR < 50%)                 |
+5. **Decision tree** — two buttons with consequence text shown inline on the card:
+
+   | Option     | Button                    | Consequence Text (shown on card)                                                                                                 |
+   | ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+   | **Resume** | `[Resume Copying]`        | "4h cooldown begins. Safety limit re-arms after cooldown. **Open positions stay open.** Next copy after cooldown expires."       |
+   | **Stop**   | `[Stop & Return Capital]` | "Copy relationship ends. **Capital returned in ~2 min.** Open positions closed at market price. You can re-copy @Alpha anytime." |
+
+6. **Sarah taps [Resume]** → cooldown timer starts → card enters **RESOLVING** state: "Safety resumes in 3h 42m. Open positions continue."
+
+   **Or Sarah taps [Stop]** → confirmation modal: "Stop copying @Alpha? Open positions will close at market. Capital (~$2,250) returns in ~2 min." → `[Confirm Stop]` / `[Cancel]` → on confirm, card enters CLOSED state, capital returns to balance.
+
+7. **Post-decision confirmation** (card stays dimmed for 24h, then auto-dismisses):
+   - If resumed: "Resumed at {time}. Cooldown expires {time}. Safety limit reset to {configured_limit}%."
+   - If stopped: "Stopped at {time}. $2,248 returned to balance. (@Alpha had 2.3% slippage on close.)"
+
+## §Recovery Card States — 3-State Machine
+
+The Recovery Card surfaces in different states depending on system trigger and Sarah's actions.
+
+| State               | Trigger                                        | Card Color | Header                                       | Primary Action                            |
+| ------------------- | ---------------------------------------------- | ---------- | -------------------------------------------- | ----------------------------------------- |
+| **ACTIVE LOSS**     | Safety bar crossing 40%+ but not at limit yet  | Amber      | "⚠️ @Alpha approaching limit — {pnl} (-40%)" | `[Review]` → opens leader profile         |
+| **LIMIT HIT**       | Circuit breaker fires, copies auto-paused      | Red        | "🛑 @Alpha hit limit. Copies paused. {pnl}"  | `[Resume Copying]` / `[Stop & Return]`    |
+| **MANUALLY PAUSED** | Sarah paused copies herself from Manage screen | Grey       | "⏸ @Alpha paused by you"                     | `[Resume Copying]` / `[Stop Permanently]` |
+
+State transitions:
+
+```
+ACTIVE LOSS       → LIMIT HIT        (circuit breaker fires)
+LIMIT HIT         → RESOLVING        (Sarah taps Resume, cooldown active)
+RESOLVING         → ACTIVE LOSS      (cooldown expires, new copy session begins)
+LIMIT HIT         → CLOSED           (Sarah taps Stop)
+MANUALLY PAUSED   → CLOSED           (Sarah taps Stop Permanently)
+MANUALLY PAUSED   → ACTIVE LOSS      (Sarah taps Resume)
+```
+
+## §Multi-Leader Scenario — Partial Portfolio Alert
+
+If Sarah has 3 leaders and only 1 hits the safety limit:
+
+- Feed shows **1 Recovery Card** (pinned, red) for @AlphaTrader
+- Below it: 2 normal active copy cards for unaffected leaders
+- No bulk action offered — each leader is a separate, deliberate decision
+- **Portfolio summary line** above all cards: "2 of 3 leaders active. @Alpha paused."
+
+If 2+ leaders hit limits simultaneously (e.g., correlated long BTC during flash crash):
+
+- Multiple Recovery Cards stacked, most recent trigger on top
+- **Correlation warning** pinned above stack: "⚠️ @Alpha and @SwingMaster both triggered. Both long BTC — possible correlated risk."
+- Each card resolved independently — Sarah decides per leader
+
+## §Warning Signals — What Sarah needs to make a decision under stress
+
+Sarah's state: scared, confused, possibly angry. Every signal must be dead simple and actionable. No jargon.
+
+| Signal                | Display                             | How It's Built                                                          |
+| --------------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| **Safety Alert**      | "@Alpha hit limit. -$420. Paused."  | Circuit breaker triggers → auto-pause → push notification. Server-side. |
+| **Recovery Card**     | State + returned amount + options   | See §Recovery Card States above                                         |
+| **Resume Cooldown**   | "Safety resumes in 3h 42m"          | 4h cooldown prevents Resume → re-trigger loops                          |
+| **Correlation Alert** | "Both long BTC — $4,200 combined"   | 2+ leaders same direction on same asset detected                        |
+| **Regime Mismatch**   | "@Alpha wins 52% in choppy markets" | Leader WR in current regime < 55% (MVP: overall WR < 55%)               |
 
 ## Edge Cases
 
-| Condition                                     | Behavior                                                                               |
-| --------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Multiple leaders hit safety simultaneously    | Separate Recovery card per leader, all pinned                                          |
-| Sarah ignores Recovery card for 7+ days       | Push reminder: "Copies still paused for @Alpha. Resume or stop?"                       |
-| Resume -> immediate re-trigger after cooldown | Card shows again with updated numbers. No infinite loop — 4h minimum between triggers. |
+| Condition                                    | Behavior                                                                                                        |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Sarah ignores Recovery Card for 7+ days      | Push reminder: "Copies still paused for @Alpha. Resume or stop?"                                                |
+| Resume → immediate re-trigger after cooldown | Card shows again with updated numbers. Hard stop at 3 triggers in 24h → requires manual review before resuming. |
+| App closed when limit hits                   | Push arrives, Recovery Card ready when app opens. No action required to surface it.                             |
+| Capital return fails (network/chain issue)   | "Return in progress — check again in 10 min. Contact support if balance hasn't updated."                        |
 
 ---
 
@@ -757,13 +815,13 @@ Jake's pre-trade flow often starts in the Discover feed (Story 5) where a signal
 
 Jake's pre-trade analysis is rarely cold. In most sessions, a feed card in Story 5 creates the itch. These are the cards that lead him from Discover → Story 7.
 
-| Card | What Jake Sees | Why It Triggers | Action Chain |
-| ---- | -------------- | --------------- | ------------ |
-| **Regime Shift** (#1) | "BTC shifted to TRENDING — regime specialist win rate 71% in this regime" | Regime change = new directional opportunity. Jake trades with the trend, not against it. | `[Analyze →]` → loads asset with regime pre-filled + §Market Signals |
-| **Smart Money** (#5) | "72% of Elite traders long BTC — avg entry $68,200 (+1.9%)" | Large-capital directional consensus = validation for Jake's own thesis. Entry price shows whether the move has started. | `[Analyze →]` → loads asset + §Clusters pre-filled with Elite consensus |
-| **Regime Specialist** (#6) | "80% of trending specialists long BTC" | Strategy-filtered consensus. More relevant than broad market — these traders outperform specifically in this regime type. | `[Analyze →]` → same as Smart Money |
-| **Funding Alert** (#2) | "BTC longs paying +42% APR — 3rd consecutive high-funding hour" | Funding extreme = market is overcrowded. Jake uses this as a contrarian trigger (fade the crowd) or a cost signal (holds are expensive). | `[Analyze →]` → asset view with annualized funding cost shown prominently |
-| **Trader Move** (#8, watched) | "@SwingMaster opened BTC Long 10x — 3rd trending trade this month, won 2/2" | Jake watches leaders not to copy, but as signal. A watched Elite trader acting = pre-qualified setup. | `[Analyze →]` → asset view + sees @SwingMaster's position in cluster data |
+| Card                          | What Jake Sees                                                              | Why It Triggers                                                                                                                          | Action Chain                                                              |
+| ----------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Regime Shift** (#1)         | "BTC shifted to TRENDING — regime specialist win rate 71% in this regime"   | Regime change = new directional opportunity. Jake trades with the trend, not against it.                                                 | `[Analyze →]` → loads asset with regime pre-filled + §Market Signals      |
+| **Smart Money** (#5)          | "72% of Elite traders long BTC — avg entry $68,200 (+1.9%)"                 | Large-capital directional consensus = validation for Jake's own thesis. Entry price shows whether the move has started.                  | `[Analyze →]` → loads asset + §Clusters pre-filled with Elite consensus   |
+| **Regime Specialist** (#6)    | "80% of trending specialists long BTC"                                      | Strategy-filtered consensus. More relevant than broad market — these traders outperform specifically in this regime type.                | `[Analyze →]` → same as Smart Money                                       |
+| **Funding Alert** (#2)        | "BTC longs paying +42% APR — 3rd consecutive high-funding hour"             | Funding extreme = market is overcrowded. Jake uses this as a contrarian trigger (fade the crowd) or a cost signal (holds are expensive). | `[Analyze →]` → asset view with annualized funding cost shown prominently |
+| **Trader Move** (#8, watched) | "@SwingMaster opened BTC Long 10x — 3rd trending trade this month, won 2/2" | Jake watches leaders not to copy, but as signal. A watched Elite trader acting = pre-qualified setup.                                    | `[Analyze →]` → asset view + sees @SwingMaster's position in cluster data |
 
 **Distance to trade from feed card:** 2–3 taps (card → [Analyze →] → regime/market view → Trade Panel). No search, no filter, no separate navigation step.
 
@@ -818,7 +876,6 @@ Confluence = count of layers agreeing on direction (0-5) x 2 -> 0-10 score.
 | Regime = TRANSITION (ambiguous)       | Show "No clear pattern — monitor only" guidance                      |
 | Cluster consensus <60% (no consensus) | Hide consensus line. Show "No consensus among Elite traders"         |
 | HIP-3 asset outside market hours      | Show "Market closed. Opens [time]." Price data frozen at last close. |
-
 
 ---
 
