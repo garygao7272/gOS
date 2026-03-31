@@ -101,7 +101,7 @@ Jake has $10K–$100K and trades his own ideas. He's T3-T4 skill — competent e
 - Sizing too large and getting liquidated
 - Being wrong about the regime (trading a trend in a choppy market)
 
-**What success feels like:** He opens Radar, immediately sees the market regime, what the Elite cluster is doing, and where consensus is forming. He sizes his trade with Kelly guidance. He manages his position with full awareness of regime shifts. His followers make money, and he earns 2bps per trade.
+**What success feels like:** He opens Radar, immediately sees the market regime, what the Elite cluster is doing, and where consensus is forming. He sizes his trade with Kelly guidance. He manages his position with full awareness of regime shifts. His followers make money, and he earns referral commissions as his club grows.
 
 **His core workflow on Radar:**
 
@@ -600,7 +600,7 @@ Per-asset classification. Portfolio regime = worst-case across all assets this l
 
 ### Implementation Constraints
 
-**Execution channel:** HIP-3 builder codes. Each copy relationship uses an Arx-managed sub-account. Latency target: <2s from leader fill to copy order submission. 2bps builder fee per copied trade flows to Arx revenue.
+**Execution channel:** HIP-3 builder codes. Each copy relationship uses an Arx-managed sub-account. Latency target: <2s from leader fill to copy order submission. 2.5bps builder fee per copied trade flows to Arx revenue.
 
 **Margin scaling:** If the sub-account cannot hold full proportional notional at leader's leverage, scale down to maximum supportable notional at same leverage. If scaled-down notional is <$10 (HL minimum order size), skip and log. Do not fill partial.
 

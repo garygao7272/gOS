@@ -100,7 +100,7 @@ Jake has $10K–$100K and trades his own ideas. He's T3-T4 skill — competent e
 - Sizing too large and getting liquidated
 - Being wrong about the regime (trading a trend in a choppy market)
 
-**What success feels like:** He opens Radar, immediately sees the market regime, what the Elite cluster is doing, and where consensus is forming. He sizes his trade with Kelly guidance. He manages his position with full awareness of regime shifts. His followers make money, and he earns 2bps per trade.
+**What success feels like:** He opens Radar, immediately sees the market regime, what the Elite cluster is doing, and where consensus is forming. He sizes his trade with Kelly guidance. He manages his position with full awareness of regime shifts. His followers make money, and he earns referral commissions as his club grows.
 
 **His core workflow on Radar:**
 
