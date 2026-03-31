@@ -48,9 +48,9 @@
 
 **Part III — Feed System**
 
-| #   | Section                                     |
-| --- | ------------------------------------------- |
-| 1   | Feed System (Freshness Tiers + Build Order) |
+| #   | Section                                                  |
+| --- | -------------------------------------------------------- |
+| 1   | Feed System (Card Index · Freshness Tiers · Build Order) |
 
 ---
 
@@ -457,6 +457,10 @@ All 8 sorts are available at launch. Each answers a different question. Time-win
 
 ## Data & Signal Matrix
 
+### The Feed — First encounter
+
+This is the first time Sarah sees a feed card. The Radar feed is a live intelligence stream: structured signals from the on-chain world, filtered and ranked by what matters to the viewer at this moment. Cards surface in **My Feed** (personalised — requires a copy or follow relationship) or **Discover** (market intelligence — visible to anyone). The cards Sarah encounters evolve with her journey: Watch Nudge here, monitoring cards in Story 4, discovery intelligence in Story 5, recovery in Story 6.
+
 ### Watch Nudge — The feed card that converts a watcher into a copier
 
 Sarah's emotional trigger: "I've been watching — now I can see exactly what I missed." The nudge quantifies the cost of inaction in real P&L terms.
@@ -634,28 +638,28 @@ The same underlying event produces different card types depending on the viewer'
 **Copy position events (A5) are always personal — never shown in Discover:**
 Cards #10 (Copy Earnings), #11 (Recovery), #12 (Weekly Rollup), and #13 (Watch Nudge) require an active copy or follow relationship. My Feed only by definition.
 
-### Feed Cards — 13 Types at Launch
+### My Feed Cards — What Sarah sees when she's actively copying
 
-This is the canonical card reference for Stories 4, 5, and 6. Each card is a self-contained update Sarah or Jake can read and act on in seconds.
+These are the cards Sarah encounters in Story 4. Each requires a copy or follow relationship — they're personal to her portfolio. Cards #1 (Regime Shift), #2 (Funding Alert), #5 (Smart Money), #6 (Regime Specialist), and #9 (Recommended Move) appear in **Discover** mode and are defined in Story 5. Card #11 (Recovery) is defined in Story 6.
 
-| #   | Card              | Alt | Trigger                                                             | Display Example                                                               | Data Sources                                                                                                                         | Freshness      | User Question Answered                                                                                         | Feed     |
-| --- | ----------------- | --- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------- | -------- |
-| 1   | Regime Shift      | A1  | Market regime transitions to a new state                            | "BTC shifted to TRENDING. Leaders win 68% in trending."                       | Regime engine: technical price indicators (momentum, volatility, trend strength) applied to Hyperliquid candlestick data             | Session-fresh  | "What changed in the market?" — Sarah (market context) + Jake (pre-trade setup)                                | Both     |
-| 2   | Funding Alert     | A1  | Funding rate extreme (>20% APR or 3+ consecutive)                   | "BTC longs paying +42% APR — 3rd consecutive high-funding hour"               | Hyperliquid funding endpoint. Settles hourly — annualize × 24 × 365                                                                  | Session-fresh  | "Is the market overcrowded on one side?" — Sarah (market awareness) + Jake (funding cost or contrarian signal) | Both     |
-| 3   | Leader Consensus  | A2  | ≥60% of Sarah's copied leaders same direction                       | "3 of 4 leaders long BTC. Entered at $68,200 (+1.9%)"                         | Live positions of Sarah's copied leaders (asset, direction, notional, avg entry). From Hyperliquid account state + Arx copy database | Live (<5s)     | "Are my leaders all betting the same way?" — Sarah (daily check + protection)                                  | My       |
-| 4   | Watch Consensus   | A2  | ≥60% of Sarah's watched leaders same direction                      | Same format, cyan border                                                      | Live positions of Sarah's watched leaders (not copied). Same source as Card 3                                                        | Live (<5s)     | "Are the traders I'm watching all in the same direction?" — Sarah (discovering trusted traders)                | My       |
-| 5   | Smart Money       | A2  | Performance Elite cluster ≥60% consensus (min 10)                   | "72% of Elite traders long BTC"                                               | Positions of Elite + Proven tier traders active in 30d; weighted avg entry price; cluster recomputed every 5 min                     | Session-fresh  | "What are the best traders doing?" — Sarah (market context + discovery) + Jake (trade thesis validation)       | Discover |
-| 6   | Regime Specialist | A2  | Regime Winners cluster ≥60% consensus (min 5)                       | "80% of trending specialists long BTC"                                        | Positions of traders with win rate >65% active 90d; current regime state from regime engine                                          | Session-fresh  | "Who's winning in this specific market condition?" — Sarah (learning) + Jake (regime-matched edge)             | Discover |
-| 7   | Divergence        | A2  | My Leaders cluster opposes Elite cluster direction                  | "Your leaders disagree with smart money" (amber)                              | Cross-comparison of Card 3 (My Leaders) vs Card 5 (Elite) consensus direction                                                        | Session-fresh  | "Are my leaders out of step with smart money?" — Sarah (protection)                                            | Both     |
-| 8   | Trader Move       | A3  | Sarah's copied/watched leader opens or closes                       | "@SwingMaster opened BTC Long 5x — Your copy: +$13.50"                        | Hyperliquid real-time fills stream. Leader trade fill + Arx copy P&L change for Sarah                                                | Live (<5s)     | "What did my leader just do, and what happened to my copy?" — Sarah (daily check)                              | My       |
-| 9   | Recommended Move  | A3  | Elite/Proven tier trader opens or closes                            | Same format; buttons: [Follow] [Copy]                                         | Hyperliquid real-time fills stream + Track Record tier from Arx database (only Elite/Proven trigger this)                            | Near-real-time | "Who made an interesting move I should consider?" — Sarah (finding new traders)                                | Discover |
-| 10  | Copy Earnings     | A5  | Daily 8am push                                                      | "Yesterday: +$47.20. Best: @SwingMaster +$33"                                 | Arx copy P&L tracking (closed positions + funding) aggregated by day per leader                                                      | Batch-daily    | "How much did I make?" — Sarah (daily check)                                                                   | My       |
-| 11  | Recovery          | A5  | Stop loss limit reached                                             | "@Alpha hit limit. -$420. [Resume] [Stop]" (RED, PINNED)                      | Arx stop loss system: copy position loss%, open position profit/loss, capital secured — server-side event                            | Instant (<2s)  | "Something went wrong — what do I do?" — Sarah (recovery decision) → Story 6                                   | My       |
-| 12  | Weekly Rollup     | A5  | Mondays (first copy active)                                         | "This week: +$87.20. All-time: +$1,245 (+14.6%)"                              | Arx copy P&L aggregated weekly; per-leader breakdown                                                                                 | Batch-weekly   | "How is my portfolio doing over time?" — Sarah (learning + tracking progress)                                  | My       |
-| 13  | Watch Nudge       | A5  | Following ≥3d, not copying, leader had positive return during watch | "@SwingMaster's 23 copiers made +$847 since you started watching. [Copy Now]" | Arx follow timestamp + Follower's Return since follow date + current copier count                                                    | Batch-daily    | "Is not copying this trader costing me money?" — Sarah (from discovery to committing)                          | My       |
+| #   | Card             | Alt | Trigger                                                | Display Example                                        | Data Sources                                                                                                         | Freshness     | User Question Answered                                                                 |
+| --- | ---------------- | --- | ------------------------------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------- |
+| 14  | WYWA             | A5  | App opens after ≥8h absence with active copies         | "While you were away: All healthy. +$47 total."        | Arx copy P&L + stop loss status across all leaders; timestamped from last foreground. Pinned, dismisses on tap.      | Live (<5s)    | "What happened while I was gone?" — Sarah (re-entry after absence)                     |
+| 3   | Leader Consensus | A2  | ≥60% of Sarah's copied leaders same direction on asset | "3 of 4 leaders long BTC. Entered at $68,200"          | Live positions of Sarah's copied leaders (asset, direction, notional, avg entry). Hyperliquid account state + Arx DB | Live (<5s)    | "Are my leaders all betting the same way?" — Sarah (daily check + protection)          |
+| 4   | Watch Consensus  | A2  | ≥60% of Sarah's watched leaders same direction         | Same format, cyan border                               | Live positions of Sarah's watched leaders (not copied). Same source as Card 3                                        | Live (<5s)    | "Are the traders I'm watching all in the same direction?" — Sarah (discovering intent) |
+| 7   | Divergence       | A2  | My Leaders cluster opposes Elite cluster direction     | "Your leaders disagree with smart money" (amber)       | Cross-comparison of Card 3 (My Leaders) vs Card 5 (Elite cluster). Defined in Story 5.                               | Session-fresh | "Are my leaders out of step with smart money?" — Sarah (protection)                    |
+| 8   | Trader Move      | A3  | Sarah's copied or watched leader opens or closes       | "@SwingMaster opened BTC Long 5x — Your copy: +$13.50" | Hyperliquid real-time fills stream. Leader trade fill + Arx copy P&L change for Sarah                                | Live (<5s)    | "What did my leader just do, and what happened to my copy?" — Sarah (daily check)      |
+| 10  | Copy Earnings    | A5  | Daily 8am push                                         | "Yesterday: +$47.20. Best: @SwingMaster +$33"          | Arx copy P&L tracking (closed positions + funding) aggregated by day per leader                                      | Batch-daily   | "How much did I make?" — Sarah (daily check)                                           |
+| 12  | Weekly Rollup    | A5  | Mondays (first copy active)                            | "This week: +$87.20. All-time: +$1,245 (+14.6%)"       | Arx copy P&L aggregated weekly; per-leader breakdown                                                                 | Batch-weekly  | "How is my portfolio doing over time?" — Sarah (learning + tracking progress)          |
 
-**Ordering:** Pinned > Critical > High > Normal > Low. My Feed cards rank above Discover. Items older than 24h move to "Earlier" section.
-**Dedup:** Same leader + asset + direction within 5 min → merge into one card. Safety + Recovery card for same leader → show Recovery only.
+**Card 14 — WYWA states:**
+
+- **All safe:** "While you were away (6h): All healthy. +$47 total."
+- **Amber:** "While you were away (6h): @SwingMaster approaching stop loss limit — 72% consumed."
+- **Red / triggered:** "While you were away: @Alpha hit stop loss limit. Copies paused." — links directly to Recovery Card (#11)
+
+**Ordering:** Pinned (WYWA, Recovery) > Critical > High > Normal > Low. Items older than 24h move to "Earlier" section.
+**Dedup:** Same leader + asset + direction within 5 min → merge into one card. Stop loss approaching + Recovery for same leader → show Recovery only.
 
 ### Push Notifications
 
@@ -720,21 +724,88 @@ The top strip is a single-glance market dashboard. Loads on Discover open, refre
 | **Elite cluster direction** | `72% of Elite traders long BTC`         | Performance Elite cluster consensus. Shown only when ≥60% of Elite traders agree on direction.                |
 | **Active alerts count**     | `2 funding alerts active`               | Count of active Funding Alert cards in current feed session.                                                  |
 
-### Discover Feed Cards — What Surfaces in Discover Mode
+### Discover Cards — Full Definitions
 
-Discover mode shows only cards relevant to market intelligence and trader discovery — not personal portfolio cards. Sarah sees CTAs oriented toward traders; Jake sees CTAs oriented toward analysis.
+Discover mode surfaces market intelligence and trader discovery signals. No copy or follow relationship required. Sarah sees trader-oriented CTAs; Jake sees analysis-oriented CTAs.
 
-| Card                       | Alt | Trigger                    | Sarah Action                                         | Jake Action                                                  |
-| -------------------------- | --- | -------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
-| **Regime Shift** (#1)      | A1  | Regime transition          | Passive — read for context                           | `[Analyze →]` opens asset with regime pre-loaded             |
-| **Funding Alert** (#2)     | A1  | Rate extreme               | Passive — market awareness                           | `[Analyze →]` opens asset; funding shown as cost/opportunity |
-| **Smart Money** (#5)       | A2  | Elite ≥60% consensus       | `[View all →]` filters Traders tab to Elite cluster  | `[Analyze →]` opens asset with consensus data pre-loaded     |
-| **Regime Specialist** (#6) | A2  | Regime Winners ≥60% agree  | `[View all →]` filters Traders tab to Regime Winners | `[Analyze →]` same as Smart Money                            |
-| **Recommended Move** (#9)  | A3  | Elite/Proven trader action | `[Follow]` / `[Copy]` — opens trader profile         | `[Watch]` — adds trader to Jake's watched list               |
+**Card ordering:** Regime Shift and Funding Alerts first (time-sensitive), then Smart Money and Regime Specialist (consensus intelligence), then Recommended Move cards (individual trader actions). Dedup: same asset + direction within 5 min → merge into one card.
 
-**Card ordering in Discover feed:** Regime Shift and Funding Alerts first (time-sensitive), then Smart Money and Regime Specialist (consensus intelligence), then Recommended Move cards (individual trader actions). Dedup: same asset+direction within 5 min → merge into one card.
+---
 
-**Note:** Cards #3 (Leader Consensus), #4 (Watch Consensus), #8 (Trader Move), #10 (Copy Earnings), #11 (Recovery), #12 (Weekly Rollup), and #13 (Watch Nudge) are My Feed only — they require an active copy or follow relationship and are not shown in Discover.
+**Card #1 — Regime Shift** (A1 · Both)
+
+|                   |                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Trigger**       | Market regime transitions to a new state for any tracked asset                                                           |
+| **Display**       | "BTC shifted to TRENDING. Regime specialists win 68% in trending."                                                       |
+| **Data sources**  | Regime engine: technical price indicators (momentum, volatility, trend strength) applied to Hyperliquid candlestick data |
+| **Freshness**     | Session-fresh (5 min)                                                                                                    |
+| **Sarah CTA**     | Passive — read for market context                                                                                        |
+| **Jake CTA**      | `[Analyze →]` opens asset with regime pre-populated in Market Signals                                                    |
+| **User question** | "What changed in the market?"                                                                                            |
+
+---
+
+**Card #2 — Funding Alert** (A1 · Both)
+
+|                   |                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| **Trigger**       | Funding rate >20% APR on any tracked asset, or 3+ consecutive high-funding hours                        |
+| **Display**       | "BTC longs paying +42% APR — 3rd consecutive high-funding hour"                                         |
+| **Data sources**  | Hyperliquid funding endpoint. Annualized: hourly rate × 24 × 365                                        |
+| **Freshness**     | Session-fresh (5 min)                                                                                   |
+| **Sarah CTA**     | Passive — market awareness                                                                              |
+| **Jake CTA**      | `[Analyze →]` opens asset; annualized funding cost shown prominently as carry cost or contrarian signal |
+| **User question** | "Is the market overcrowded on one side?"                                                                |
+
+---
+
+**Card #5 — Smart Money** (A2 · Discover)
+
+|                   |                                                                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Trigger**       | Elite + Proven tier traders: ≥60% consensus on direction for one asset (minimum 10 traders)                                                                          |
+| **Display**       | "72% of top traders long BTC — avg entry $68,200 (+1.9%)"                                                                                                            |
+| **Data sources**  | Live positions of Elite + Proven tier traders active in last 30d. Weighted avg entry price. Cluster recomputed every 5 min. Breaking threshold: 55% (5% hysteresis). |
+| **Freshness**     | Session-fresh (5 min)                                                                                                                                                |
+| **Sarah CTA**     | `[View all →]` filters Traders tab to Elite + Proven, sorted by Copier Return                                                                                        |
+| **Jake CTA**      | `[Analyze →]` opens asset with Elite + Proven consensus pre-loaded in Clusters                                                                                       |
+| **User question** | "What are the best traders doing?"                                                                                                                                   |
+
+**Note on label:** Displayed as "top traders" or "smart money" in card copy — not "Elite traders" — because the cluster includes Proven tier. See Market Overview Strip.
+
+---
+
+**Card #6 — Regime Specialist** (A2 · Discover)
+
+|                        |                                                                                                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Trigger**            | Regime Winners cluster: ≥60% consensus on direction for one asset (minimum 5 traders in cluster)                                                            |
+| **Display**            | "80% of trending specialists long BTC"                                                                                                                      |
+| **Cluster definition** | Traders with D7 label = Anticipator or Adapter AND regime-specific win rate in current regime >60%, with ≥10 trades in that regime type, active in last 90d |
+| **Data sources**       | D7 Regime Timing labels (batch-weekly) + regime-specific win rate per trader (batch-weekly) + live positions                                                |
+| **Freshness**          | Session-fresh (5 min)                                                                                                                                       |
+| **Sarah CTA**          | `[View all →]` filters Traders tab to Regime Winners cluster                                                                                                |
+| **Jake CTA**           | `[Analyze →]` opens asset with regime-specialist consensus data                                                                                             |
+| **User question**      | "Who's winning specifically in this market condition?"                                                                                                      |
+
+**Why this differs from Card #5:** Smart Money is a performance cluster (who are the best traders overall). Regime Specialist is a context cluster (who performs best in the _current_ regime type). In a CRISIS regime, a conservative Adapter may rank higher here than a high-return trader who struggles in crashes.
+
+---
+
+**Card #9 — Recommended Move** (A3 · Discover)
+
+|                   |                                                                                                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Trigger**       | Elite or Proven tier trader opens or closes a position                                                                                                            |
+| **Display**       | "@SwingMaster opened BTC Long 5x — 28 active copiers · Copier Return +6.2% this month"                                                                            |
+| **Data sources**  | Hyperliquid real-time fills stream + Track Record tier from Arx database (only Elite/Proven trigger this) + active copier count + 30d Copier Return (batch-daily) |
+| **Freshness**     | Near-real-time (<30s)                                                                                                                                             |
+| **Sarah CTA**     | `[Follow]` / `[Copy]` — opens trader profile                                                                                                                      |
+| **Jake CTA**      | `[Watch]` — adds trader to Jake's watched list. `[Analyze →]` if from a trigger card.                                                                             |
+| **User question** | "Who made an interesting move I should consider?"                                                                                                                 |
+
+**Copier P&L context:** Active copier count and 30d Copier Return are shown on the card (not just in the profile). This is the key proof point that copy trading works — shown at the moment of discovery, not gated behind a profile tap. Cold start fallback: if <3 active copiers, show "New leader" instead of copier stats.
 
 ## Edge Cases
 
@@ -789,6 +860,18 @@ Discover mode shows only cards relevant to market intelligence and trader discov
    - If stopped: "Stopped at {time}. $2,248 returned to balance. (@Alpha had 2.3% slippage on close.)"
 
 ## Data & Signal Matrix
+
+### Card #11 — Recovery (A5 · My Feed)
+
+|                   |                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| **Trigger**       | Stop loss limit reached — server-side event, fires even if phone is off                                   |
+| **Display**       | "@Alpha hit limit. -$420. [Resume Copying] [Stop & Return]" (RED, PINNED)                                 |
+| **Data sources**  | Arx stop loss system: copy position loss%, open position profit/loss, capital secured — server-side event |
+| **Freshness**     | Instant (<2s)                                                                                             |
+| **User question** | "Something went wrong — what do I do?"                                                                    |
+
+The Recovery card is the only card that is **always pinned above all other content** when active. It does not age out or move to "Earlier." It stays until Sarah acts. See Recovery Card States below.
 
 ### Recovery Card States — 3-State Machine
 
@@ -945,6 +1028,31 @@ Confluence = count of layers agreeing on direction (0-5) x 2 -> 0-10 score.
 ---
 
 # 1. Feed System
+
+## Card Index — All 14 Cards at a Glance
+
+Quick reference. For full definitions, see the story where each card is introduced.
+
+| #   | Card              | Alt | Feed     | Introduced | Freshness      | Persona      |
+| --- | ----------------- | --- | -------- | ---------- | -------------- | ------------ |
+| 13  | Watch Nudge       | A5  | My       | Story 3    | Batch-daily    | S7 Sarah     |
+| 14  | WYWA              | A5  | My       | Story 4    | Live (<5s)     | S7 Sarah     |
+| 3   | Leader Consensus  | A2  | My       | Story 4    | Live (<5s)     | S7 Sarah     |
+| 4   | Watch Consensus   | A2  | My       | Story 4    | Live (<5s)     | S7 Sarah     |
+| 7   | Divergence        | A2  | Both     | Story 4    | Session-fresh  | S7 Sarah     |
+| 8   | Trader Move       | A3  | My       | Story 4    | Live (<5s)     | S7 Sarah     |
+| 10  | Copy Earnings     | A5  | My       | Story 4    | Batch-daily    | S7 Sarah     |
+| 12  | Weekly Rollup     | A5  | My       | Story 4    | Batch-weekly   | S7 Sarah     |
+| 1   | Regime Shift      | A1  | Both     | Story 5    | Session-fresh  | S7 + S2 Jake |
+| 2   | Funding Alert     | A1  | Both     | Story 5    | Session-fresh  | S7 + S2 Jake |
+| 5   | Smart Money       | A2  | Discover | Story 5    | Session-fresh  | S7 + S2 Jake |
+| 6   | Regime Specialist | A2  | Discover | Story 5    | Session-fresh  | S7 + S2 Jake |
+| 9   | Recommended Move  | A3  | Discover | Story 5    | Near-real-time | S7 + S2 Jake |
+| 11  | Recovery          | A5  | My       | Story 6    | Instant (<2s)  | S7 Sarah     |
+
+**Cards not shown in Discover:** #3, #4, #8, #10, #11, #12, #13, #14 — all require a copy or follow relationship.
+**Cards not shown in My Feed:** #5, #6, #9 — market intelligence, no relationship required.
+**Cards in both:** #1, #2, #7 — market context relevant regardless of copy status.
 
 ## Freshness Tiers
 
