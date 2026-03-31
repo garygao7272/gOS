@@ -33,6 +33,7 @@
 1. [Sarah (S7) — The Capital Allocator](#1-sarah-s7--the-capital-allocator)
 2. [Jake (S2) — The Strategic Learner](#2-jake-s2--the-strategic-learner)
 3. [Jobs to Be Done](#3-jobs-to-be-done)
+4. [Signal Reference](#4-signal-reference) — Trader classification · Track record tiers · Key metrics · Feed system
 
 **Part II — Radar Stories**
 
@@ -137,6 +138,111 @@ Jake has $10K–$100K and trades his own ideas. He's T3-T4 skill — competent e
 | **Know what smart money is doing**               | Any time during analysis         | Sees cluster consensus direction + strength    | Story 7     |
 | **Find market signals that inspire trade ideas** | Browsing Discover feed passively | Identifies actionable setup in <15 seconds     | Story 5     |
 
+---
+
+# 4. Signal Reference
+
+## Trader Classification — 10 Dimensions
+
+| Dim | Dimension        | Labels                                                          | Update       |
+| --- | ---------------- | --------------------------------------------------------------- | ------------ |
+| D1  | Capital Scale    | Shrimp / Fish / Dolphin / Whale / Mega Whale                    | Batch-daily  |
+| D2  | Strategy         | Scalper / Day Trader / Swing Trader / Position Trader / HODLer  | Batch-weekly |
+| D3  | Track Record     | Elite / Proven / Verified / Rising / Unranked                   | Batch-weekly |
+| D4  | Risk Behavior    | Conservative / Moderate / Aggressive / Degen                    | Batch-weekly |
+| D5  | Market Focus     | BTC-Focused / ETH-Focused / Multi-Coin / Cross-Asset            | Batch-weekly |
+| D6  | Social Proof     | Top Leader / Established / Emerging / Private / Alpha Source    | Batch-daily  |
+| D7  | Regime Timing    | Anticipator / Adapter / Follower / Blind                        | Batch-weekly |
+| D8  | Current Exposure | Heavy / Moderate / Light / Sidelined                            | Live (<5s)   |
+| D9  | Last Active      | Active / Recent / Quiet / Dormant                               | Batch-daily  |
+| D10 | Consistency      | 4/4 / 3/4 / 2/4 / 1/4 / 0/4 (profitable quarters out of last 4) | Batch-daily  |
+
+## Track Record Tiers (D3)
+
+| Tier     | Return | Sharpe | Min Trades | Badge  |
+| -------- | ------ | ------ | ---------- | ------ |
+| Elite    | ≥30%   | ≥1.5   | 50+        | Gold   |
+| Proven   | ≥15%   | ≥1.0   | 50+        | Purple |
+| Verified | ≥5%    | ≥0.7   | 50+        | Green  |
+| Rising   | >0%    | any    | 10–49      | Yellow |
+| Unranked | any    | any    | <10        | Hidden |
+
+Return = (closed P&L + net funding) ÷ arithmetic mean of daily equity snapshots. Phase 1.1 upgrades to time-weighted return.
+
+## Key Trader Metrics
+
+| Metric                    | Definition                                                                          | Time Window              |
+| ------------------------- | ----------------------------------------------------------------------------------- | ------------------------ |
+| **Copier Return**         | Total copier P&L ÷ total copier allocation across all copiers                       | 7d / 30d / 90d toggle    |
+| **Worst Month**           | Worst 30-day return in all-time equity history                                      | All-time                 |
+| **Profit Streak**         | Consecutive Mon–Sun weeks with positive closed P&L (completed weeks only)           | Back from last full week |
+| **Win Rate**              | Profitable closings ÷ total closings. Shows "—" if <5 trades in window              | 7d / 30d / 90d toggle    |
+| **Profit Factor**         | Gross wins ÷ gross losses. >1.5 = strong edge                                       | 7d / 30d / 90d toggle    |
+| **Sharpe Ratio**          | Annualised return ÷ annualised volatility of daily equity returns. >1.5 = excellent | 90d                      |
+| **Worst Drawdown**        | Worst peak-to-trough loss in all-time equity curve                                  | All-time                 |
+| **Copier Total Earnings** | Net sum of all copier P&L across all copy relationships, all-time                   | All-time                 |
+
+## Feed System
+
+### Event Structure
+
+Every feed card originates from a FeedEvent. Viewer context is applied at read time — the same event can produce different card types depending on the viewer's relationship to the subject.
+
+**4 event subjects:**
+
+| Subject       | Scope                               | Altitude |
+| ------------- | ----------------------------------- | -------- |
+| Market        | Asset-level market state            | A1       |
+| Cluster       | Consensus across a group of wallets | A2       |
+| Wallet        | A single trader taking an action    | A3       |
+| Copy Position | Viewer's open copy relationship     | A5       |
+
+A4 (position detail) is always embedded inside an A3 or A5 card — never a standalone.
+
+### My Feed vs Discover
+
+The same wallet event produces different cards based on viewer relationship:
+
+| Viewer relationship to wallet               | Card type                                 | Feed     |
+| ------------------------------------------- | ----------------------------------------- | -------- |
+| Actively copying                            | Trader Move — with copy P&L impact shown  | My       |
+| Watching (not copying)                      | Trader Move — without copy P&L            | My       |
+| No relationship; Elite or Proven tier       | Recommended Move — with [Follow] / [Copy] | Discover |
+| No relationship; below Elite or Proven tier | No card generated                         | —        |
+
+A5 (Copy Position) events are My Feed only. Cards #10, #11, #12, #13, #14 all require an active copy or follow relationship to appear.
+
+### Cluster Aggregation
+
+Cluster cards are recomputed snapshots — not event-driven. The card fires when consensus crosses the threshold and is suppressed when it breaks.
+
+| Cluster                | Population                                                                                | Threshold                    | Min Members | Recompute   | Breaks when |
+| ---------------------- | ----------------------------------------------------------------------------------------- | ---------------------------- | ----------- | ----------- | ----------- |
+| Smart Money (#5)       | Elite + Proven, active 30d                                                                | ≥60% one direction           | 10          | Every 5 min | <55%        |
+| Regime Specialist (#6) | D7 = Anticipator or Adapter; regime-specific win rate >60%, ≥10 regime trades; active 90d | ≥60% one direction           | 5           | Every 5 min | <55%        |
+| My Leaders (#3)        | Viewer's actively copied leaders                                                          | ≥60% same direction on asset | —           | Every 5 min | —           |
+| My Watched (#4)        | Viewer's watched (not copied) leaders                                                     | ≥60% same direction on asset | —           | Every 5 min | —           |
+
+### Deduplication
+
+| Rule                                                   | Behaviour                 |
+| ------------------------------------------------------ | ------------------------- |
+| Same `(subject_id, asset, direction)` within 5 minutes | Merge into one card       |
+| Stop loss approaching + Recovery for same leader       | Show Recovery only        |
+| Age >24h                                               | Move to "Earlier" section |
+
+### Freshness Tiers
+
+| Tier           | Latency | Used by                                   |
+| -------------- | ------- | ----------------------------------------- |
+| Live           | <5s     | Exposure, price, cluster consensus        |
+| Near-real-time | <30s    | Position changes, P&L updates             |
+| Session-fresh  | <5 min  | Regime state, signal scores               |
+| Batch-daily    | 24h     | Capital scale, social proof, last active  |
+| Batch-weekly   | 7d      | Strategy, risk, track record, consistency |
+
+---
+
 # PART II — RADAR STORIES
 
 ---
@@ -160,9 +266,7 @@ Jake has $10K–$100K and trades his own ideas. He's T3-T4 skill — competent e
 
 ## Data & Signal Matrix
 
-### Presets — Curated Starting Points
-
-Sarah's fear: "There are too many traders and I don't know where to start." Presets collapse the taxonomy into one-tap starting points.
+### Presets
 
 Each preset combines two types of criteria:
 
@@ -251,6 +355,8 @@ Track Record is Dimension 3 of the taxonomy. It determines the badge displayed o
 
 **Realized Return** = sum of all closed P&L plus net funding payments, divided by average account equity over the period. Funding payments are real cash flows in perpetual futures (not accounting entries) and must be included. All-time is the default; the Trader Card also supports toggling to 7d, 30d, or 90d views.
 
+**Average account equity:** arithmetic mean of daily equity snapshots. Snapshot taken at 00:00 UTC from the Hyperliquid account state API (cross-margin balance + unrealized P&L). This matches the daily close convention used for Sharpe calculation.
+
 **Calculation roadmap:** At launch, uses realized return (closed P&L + net funding / avg equity) from public Hyperliquid API. V1.1 upgrades to Time-Weighted Return (TWR) — sub-period returns chained at deposit/withdrawal boundaries, eliminating capital-flow distortion. V2 adds Sharpe-on-TWR for risk-adjusted tier ranking.
 
 **Sharpe** = risk-adjusted return: annualized return divided by annualized volatility of daily equity changes. Measures how much return was earned per unit of risk taken. Above 1.5 is excellent.
@@ -263,9 +369,7 @@ Track Record is Dimension 3 of the taxonomy. It determines the badge displayed o
 | **Rising**   | > 0%                     | any                           | 10-49      | Yellow                  |
 | **Unranked** | any                      | any                           | < 10       | Hidden from leaderboard |
 
-### Trader Card — What Sarah scans in <2 seconds to decide whether to tap
-
-Sarah's fear: picking someone who looks good but blows up. Every field on this card fights one specific anxiety.
+### Trader Card
 
 **Card anatomy:** `[Avatar] @Name [Badge] | [Strategy chip] [Wallet chip]` — then a liveness sub-line, then 5 core signals. The two chips are identity context, not primary decision signals.
 
@@ -280,11 +384,13 @@ The **Time Window view control** `[7d] [30d●] [90d]` at the top of the trader 
 | **Follower's Return**               | `+8.2%`                        | Total copier P&L ÷ total copier allocation over the selected window. Day-1 fallback: leader's own return labeled "Leader's Return." | **Yes** — 7d / 30d (default) / 90d |
 | **Worst Month**                     | `-3.1%`                        | Worst calendar month in entire equity history. Downside anchor — return and risk visible together without opening the profile.      | No — always all-time               |
 | **Consistency Score**               | `4/4`                          | Consistency Score: profitable in all 4 rolling windows (7d, 30d, 60d, 90d). ~10-15% of active wallets score 4/4.                    | No — always checks all 4 windows   |
-| **Spots Remaining**                 | `77 spots left`                | Max copy capacity minus current followers. Scarcity signal that drives urgency.                                                     | No                                 |
+| **Spots Remaining**                 | `77 spots left`                | Max copy capacity minus current active copiers. Scarcity signal that drives urgency.                                                | No                                 |
+
+**Max copy capacity:** 500 active copiers per leader at launch. Leaders may not reduce their cap below their current active copier count. Setting is per-leader in account settings. When at full capacity: [Copy] disabled, [Follow] active, [Join Waitlist] shown.
 
 **Moved to Trader Profile:** Profit Streak, Win Rate, and Current Exposure. These require interpretive context best read in the profile (win rate varies by strategy type; streak needs regime context; exposure needs position detail to be meaningful).
 
-### Trader Profile — Due diligence Sarah reads before committing money
+### Trader Profile
 
 Sarah has tapped a card. She is deciding whether to trust this person with her capital. The profile is organized in three layers: **performance history** (verify the track record), **current activity** (see what they're in right now), and **copy setup** (commit with a safety net).
 
@@ -360,9 +466,7 @@ Sarah's comparison loop typically cycles 2–3 times before she commits. The loo
 
 ## Data & Signal Matrix
 
-### Time Metrics — How Sarah compares the same trader across different windows
-
-Sarah's need: "Are they good right now, or were they good months ago?" Time toggling lets her separate recency from track record.
+### Time Metrics
 
 All metrics below are computed from Hyperliquid fills history — data predates Arx launch, so there is no cold-start problem. Any wallet with on-chain trading history has data for any window it was active.
 
@@ -377,8 +481,6 @@ All metrics below are computed from Hyperliquid fills history — data predates 
 † **Low-sample footnote:** When the selected window has fewer than 10 closed trades, the metric shows with a `ⓘ` indicator: "Based on N trades — interpret with caution." The value is shown, not hidden — experienced traders can read it; Sarah learns to weight it accordingly.
 
 ### Filters — 10 Taxonomy Dimensions
-
-Sarah's need: "I know what I want — let me say it." Each filter maps to exactly one taxonomy dimension.
 
 | Filter            | Dim | Type                         | Default                      | Adjustable                                      |
 | ----------------- | --- | ---------------------------- | ---------------------------- | ----------------------------------------------- |
@@ -412,9 +514,9 @@ View controls change how data is **displayed** on cards. They do not classify wa
 
 **Key distinction from filters:** If Sarah has F3 set to Track Record >= Verified and switches Time Window from 30d to 7d, the list of traders shown is identical. Only the return % values on each card update.
 
-### Sort Mechanisms — How Sarah ranks the list
+### Sort Mechanisms
 
-All 8 sorts are available at launch. Each answers a different question. Time-window-aware sorts update when Sarah changes the Time Window toggle.
+All 8 sorts are available at launch. Each answers a different question. Time-window-aware sorts update when the Time Window toggle changes.
 
 | Sort                              | Ranks By                                         | Question It Answers                    | Time-Window?              | Notes                                                                       |
 | --------------------------------- | ------------------------------------------------ | -------------------------------------- | ------------------------- | --------------------------------------------------------------------------- |
@@ -461,9 +563,7 @@ All 8 sorts are available at launch. Each answers a different question. Time-win
 
 This is the first time Sarah sees a feed card. The Radar feed is a live intelligence stream: structured signals from the on-chain world, filtered and ranked by what matters to the viewer at this moment. Cards surface in **My Feed** (personalised — requires a copy or follow relationship) or **Discover** (market intelligence — visible to anyone). The cards Sarah encounters evolve with her journey: Watch Nudge here, monitoring cards in Story 4, discovery intelligence in Story 5, recovery in Story 6.
 
-### Watch Nudge — The feed card that converts a watcher into a copier
-
-Sarah's emotional trigger: "I've been watching — now I can see exactly what I missed." The nudge quantifies the cost of inaction in real P&L terms.
+### Watch Nudge
 
 | Signal              | Display                                                           | How It's Built                                                                                               |
 | ------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -478,9 +578,7 @@ Sarah's emotional trigger: "I've been watching — now I can see exactly what I 
 - Leader had positive Follower's Return during that watch period
 - Dismissed: card disappears after viewing; re-surfaces after 7 days if still not copying
 
-### Copier Social Proof — At the moment of commitment
-
-Sarah's need at the copy wizard: "I'm not the only one who sees this is good." Not asset consensus (that's Jake) — social proof that real people are copying and profiting.
+### Copier Social Proof
 
 | Signal                 | Display                   | How It's Built                                                       |
 | ---------------------- | ------------------------- | -------------------------------------------------------------------- |
@@ -489,8 +587,6 @@ Sarah's need at the copy wizard: "I'm not the only one who sees this is good." N
 | **Social Proof Label** | `Established`             | D6 Social Proof dimension label                                      |
 
 ### Regime Engine — Copy timing context
-
-Sarah's need: "Is now a good time to start copying?" Regime is shown inline in the Copy Wizard as a green/amber/red signal — not a separate analysis panel.
 
 | State           | Color       | Copy Sizing | Inline Message                                     |
 | --------------- | ----------- | ----------- | -------------------------------------------------- |
@@ -502,9 +598,15 @@ Sarah's need: "Is now a good time to start copying?" Regime is shown inline in t
 
 Per-asset classification. Portfolio regime = worst-case across all assets this leader trades. The allocation wizard automatically pre-scales the recommendation to the regime multiplier; Sarah can override.
 
-### Stop Loss — Your safety net for copy trading
+### Implementation Constraints
 
-Sarah's need: "What if it goes wrong while I'm asleep?" The stop loss is a server-side kill switch that pauses copying when losses reach a threshold — even if Sarah's phone is off.
+**Execution channel:** HIP-3 builder codes. Each copy relationship uses an Arx-managed sub-account. Latency target: <2s from leader fill to copy order submission. 2bps builder fee per copied trade flows to Arx revenue.
+
+**Margin scaling:** If the sub-account cannot hold full proportional notional at leader's leverage, scale down to maximum supportable notional at same leverage. If scaled-down notional is <$10 (HL minimum order size), skip and log. Do not fill partial.
+
+**Full copy architecture spec:** `Arx_5-2-3_OnChain_Signal_Transformation_v6.md` § Copy Engine.
+
+### Stop Loss
 
 **What it measures:**
 
@@ -573,9 +675,7 @@ loss% = (initial allocation − current copy equity) / initial allocation
 
 ## Data & Signal Matrix
 
-### Live Signals — What Sarah sees before she even scrolls (refresh 1-5s)
-
-Sarah's question: "Am I okay?" Every signal in this strip answers that in under 5 seconds.
+### Live Signals (refresh 1–5s)
 
 | Signal                | Display                          | How It's Built                                                      |
 | --------------------- | -------------------------------- | ------------------------------------------------------------------- |
@@ -586,8 +686,6 @@ Sarah's question: "Am I okay?" Every signal in this strip answers that in under 
 | **Correlation Alert** | `Both leaders long BTC — $4,200` | 2+ copied leaders same asset + same direction                       |
 
 ### Altitudes — Feed Card Layers
-
-Sarah's need: "What level of detail do I need right now?" Cards are organized from macro to personal so she can stop scrolling the moment she's satisfied.
 
 | Altitude      | Scope        | Question                       | Example                           |
 | ------------- | ------------ | ------------------------------ | --------------------------------- |
@@ -638,7 +736,7 @@ The same underlying event produces different card types depending on the viewer'
 **Copy position events (A5) are always personal — never shown in Discover:**
 Cards #10 (Copy Earnings), #11 (Recovery), #12 (Weekly Rollup), and #13 (Watch Nudge) require an active copy or follow relationship. My Feed only by definition.
 
-### My Feed Cards — What Sarah sees when she's actively copying
+### My Feed Cards
 
 These are the cards Sarah encounters in Story 4. Each requires a copy or follow relationship — they're personal to her portfolio. Cards #1 (Regime Shift), #2 (Funding Alert), #5 (Smart Money), #6 (Regime Specialist), and #9 (Recommended Move) appear in **Discover** mode and are defined in Story 5. Card #11 (Recovery) is defined in Story 6.
 
@@ -663,17 +761,15 @@ These are the cards Sarah encounters in Story 4. Each requires a copy or follow 
 
 ### Push Notifications
 
-Sarah's need: "Tell me when something matters so I don't have to check constantly."
-
-| Type                  | Priority | Trigger                                 |
-| --------------------- | -------- | --------------------------------------- |
-| Stop loss triggered   | Critical | Loss reached stop loss limit (100%)     |
-| Stop loss approaching | High     | Loss exceeded 60% of stop loss limit    |
-| Regime mismatch       | Medium   | Leader win rate < 50% in current regime |
-| Leader inactive       | Medium   | No trades 14+ days                      |
-| Regime change         | Medium   | State transition                        |
-| Copy executed         | Low      | Leader trade -> copy placed             |
-| Daily P&L             | Low      | End of day                              |
+| Type                  | Priority | Trigger                                                                  |
+| --------------------- | -------- | ------------------------------------------------------------------------ |
+| Stop loss triggered   | Critical | Loss reached stop loss limit (100%)                                      |
+| Stop loss approaching | High     | Loss exceeded 60% of stop loss limit                                     |
+| Regime mismatch       | Medium   | Leader win rate < 55% in current regime (launch: overall win rate < 55%) |
+| Leader inactive       | Medium   | No trades 14+ days                                                       |
+| Regime change         | Medium   | State transition                                                         |
+| Copy executed         | Low      | Leader trade -> copy placed                                              |
+| Daily P&L             | Low      | End of day                                                               |
 
 ## Edge Cases
 
@@ -772,7 +868,7 @@ Discover mode surfaces market intelligence and trader discovery signals. No copy
 | **Jake CTA**      | `[Analyze →]` opens asset with Elite + Proven consensus pre-loaded in Clusters                                                                                       |
 | **User question** | "What are the best traders doing?"                                                                                                                                   |
 
-**Note on label:** Displayed as "top traders" or "smart money" in card copy — not "Elite traders" — because the cluster includes Proven tier. See Market Overview Strip.
+Display copy uses "top traders" or "smart money" — not "Elite traders" — because the cluster includes Proven tier.
 
 ---
 
@@ -789,7 +885,7 @@ Discover mode surfaces market intelligence and trader discovery signals. No copy
 | **Jake CTA**           | `[Analyze →]` opens asset with regime-specialist consensus data                                                                                             |
 | **User question**      | "Who's winning specifically in this market condition?"                                                                                                      |
 
-**Why this differs from Card #5:** Smart Money is a performance cluster (who are the best traders overall). Regime Specialist is a context cluster (who performs best in the _current_ regime type). In a CRISIS regime, a conservative Adapter may rank higher here than a high-return trader who struggles in crashes.
+Smart Money is a performance cluster (top traders overall). Regime Specialist is a context cluster (top traders in the current regime type). In a CRISIS regime, a conservative Adapter may outrank a high-return trader who struggles in crashes.
 
 ---
 
@@ -828,15 +924,15 @@ Discover mode surfaces market intelligence and trader discovery signals. No copy
 ## Steps
 
 1. **Receive push notification** (lock screen):
-   `"@AlphaTrader hit your 50% loss limit. Copies paused. -$420."`
+   `"@AlphaTrader hit your 50% loss limit. Copies paused. -$1,300."`
    Format: `"@{leader} hit your {limit}% loss limit. Copies paused. {net_pnl}."`
 
 2. **Tap notification** → app opens to **Radar > Feed > My** → **Recovery Card** pinned at top, red border, above all other cards
 
 3. **Recovery Card** shows current state (see Recovery Card States below):
    - Leader name + avatar: "@AlphaTrader"
-   - Loss amount: "-$420 (52% of stop loss limit)"
-   - Capital secured: "$2,250 of $2,500 returned to balance"
+   - Loss amount: "-$1,300 (52% of $2,500 allocation — past 50% limit)"
+   - Copy equity remaining: "$1,200 of $2,500 allocation"
    - Trigger reason: "BTC dropped 15% in 4h. Hit 50% limit."
    - Card state: **LIMIT HIT**
 
@@ -853,11 +949,11 @@ Discover mode surfaces market intelligence and trader discovery signals. No copy
 
 6. **Sarah taps [Resume]** → cooldown timer starts → card enters **RESOLVING** state: "Safety resumes in 3h 42m. Open positions continue."
 
-   **Or Sarah taps [Stop]** → confirmation modal: "Stop copying @Alpha? Open positions will close at market. Capital (~$2,250) returns in ~2 min." → `[Confirm Stop]` / `[Cancel]` → on confirm, card enters CLOSED state, capital returns to balance.
+   **Or Sarah taps [Stop]** → confirmation modal: "Stop copying @Alpha? Open positions will close at market. Capital (~$1,200) returns in ~2 min." → `[Confirm Stop]` / `[Cancel]` → on confirm, card enters CLOSED state, capital returns to balance.
 
 7. **Post-decision confirmation** (card stays dimmed for 24h, then auto-dismisses):
    - If resumed: "Resumed at {time}. Cooldown expires {time}. Safety limit reset to {configured_limit}%."
-   - If stopped: "Stopped at {time}. $2,248 returned to balance. (@Alpha had 2.3% slippage on close.)"
+   - If stopped: "Stopped at {time}. $1,172 returned to balance. (@Alpha had 2.3% slippage on position close.)"
 
 ## Data & Signal Matrix
 
@@ -909,26 +1005,24 @@ If 2+ leaders hit limits simultaneously (e.g., correlated long BTC during flash 
 - **Correlation warning** pinned above stack: "⚠️ @Alpha and @SwingMaster both triggered. Both long BTC — possible correlated risk."
 - Each card resolved independently — Sarah decides per leader
 
-### Warning Signals — What Sarah needs to make a decision under stress
+### Warning Signals
 
-Sarah's state: scared, confused, possibly angry. Every signal must be dead simple and actionable. No jargon.
-
-| Signal                | Display                             | How It's Built                                                              |
-| --------------------- | ----------------------------------- | --------------------------------------------------------------------------- |
-| **Safety Alert**      | "@Alpha hit limit. -$420. Paused."  | Stop loss limit reached → auto-pause → push notification. Server-side.      |
-| **Recovery Card**     | State + returned amount + options   | See Recovery Card States above                                              |
-| **Resume Cooldown**   | "Safety resumes in 3h 42m"          | 4h cooldown prevents Resume → re-trigger loops                              |
-| **Correlation Alert** | "Both long BTC — $4,200 combined"   | 2+ leaders same direction on same asset detected                            |
-| **Regime Mismatch**   | "@Alpha wins 52% in choppy markets" | Leader win rate in current regime < 55% (at launch: overall win rate < 55%) |
+| Signal                | Display                              | How It's Built                                                              |
+| --------------------- | ------------------------------------ | --------------------------------------------------------------------------- |
+| **Safety Alert**      | "@Alpha hit limit. -$1,300. Paused." | Stop loss limit reached → auto-pause → push notification. Server-side.      |
+| **Recovery Card**     | State + returned amount + options    | See Recovery Card States above                                              |
+| **Resume Cooldown**   | "Safety resumes in 3h 42m"           | 4h cooldown prevents Resume → re-trigger loops                              |
+| **Correlation Alert** | "Both long BTC — $4,200 combined"    | 2+ leaders same direction on same asset detected                            |
+| **Regime Mismatch**   | "@Alpha wins 52% in choppy markets"  | Leader win rate in current regime < 55% (at launch: overall win rate < 55%) |
 
 ## Edge Cases
 
-| Condition                                    | Behavior                                                                                                        |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Sarah ignores Recovery Card for 7+ days      | Push reminder: "Copies still paused for @Alpha. Resume or stop?"                                                |
-| Resume → immediate re-trigger after cooldown | Card shows again with updated numbers. Hard stop at 3 triggers in 24h → requires manual review before resuming. |
-| App closed when limit hits                   | Push arrives, Recovery Card ready when app opens. No action required to surface it.                             |
-| Capital return fails (network/chain issue)   | "Return in progress — check again in 10 min. Contact support if balance hasn't updated."                        |
+| Condition                                    | Behavior                                                                                                                                                                                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Sarah ignores Recovery Card for 7+ days      | Push reminder: "Copies still paused for @Alpha. Resume or stop?"                                                                                                                                                                                             |
+| Resume → immediate re-trigger after cooldown | Card shows again with updated numbers. At 3 triggers in 24h → [Resume] button locked for 24h. Card shows: "Safety triggered 3× today. Resume available at {time}. You can still [Stop & Return Capital]." Auto-unlocks after 24h — no support flow required. |
+| App closed when limit hits                   | Push arrives, Recovery Card ready when app opens. No action required to surface it.                                                                                                                                                                          |
+| Capital return fails (network/chain issue)   | "Return in progress — check again in 10 min. Contact support if balance hasn't updated."                                                                                                                                                                     |
 
 ---
 
@@ -973,33 +1067,47 @@ Jake's pre-trade analysis is rarely cold. In most sessions, a feed card in Story
 
 Jake's question: "What's the market doing right now?" This strip gives him the raw numbers to form a directional thesis.
 
-| Signal               | Display             | How It's Built                                                                   |
-| -------------------- | ------------------- | -------------------------------------------------------------------------------- |
-| **24h Price Change** | `+2.3%`             | Mark price vs previous day price                                                 |
-| **Funding Rate**     | `+5.5% APR`         | Hourly funding rate annualized. Settles every hour (not 8h like competitors).    |
-| **Open Interest**    | `26,394 BTC`        | Total outstanding contracts. Rising open interest + rising price = strong trend. |
-| **24h Volume**       | `$2.1B`             | Activity level. Low = thin liquidity.                                            |
-| **Premium**          | `-0.03%`            | Mark-to-oracle divergence. Negative = shorts slightly dominant.                  |
-| **Impact Prices**    | `$69,018 / $69,019` | Estimated execution for $5K order. Direct from order book.                       |
+| Signal               | Display             | How It's Built                                                                                                                                                                                        |
+| -------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **24h Price Change** | `+2.3%`             | Mark price vs previous day price                                                                                                                                                                      |
+| **Funding Rate**     | `+5.5% APR`         | `hourly_rate × 8,760 = APR`. HL settles every hour. Positive = longs paying shorts. Source: `fundingHistory` endpoint.                                                                                |
+| **Open Interest**    | `26,394 BTC`        | Total open contracts in base asset. Rising OI + rising price = trend conviction; rising OI + falling price = short pressure.                                                                          |
+| **24h Volume**       | `$2.1B`             | Total traded notional in USD. Low volume = thin liquidity, higher slippage risk.                                                                                                                      |
+| **Premium**          | `-0.03%`            | `(mid_price − oracle_price) / oracle_price`. On HL, mark price = oracle price for funding calculations; premium reflects order book imbalance. Negative = asks pulling below oracle = short pressure. |
+| **Impact Prices**    | `$69,018 / $69,019` | Estimated fill price for $5K order long / $5K order short. Direct from L2 book. Shows real execution cost, not just mid.                                                                              |
 
 ### Clusters — Group Consensus
-
-Jake's need: "What are the smart money players actually positioned in?" Cluster consensus tells him whether his directional thesis has large-capital backing.
 
 | Cluster                | What Jake Sees                         | Min Members | Trigger                  |
 | ---------------------- | -------------------------------------- | ----------- | ------------------------ |
 | **Performance Elite**  | "72% of Elite traders long BTC"        | 10          | >=60% agree on direction |
 | **Regime Specialists** | "80% of trending specialists long BTC" | 5           | >=60% agree on direction |
 
-Enrichments: weighted avg entry price ("entered at $68,200, +1.9%"), liquidation heatmap (shown when zone <15% from mark price).
+Enrichments: weighted avg entry price ("entered at $68,200, +1.9%"), liquidation heatmap (shown when nearest concentration is <15% from mark price).
+
+**Liquidation heatmap data source:** Computed by Arx from open positions of tracked wallets. For each wallet with a known position, estimate liquidation price from: entry price, leverage, and maintenance margin rate (0.5% for most HL perp markets). Group estimated prices into $100 bins. Display as bar chart beneath cluster consensus when the densest bin is <15% from current mark price. This is an approximation — HL does not expose individual liquidation prices via public API. Phase 2: use HL's native liquidation levels endpoint if/when available.
 
 Consensus detected every 5 min. Breaking when strength drops below 55% (5% hysteresis).
 
-**Note on Sarah's use of cluster signals:** Sarah's feed (Story 4 Feed Cards, Cards #3/#4) shows "your watched/copied leaders are both long BTC" — this is position correlation risk for her copy portfolio, not market intelligence. Jake uses clusters here as a directional signal for his own trades.
+Cards #3/#4 in Sarah's My Feed show "your watched/copied leaders are both long BTC" — this is position correlation risk for her copy portfolio, not market intelligence. Jake's cluster panel here is a directional signal for his own trades.
+
+### Kelly Position Sizing
+
+Jake's profile identifies position sizing as a key need ("sizes his trade with Kelly guidance"). Kelly is surfaced in the Trade Panel (Arx_4-1-1-3), not in Radar, but Story 7 feeds it the inputs:
+
+| Input to Kelly          | Source in Radar                                                            |
+| ----------------------- | -------------------------------------------------------------------------- |
+| Win rate for setup type | Jake's personal win rate for the asset + regime (from Analytics [Phase 2]) |
+| Profit factor           | Jake's personal profit factor for same conditions                          |
+| Account equity          | Live portfolio equity (Live Signals strip)                                 |
+
+**At launch:** Kelly sizing is shown in the Trade Panel using Jake's own 30d/90d win rate + profit factor. No Radar surface required — Radar is where Jake builds conviction, Trade Panel is where he sizes. The link is: the regime and cluster signals from Story 7 inform which win rate bucket applies (e.g., "TRENDING regime, long-biased" vs "RANGE_BOUND").
+
+**Phase 2:** Signal Confluence score feeds directly into Kelly fraction as a conviction multiplier.
 
 ### Signal Confluence [Phase 2]
 
-Jake's need: "Give me one number that tells me how many signals agree." At launch, Jake sees individual signals above. Phase 2 unifies into 5-layer score (0-10).
+At launch, Jake sees the individual signals above. Phase 2 unifies them into a single 5-layer score (0–10).
 
 | Layer          | Measures           | Sub-Signals                                                          |
 | -------------- | ------------------ | -------------------------------------------------------------------- |
@@ -1013,11 +1121,11 @@ Confluence = count of layers agreeing on direction (0-5) x 2 -> 0-10 score.
 
 ## Edge Cases
 
-| Condition                                                                     | Behavior                                                             |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Regime = TRANSITION (ambiguous)                                               | Show "No clear pattern — monitor only" guidance                      |
-| Cluster consensus <60% (no consensus)                                         | Hide consensus line. Show "No consensus among Elite traders"         |
-| Spot token (listed via Hyperliquid token launch / HIP-3) outside market hours | Show "Market closed. Opens [time]." Price data frozen at last close. |
+| Condition                                               | Behavior                                                                                     |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Regime = TRANSITION (ambiguous)                         | Show "No clear pattern — monitor only" guidance                                              |
+| Cluster consensus <60% (no consensus)                   | Hide consensus line. Show "No consensus among Elite traders"                                 |
+| HIP-1 spot token with low liquidity (<$100K 24h volume) | Show liquidity warning: "Low volume — impact costs high. Check impact prices before sizing." |
 
 ---
 
