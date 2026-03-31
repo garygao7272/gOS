@@ -1076,7 +1076,7 @@ Jake's question: "What's the market doing right now?"
 
 Enrichments: weighted avg entry price ("entered at $68,200, +1.9%"), liquidation heatmap (shown when nearest concentration is <15% from mark price).
 
-**Liquidation heatmap data source:** Computed by Arx from open positions of tracked wallets. For each wallet with a known position, estimate liquidation price from: entry price, leverage, and maintenance margin rate (0.5% for most HL perp markets). Group estimated prices into $100 bins. Display as bar chart beneath cluster consensus when the densest bin is <15% from current mark price. This is an approximation [approx] — HL does not expose individual liquidation prices via public API. Phase 2: use HL's native liquidation levels endpoint if/when available.
+**Liquidation heatmap data source:** Sourced from on-chain HL data (via indexer, e.g. Hypertrack). Group liquidation prices into $100 bins. Display as bar chart beneath cluster consensus when the densest bin is <15% from current mark price.
 
 Consensus detected every 5 min. Breaking when strength drops below 55% (5% hysteresis).
 
