@@ -39,24 +39,24 @@
 
 | #   | Story                | Persona  | Stage    |
 | --- | -------------------- | -------- | -------- |
-| 4   | Cold Start Discovery | S7 Sarah | S0       |
-| 5   | Browsing & Filtering | S7 Sarah | S1       |
-| 6   | Watching → Copying   | S7 Sarah | S2 → S3  |
-| 7   | Monitoring (My Feed) | S7 Sarah | S3       |
-| 8   | Discover & Explore   | S7 + S2  | S1+ / L0 |
-| 9   | Warning & Recovery   | S7 Sarah | S3w      |
-| 10  | Pre-Trade Analysis   | S2 Jake  | L0       |
+| 1   | Cold Start Discovery | S7 Sarah | S0       |
+| 2   | Browsing & Filtering | S7 Sarah | S1       |
+| 3   | Watching → Copying   | S7 Sarah | S2 → S3  |
+| 4   | Monitoring (My Feed) | S7 Sarah | S3       |
+| 5   | Discover & Explore   | S7 + S2  | S1+ / L0 |
+| 6   | Warning & Recovery   | S7 Sarah | S3w      |
+| 7   | Pre-Trade Analysis   | S2 Jake  | L0       |
 
 **Part III — Signal Reference**
 
 | #   | Section                        |
 | --- | ------------------------------ |
-| 11  | Signal → Story Cross-Reference |
-| 12  | Computation Index (C1-C14)     |
-| 13  | Cluster Consensus Engine (C10) |
-| 14  | Display Object Schemas         |
-| 15  | API Source Registry            |
-| 16  | Feed System                    |
+| 1   | Signal → Story Cross-Reference |
+| 2   | Computation Index (C1-C14)     |
+| 3   | Cluster Consensus Engine (C10) |
+| 4   | Display Object Schemas         |
+| 5   | API Source Registry            |
+| 6   | Feed System                    |
 
 ---
 
