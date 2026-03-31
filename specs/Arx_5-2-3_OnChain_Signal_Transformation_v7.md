@@ -443,7 +443,7 @@ All 8 sorts are available at launch. Each answers a different question. Time-win
 **Persona:** Sarah (S7) | **Stage:** Watching → Copying | **Goal:** Convert from watcher to copier
 
 **Pre:** Following ≥1 trader for ≥3 days. Has been watching Trader Move cards in the feed. Not yet copying.
-**Post:** Actively copying with safety limit set. Enters Story 4 (My Feed monitoring).
+**Post:** Actively copying with stop loss set. Enters Story 4 (My Feed monitoring).
 
 ## Steps
 
@@ -452,7 +452,7 @@ All 8 sorts are available at launch. Each answers a different question. Time-win
 3. Tap **[Copy Now]** on the card (or tap leader name → re-opens full profile from Story 1 Trader Profile)
 4. **Copy Wizard** opens: enter allocation amount → monthly projection updates live → Safety
 5. Review **regime context pill** inline: TRENDING = green / CRISIS = warning with reduced recommendation
-6. Set **safety limit** (default 50%, range 20-90%) → preview green/amber/red zones
+6. Set **stop loss %** (default 50%, range 20-90%) → preview green/amber/red zones
 7. Tap **[Confirm Copy]** → copy activates
 
 ## Data & Signal Matrix
@@ -498,14 +498,36 @@ Sarah's need: "Is now a good time to start copying?" Regime is shown inline in t
 
 Per-asset classification. Portfolio regime = worst-case across all assets this leader trades. The allocation wizard automatically pre-scales the recommendation to the regime multiplier; Sarah can override.
 
-### Safety — Circuit Breaker Setup
+### Stop Loss — Your safety net for copy trading
 
-Sarah's need: "What if it goes wrong while I'm asleep?" The safety limit is a server-side kill switch that fires even if her phone is off.
+Sarah's need: "What if it goes wrong while I'm asleep?" The stop loss is a server-side kill switch that pauses copying when losses reach a threshold — even if Sarah's phone is off.
 
-- **Limit:** User sets max loss tolerance (default 50%, range 20-90%). Per-leader override allowed.
-- **Zones** (scaled to chosen limit): Green Healthy (0 to limit × 0.6), Amber Watch (limit × 0.6 to limit × 0.8), Red Danger (limit × 0.8 to limit)
-- **Auto-pause:** At 100% of limit → server-side pause, even if phone is off
-- Example: 50% limit → zones 0-30% / 30-40% / 40-50%. Pauses at 50% loss.
+**What it measures:**
+
+Each copy relationship has its own stop loss, tracking:
+
+```
+loss% = (initial allocation − current copy equity) / initial allocation
+```
+
+**Current copy equity** = realized profit/loss (closed trades) + unrealized profit/loss (open positions) + net funding payments. All three are included, not just closed trades. Measured per-leader — not across the total portfolio.
+
+**Example:** Sarah allocates $2,500 to @Alpha. @Alpha's open positions are currently down $1,200. Copy equity = $1,300. Loss% = (2,500 − 1,300) / 2,500 = 48%.
+
+**How to set it:**
+
+- **Stop loss %:** Maximum loss tolerated on this leader's allocation (default 50%, range 20–90%). Per-leader override allowed.
+- **Zones** (displayed as a bar in the Live Signals strip, scaled to the chosen limit):
+  - Green — Healthy: 0 to limit × 0.6
+  - Amber — Watch: limit × 0.6 to limit × 0.8
+  - Red — Danger: limit × 0.8 to limit
+- **Auto-pause trigger:** When loss% reaches 100% of the limit → server-side pause, even if phone is off. Open positions stay open (not force-closed); new copies stop until Sarah resumes or stops the relationship.
+
+**Example with 50% limit:** Green 0–30% / Amber 30–40% / Red 40–50%. Auto-pauses at 50% loss ($1,250 on a $2,500 allocation).
+
+**At launch:** Static stop loss — does not trail upward as the copy makes profit. Trailing stop (resets baseline as equity grows) is Phase 2.
+
+**Per-leader:** Each copied leader has its own independent stop loss. @Alpha hitting its limit does not affect @SwingMaster's copy.
 
 ## Edge Cases
 
@@ -551,13 +573,13 @@ Sarah's need: "What if it goes wrong while I'm asleep?" The safety limit is a se
 
 Sarah's question: "Am I okay?" Every signal in this strip answers that in under 5 seconds.
 
-| Signal                | Display                          | How It's Built                                              |
-| --------------------- | -------------------------------- | ----------------------------------------------------------- |
-| **Total P&L**         | `+$28.13 today`                  | Closed + unrealized P&L across all copies for current day   |
-| **Per-Leader Chips**  | `@SwingMaster +$47` (green)      | Per-leader copy equity change since allocation              |
-| **Safety Bar**        | `22% used` (green)               | Percentage of loss tolerance consumed. See Safety (Story 3) |
-| **Portfolio Equity**  | `$12,450`                        | Total account value                                         |
-| **Correlation Alert** | `Both leaders long BTC — $4,200` | 2+ copied leaders same asset + same direction               |
+| Signal                | Display                          | How It's Built                                                      |
+| --------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| **Total P&L**         | `+$28.13 today`                  | Closed + unrealized P&L across all copies for current day           |
+| **Per-Leader Chips**  | `@SwingMaster +$47` (green)      | Per-leader copy equity change since allocation                      |
+| **Stop Loss Bar**     | `22% used` (green)               | Percentage of stop loss tolerance consumed. See Stop Loss (Story 3) |
+| **Portfolio Equity**  | `$12,450`                        | Total account value                                                 |
+| **Correlation Alert** | `Both leaders long BTC — $4,200` | 2+ copied leaders same asset + same direction                       |
 
 ### Altitudes — Feed Card Layers
 
@@ -570,6 +592,47 @@ Sarah's need: "What level of detail do I need right now?" Cards are organized fr
 | A3 — Trader   | Individual   | "What did they do?"            | "@SwingMaster opened BTC Long 5x" |
 | A4 — Position | Trade detail | (Embedded in A3/A5)            | --                                |
 | A5 — Personal | Your money   | "Am I okay?"                   | "Your copy: +$13.50"              |
+
+### Feed Data Model — How cards are generated
+
+Every card is generated from a **FeedEvent** with a **viewer context** applied on top. Understanding this structure prevents confusion when one event appears as different card types depending on who's viewing.
+
+**The 4 event subjects:**
+
+| Subject         | What It Covers                              | Examples                                           |
+| --------------- | ------------------------------------------- | -------------------------------------------------- |
+| Market          | Asset-level market state                    | Regime change, funding rate extreme                |
+| Cluster (Group) | Consensus across a group of wallets         | ≥60% of Elite traders long BTC                     |
+| Wallet          | A single trader taking an action            | @SwingMaster opened BTC Long 5x                    |
+| Copy Position   | Sarah's relationship with a specific leader | Stop loss triggered, daily earnings, nudge to copy |
+
+**How altitude maps to subject:**
+
+- A1 (Market events) → subject = market
+- A2 (Group / consensus) → subject = cluster
+- A3 (Individual trader) → subject = wallet
+- A5 (Your money) → subject = copy position
+- A4 (Position detail) is never a standalone card — always embedded inside A3 or A5
+
+**My Feed vs Discover is not stored on the event — it's computed at read time:**
+
+The same underlying event produces different card types depending on the viewer's relationship to the wallet:
+
+| Viewer relationship to @SwingMaster   | Card type                                  | Feed     |
+| ------------------------------------- | ------------------------------------------ | -------- |
+| Actively copying                      | Trader Move — with copy profit/loss impact | My Feed  |
+| Watching (not copying)                | Trader Move — without copy profit/loss     | My Feed  |
+| No relationship; Elite or Proven tier | Recommended Move — with [Follow] / [Copy]  | Discover |
+| No relationship; not Elite or Proven  | No card generated                          | —        |
+
+**Multi-asset, multi-leader card logic:**
+
+- Each event is tied to one `(wallet, asset)` pair. @SwingMaster opening BTC Long and ETH Long are two separate events.
+- Consensus cards (A2) are **aggregations** across multiple wallet-asset positions, recomputed every 5 minutes — not one event per trade.
+- Dedup key: `(subject_id, asset, direction)` within a 5-minute window → merge into one card.
+
+**Copy position events (A5) are always personal — never shown in Discover:**
+Cards #10 (Copy Earnings), #11 (Recovery), #12 (Weekly Rollup), and #13 (Watch Nudge) require an active copy or follow relationship. My Feed only by definition.
 
 ### Feed Cards — 13 Types at Launch
 
@@ -587,7 +650,7 @@ This is the canonical card reference for Stories 4, 5, and 6. Each card is a sel
 | 8   | Trader Move       | A3  | Sarah's copied/watched leader opens or closes                       | "@SwingMaster opened BTC Long 5x — Your copy: +$13.50"                        | Hyperliquid real-time fills stream. Leader trade fill + Arx copy P&L change for Sarah                                                | Live (<5s)     | "What did my leader just do, and what happened to my copy?" — Sarah (daily check)                              | My       |
 | 9   | Recommended Move  | A3  | Elite/Proven tier trader opens or closes                            | Same format; buttons: [Follow] [Copy]                                         | Hyperliquid real-time fills stream + Track Record tier from Arx database (only Elite/Proven trigger this)                            | Near-real-time | "Who made an interesting move I should consider?" — Sarah (finding new traders)                                | Discover |
 | 10  | Copy Earnings     | A5  | Daily 8am push                                                      | "Yesterday: +$47.20. Best: @SwingMaster +$33"                                 | Arx copy P&L tracking (closed positions + funding) aggregated by day per leader                                                      | Batch-daily    | "How much did I make?" — Sarah (daily check)                                                                   | My       |
-| 11  | Recovery          | A5  | Safety circuit breaker fires at configured limit                    | "@Alpha hit limit. -$420. [Resume] [Stop]" (RED, PINNED)                      | Arx safety system: circuit breaker state, loss amount, capital secured — server-side event                                           | Instant (<2s)  | "Something went wrong — what do I do?" — Sarah (recovery decision) → Story 6                                   | My       |
+| 11  | Recovery          | A5  | Stop loss limit reached                                             | "@Alpha hit limit. -$420. [Resume] [Stop]" (RED, PINNED)                      | Arx stop loss system: copy position loss%, open position profit/loss, capital secured — server-side event                            | Instant (<2s)  | "Something went wrong — what do I do?" — Sarah (recovery decision) → Story 6                                   | My       |
 | 12  | Weekly Rollup     | A5  | Mondays (first copy active)                                         | "This week: +$87.20. All-time: +$1,245 (+14.6%)"                              | Arx copy P&L aggregated weekly; per-leader breakdown                                                                                 | Batch-weekly   | "How is my portfolio doing over time?" — Sarah (learning + tracking progress)                                  | My       |
 | 13  | Watch Nudge       | A5  | Following ≥3d, not copying, leader had positive return during watch | "@SwingMaster's 23 copiers made +$847 since you started watching. [Copy Now]" | Arx follow timestamp + Follower's Return since follow date + current copier count                                                    | Batch-daily    | "Is not copying this trader costing me money?" — Sarah (from discovery to committing)                          | My       |
 
@@ -598,15 +661,15 @@ This is the canonical card reference for Stories 4, 5, and 6. Each card is a sel
 
 Sarah's need: "Tell me when something matters so I don't have to check constantly."
 
-| Type               | Priority | Trigger                                 |
-| ------------------ | -------- | --------------------------------------- |
-| Safety triggered   | Critical | Circuit breaker 100%                    |
-| Safety approaching | High     | Circuit breaker > 60%                   |
-| Regime mismatch    | Medium   | Leader win rate < 50% in current regime |
-| Leader inactive    | Medium   | No trades 14+ days                      |
-| Regime change      | Medium   | State transition                        |
-| Copy executed      | Low      | Leader trade -> copy placed             |
-| Daily P&L          | Low      | End of day                              |
+| Type                  | Priority | Trigger                                 |
+| --------------------- | -------- | --------------------------------------- |
+| Stop loss triggered   | Critical | Loss reached stop loss limit (100%)     |
+| Stop loss approaching | High     | Loss exceeded 60% of stop loss limit    |
+| Regime mismatch       | Medium   | Leader win rate < 50% in current regime |
+| Leader inactive       | Medium   | No trades 14+ days                      |
+| Regime change         | Medium   | State transition                        |
+| Copy executed         | Low      | Leader trade -> copy placed             |
+| Daily P&L             | Low      | End of day                              |
 
 ## Edge Cases
 
@@ -701,7 +764,7 @@ Discover mode shows only cards relevant to market intelligence and trader discov
 
 3. **Recovery Card** shows current state (see Recovery Card States below):
    - Leader name + avatar: "@AlphaTrader"
-   - Loss amount: "-$420 (52% of safety limit)"
+   - Loss amount: "-$420 (52% of stop loss limit)"
    - Capital secured: "$2,250 of $2,500 returned to balance"
    - Trigger reason: "BTC dropped 15% in 4h. Hit 50% limit."
    - Card state: **LIMIT HIT**
@@ -734,13 +797,13 @@ The Recovery Card surfaces in different states depending on system trigger and S
 | State               | Trigger                                        | Card Color | Header                                       | Primary Action                            |
 | ------------------- | ---------------------------------------------- | ---------- | -------------------------------------------- | ----------------------------------------- |
 | **ACTIVE LOSS**     | Safety bar crossing 40%+ but not at limit yet  | Amber      | "⚠️ @Alpha approaching limit — {pnl} (-40%)" | `[Review]` → opens leader profile         |
-| **LIMIT HIT**       | Circuit breaker fires, copies auto-paused      | Red        | "🛑 @Alpha hit limit. Copies paused. {pnl}"  | `[Resume Copying]` / `[Stop & Return]`    |
+| **LIMIT HIT**       | Stop loss limit reached, copies auto-paused    | Red        | "🛑 @Alpha hit limit. Copies paused. {pnl}"  | `[Resume Copying]` / `[Stop & Return]`    |
 | **MANUALLY PAUSED** | Sarah paused copies herself from Manage screen | Grey       | "⏸ @Alpha paused by you"                     | `[Resume Copying]` / `[Stop Permanently]` |
 
 State transitions:
 
 ```
-ACTIVE LOSS       → LIMIT HIT        (circuit breaker fires)
+ACTIVE LOSS       → LIMIT HIT        (stop loss limit reached)
 LIMIT HIT         → RESOLVING        (Sarah taps Resume, cooldown active)
 RESOLVING         → ACTIVE LOSS      (cooldown expires, new copy session begins)
 LIMIT HIT         → CLOSED           (Sarah taps Stop)
@@ -750,7 +813,7 @@ MANUALLY PAUSED   → ACTIVE LOSS      (Sarah taps Resume)
 
 ### Multi-Leader Scenario — Partial Portfolio Alert
 
-If Sarah has 3 leaders and only 1 hits the safety limit:
+If Sarah has 3 leaders and only 1 hits the stop loss limit:
 
 - Feed shows **1 Recovery Card** (pinned, red) for @AlphaTrader
 - Below it: 2 normal active copy cards for unaffected leaders
@@ -769,7 +832,7 @@ Sarah's state: scared, confused, possibly angry. Every signal must be dead simpl
 
 | Signal                | Display                             | How It's Built                                                              |
 | --------------------- | ----------------------------------- | --------------------------------------------------------------------------- |
-| **Safety Alert**      | "@Alpha hit limit. -$420. Paused."  | Circuit breaker triggers → auto-pause → push notification. Server-side.     |
+| **Safety Alert**      | "@Alpha hit limit. -$420. Paused."  | Stop loss limit reached → auto-pause → push notification. Server-side.      |
 | **Recovery Card**     | State + returned amount + options   | See Recovery Card States above                                              |
 | **Resume Cooldown**   | "Safety resumes in 3h 42m"          | 4h cooldown prevents Resume → re-trigger loops                              |
 | **Correlation Alert** | "Both long BTC — $4,200 combined"   | 2+ leaders same direction on same asset detected                            |
@@ -887,7 +950,7 @@ Confluence = count of layers agreeing on direction (0-5) x 2 -> 0-10 score.
 
 | Tier                     | Latency        | Signals                                                                 | Why                               |
 | ------------------------ | -------------- | ----------------------------------------------------------------------- | --------------------------------- |
-| **Instant** (<2s)        | Sub-300ms      | Copy execution, circuit breaker, safety push                            | Money is at stake                 |
+| **Instant** (<2s)        | Sub-300ms      | Copy execution, stop loss trigger, safety push                          | Money is at stake                 |
 | **Live** (<5s)           | 1-5s refresh   | P&L, safety bar, positions, prices, correlation                         | "Am I okay?" check                |
 | **Session-fresh** (5min) | Every 5 min    | Feed cards, regime, clusters, context line                              | Periodic update                   |
 | **Batch-daily**          | Overnight      | Consistency, streaks, activity, wallet size, followers                  | Slow-changing discovery metrics   |
