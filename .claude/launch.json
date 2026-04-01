@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "arx-prototype",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "serve",
+        "/Users/garyg/Documents/Claude Working Folder/Arx/apps/web-prototype",
+        "-l",
+        "8080",
+        "--no-clipboard"
+      ],
+      "port": 8080
+    },
+    {
+      "name": "spec-rag",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "/Users/garyg/Documents/Claude Working Folder/Arx/tools/spec-rag-mcp/server.py"
+      ],
+      "port": 8765,
+      "env": {
+        "SPECS_DIR": "specs",
+        "LANCEDB_DIR": ".lancedb"
+      }
+    }
+  ]
+}

@@ -1,37 +1,22 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════
-# Hook 4: Scratchpad Auto-Checkpoint
+# Scratchpad Auto-Checkpoint
 # Event: PostToolUse (Edit|Write)
 # Appends edited file path to scratchpad "Files Actively Editing"
 # ═══════════════════════════════════════════════════════════
 
 set -euo pipefail
 
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-SCRATCHPAD="$PROJECT_DIR/sessions/scratchpad.md"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/hook-utils.sh"
+_parse_hook_input
 
-# Read tool input from stdin
-INPUT=$(cat)
+[ -n "$HOOK_FILE_PATH" ] || exit 0
 
-# Extract file path from tool input
-FILE_PATH=$(echo "$INPUT" | python3 -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    ti = data.get('tool_input', {})
-    print(ti.get('file_path', '') or ti.get('filePath', ''))
-except:
-    print('')
-" 2>/dev/null)
+SCRATCHPAD="$HOOK_PROJECT_DIR/sessions/scratchpad.md"
+REL_PATH="${HOOK_FILE_PATH#"$HOOK_PROJECT_DIR"/}"
 
-if [ -z "$FILE_PATH" ]; then
-    exit 0
-fi
-
-# Make path relative to project
-REL_PATH="${FILE_PATH#"$PROJECT_DIR"/}"
-
-# Ensure scratchpad exists with the section
+# Create scratchpad with template if missing
 if [ ! -f "$SCRATCHPAD" ]; then
     mkdir -p "$(dirname "$SCRATCHPAD")"
     cat > "$SCRATCHPAD" << 'TEMPLATE'
@@ -66,10 +51,9 @@ if [ ! -f "$SCRATCHPAD" ]; then
 TEMPLATE
 fi
 
-# Append file path if not already listed
+# Append if not already listed
 if ! grep -qF "$REL_PATH" "$SCRATCHPAD" 2>/dev/null; then
     TIMESTAMP=$(date +%H:%M)
-    # Append under "Files Actively Editing"
     if grep -q "## Files Actively Editing" "$SCRATCHPAD"; then
         sed -i '' "/## Files Actively Editing/a\\
 - \`$REL_PATH\` ($TIMESTAMP)" "$SCRATCHPAD"

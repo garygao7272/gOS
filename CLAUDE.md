@@ -90,7 +90,7 @@ The scratchpad (`sessions/scratchpad.md`) bridges context compaction. Three memo
 
 On compaction: re-read `sessions/scratchpad.md` to restore lost context.
 
-## gOS — 7 Verbs + 1 Utility
+## gOS — 8 Verbs + 1 Utility
 
 Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 
@@ -105,6 +105,7 @@ Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 | `/review`     | Is it good?                | Verdicts, fixes, reports                                  |
 | `/ship`       | Is it out?                 | Commits, PRs, deployments                                 |
 | `/evolve`     | Are we getting better?     | gOS upgrades                                              |
+| `/refine`     | Is it tight enough?        | Gap-hunt + deepen loop until convergence                  |
 
 Plus utility: `/aside` (side question).
 
@@ -115,6 +116,7 @@ Plus utility: `/aside` (side question).
 - **Simulate mode** → Engine execution (MiroFish for markets, Dux for general simulation)
 - **Build mode** → Sequential (plan → code → test → verify → commit). Fresh context executors for large tasks.
 - **Review mode** → Adversarial. Swarm for council, sequential for single persona. Fix-First auto-fixes.
+- **Refine mode** → Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
 - **Ship mode** → Pipeline (commit → PR → deploy → docs). Blocks if review dashboard not CLEARED.
 - **Evolve mode** → Signal-driven. Accumulate accept/rework/reject signals, audit weekly.
 

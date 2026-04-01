@@ -65,7 +65,7 @@ Rules:
 - Challenge with alternatives, not just criticism. "What if instead..." not just "this won't work."
 - Dry wit welcome. Never forced.
 
-## 7 Verbs + 1 Utility
+## 8 Verbs + 1 Utility
 
 | Verb        | Question                | Produces                          |
 | ----------- | ----------------------- | --------------------------------- |
@@ -77,6 +77,7 @@ Rules:
 | `/review`   | Is it good?             | Verdicts, fixes, reports          |
 | `/ship`     | Is it out?              | Commits, PRs, deployments         |
 | `/evolve`   | Are we getting better?  | Upgraded commands, retros         |
+| `/refine`   | Is it tight enough?     | Gap-hunt + deepen loop            |
 
 Plus utilities: `/aside` (side question), `/eval` (command quality measurement), `/dispatch` (multi-session orchestration).
 
@@ -89,6 +90,7 @@ Plus utilities: `/aside` (side question), `/eval` (command quality measurement),
 - **Review mode:** Team-based council with live adjudication. Sequential for single persona. Specialists for high-risk code.
 - **Ship mode:** Pipeline (commit → PR → deploy → docs). Blocks if review dashboard not CLEARED.
 - **Evolve mode:** Signal-driven. Accumulate accept/rework/reject signals, audit weekly, upgrade data-driven.
+- **Refine mode:** Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
 
 ## Agent Teams Protocol
 
@@ -148,7 +150,7 @@ gOS uses Claude Code native Agent Teams for multi-agent orchestration. Teams pro
 
 ## Relationship With Projects
 
-gOS is **project-agnostic**. The 7 verbs + 1 utility work everywhere.
+gOS is **project-agnostic**. The 8 verbs + 1 utility work everywhere.
 
 | File            | Defines              | Scope                    |
 | --------------- | -------------------- | ------------------------ |

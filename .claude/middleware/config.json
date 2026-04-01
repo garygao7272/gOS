@@ -1,0 +1,145 @@
+{
+  "$schema": "Middleware chain configuration. Maps verbs to ordered middleware stacks.",
+  "version": "1.0",
+
+  "defaults": {
+    "pre": ["trust_gate", "context_budget", "artifact_resolution"],
+    "post": ["scratchpad_sync", "signal_capture"]
+  },
+
+  "verbs": {
+    "think": {
+      "pre": [
+        "trust_gate",
+        "context_budget",
+        "artifact_resolution",
+        "memory_inject"
+      ],
+      "post": [
+        "fact_extraction",
+        "summarization",
+        "scratchpad_sync",
+        "signal_capture"
+      ]
+    },
+    "design": {
+      "pre": [
+        "trust_gate",
+        "context_budget",
+        "artifact_resolution",
+        "memory_inject"
+      ],
+      "post": [
+        "fact_extraction",
+        "summarization",
+        "scratchpad_sync",
+        "signal_capture"
+      ]
+    },
+    "simulate": {
+      "pre": [
+        "trust_gate",
+        "context_budget",
+        "artifact_resolution",
+        "memory_inject"
+      ],
+      "post": ["summarization", "scratchpad_sync", "signal_capture"]
+    },
+    "build": {
+      "pre": ["trust_gate", "context_budget", "artifact_resolution"],
+      "post": ["scratchpad_sync", "signal_capture"]
+    },
+    "review": {
+      "pre": ["trust_gate", "context_budget", "artifact_resolution"],
+      "post": ["scratchpad_sync", "signal_capture"]
+    },
+    "ship": {
+      "pre": ["trust_gate", "artifact_resolution"],
+      "post": ["scratchpad_sync", "signal_capture"]
+    },
+    "evolve": {
+      "pre": ["trust_gate", "memory_inject"],
+      "post": ["fact_extraction", "scratchpad_sync", "signal_capture"]
+    },
+    "refine": {
+      "pre": [
+        "trust_gate",
+        "context_budget",
+        "artifact_resolution",
+        "memory_inject"
+      ],
+      "post": [
+        "fact_extraction",
+        "summarization",
+        "scratchpad_sync",
+        "signal_capture"
+      ]
+    }
+  },
+
+  "middlewares": {
+    "trust_gate": {
+      "description": "Check trust level for inferred domain, adjust Intent Gate depth",
+      "phase": "pre",
+      "blocking": true,
+      "source": "middlewares/trust_gate.py"
+    },
+    "context_budget": {
+      "description": "Estimate context usage, warn at thresholds, trigger summarization",
+      "phase": "pre",
+      "blocking": false,
+      "source": "middlewares/context_budget.py"
+    },
+    "artifact_resolution": {
+      "description": "Resolve upstream artifacts by topic matching",
+      "phase": "pre",
+      "blocking": false,
+      "source": "middlewares/artifact_resolution.py"
+    },
+    "memory_inject": {
+      "description": "Inject top-N structured facts from facts.json into context",
+      "phase": "pre",
+      "blocking": false,
+      "source": "middlewares/memory_inject.py"
+    },
+    "fact_extraction": {
+      "description": "Extract structured facts from output, update facts.json with confidence",
+      "phase": "post",
+      "blocking": false,
+      "source": "middlewares/fact_extraction.py"
+    },
+    "summarization": {
+      "description": "Compress completed verb outputs when context exceeds threshold",
+      "phase": "post",
+      "blocking": false,
+      "source": "middlewares/summarization.py"
+    },
+    "scratchpad_sync": {
+      "description": "Persist critical state to scratchpad after each phase",
+      "phase": "post",
+      "blocking": false,
+      "source": "middlewares/scratchpad_sync.py"
+    },
+    "signal_capture": {
+      "description": "Extract accept/rework/reject signals, update trust.json",
+      "phase": "post",
+      "blocking": false,
+      "source": "middlewares/signal_capture.py"
+    }
+  },
+
+  "limits": {
+    "max_concurrent_agents": {
+      "think": 5,
+      "design": 3,
+      "simulate": 3,
+      "build": 2,
+      "review": 3,
+      "ship": 1,
+      "evolve": 2,
+      "refine": 4
+    },
+    "agent_timeout_seconds": 600,
+    "clarification_budget": 2
+  }
+}

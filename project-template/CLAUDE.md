@@ -21,16 +21,17 @@ project/
 
 Soul file: `.claude/gOS.md`. All 8 verbs are globally installed.
 
-| Command | Purpose |
-|---------|---------|
-| `/gos` | Session entry, safety, save/resume |
-| `/think` | discover, research, decide, spec, intake |
-| `/design` | quick, variants, flow, full, system, sync |
-| `/simulate` | market, scenario, backtest, dux |
-| `/build` | plan, prototype, feature, component, fix, tdd, refactor |
-| `/review` | code, test, design, gate, prove, council, dashboard |
-| `/ship` | commit, pr, deploy, docs, release |
-| `/evolve` | audit, upgrade, learn, reflect |
+| Command     | Purpose                                                      |
+| ----------- | ------------------------------------------------------------ |
+| `/gos`      | Session entry, safety, save/resume                           |
+| `/think`    | discover, research, decide, spec, intake                     |
+| `/design`   | quick, variants, flow, full, system, sync                    |
+| `/simulate` | market, scenario, backtest, dux                              |
+| `/build`    | plan, prototype, feature, component, fix, tdd, refactor      |
+| `/review`   | code, test, design, gate, prove, council, dashboard          |
+| `/ship`     | commit, pr, deploy, docs, release                            |
+| `/evolve`   | audit, upgrade, learn, reflect                               |
+| `/refine`   | prebuild convergence loop (think/design/simulate/review x N) |
 
 ## Key Context
 

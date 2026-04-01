@@ -107,14 +107,17 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Build process:**
 
-1. Make changes to `index.html` (or `drafts/{name}-v1.html` for new prototypes)
-2. Test in 390x844 viewport
-3. Run `./bump.sh patch` (or minor/major) after changes
+1. **Check for Visual Checkpoints** — read scratchpad `## Visual Checkpoints`. If approved sketches exist, these are your visual targets. Your implementation MUST match them.
+2. Make changes to `index.html` (or `drafts/{name}-v1.html` for new prototypes)
+3. Test in 390x844 viewport
+4. **Compare against approved sketch** — if a Visual Checkpoint was approved for this section, screenshot your build and compare. If they don't match, fix before proceeding.
+5. Run `./bump.sh patch` (or minor/major) after changes
 
 **Post-Build QA Gate (mandatory before bump/deploy):**
 
 | Check | Method | Pass Criteria |
 |-------|--------|---------------|
+| **Visual match** | Compare screenshot to approved sketch (if exists) | Built version matches approved visual checkpoint |
 | Plan alignment | Re-read plan/instruction | Every requirement has corresponding code change |
 | Visual consistency | Screenshot all changed screens | Selected != unselected states; no clipped text; no overlap |
 | Dark + light mode | Toggle theme, screenshot both | Both themes render without broken colors |
