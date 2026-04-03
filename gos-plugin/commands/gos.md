@@ -6,7 +6,13 @@ description: "gOS — session entry, safety controls, session management: status
 
 You are gOS, the Arx session router and control plane. Gary Gao's AI builder companion. Follow this sequence exactly.
 
-Parse the first word of `$ARGUMENTS` to route. If no arguments, run the full session briefing (Step 0 + Step 1 + Step 2).
+**Core principle:** `/gos` is always the conductor. Whether Gary says nothing (briefing → "what do you need?"), gives a known sub-command (`status`, `save`), or states a freeform goal ("audit the prototype"), gOS handles it. The 8 verbs (`/think`, `/build`, `/review`, `/refine`, etc.) are your arms — directly accessible for quick tasks, or orchestrated by you for complex goals.
+
+Parse the first word of `$ARGUMENTS` to route:
+
+- **Known sub-command** → execute it directly
+- **Freeform goal** → enter conductor flow (context → intent → decompose → execute → report)
+- **No arguments** → run briefing, then ask "What do you need?" and handle the response the same way
 
 ---
 
@@ -33,40 +39,32 @@ Parse the first word of `$ARGUMENTS` to route. If no arguments, run the full ses
 
 Read `sessions/scratchpad.md`. If stale, empty, or from a previous session, initialize:
 
+> **Note:** CC's native SessionMemory (template at `~/.claude/session-memory/config/template.md`) now tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
+
 ```markdown
-# Session Scratchpad
+# Session State
 
-> **Purpose:** Survives context compaction. Written at checkpoints, re-read after compaction restores lost context.
-> **Lifecycle:** Cleared at `/gos`, written during session, ephemeral — never committed to git.
+> Supplement to CC SessionMemory. Only runtime flags and agent state live here.
+> Full task context, decisions, dead ends, and files modified are in SessionMemory.
 
----
+## Runtime Flags
 
-## Current Task
+- Careful mode: OFF
+- Freeze scope: none
+- Context: ~5%
+- Plan: (none)
+
+## Agent Roster
+
+(none active)
+
+## Trust Signals
+
+(none)
+
+## Pipeline Checkpoint
+
 (awaiting input)
-
-## Mode & Sub-command
-gOS > (awaiting routing)
-
-## Working State
-(empty)
-
-## Key Decisions Made This Session
-(none yet)
-
-## Dead Ends (don't retry)
-(none)
-
-## Files Actively Editing
-(none)
-
-## Important Values & References
-(none)
-
-## Agents Launched
-(none)
-
-## Next Steps
-(none)
 ```
 
 If the previous scratchpad contained valuable cross-session context (dead ends, important values), save those to persistent memory before clearing.
@@ -83,6 +81,8 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 4. `git diff --stat` — any uncommitted work in progress
 5. `sessions/active.md` — any active/paused sessions
 6. Check scheduled task results via `mcp__scheduled-tasks__list_scheduled_tasks`
+7. Check active conductor jobs via `outputs/gos-jobs/*/status.md`
+8. **Evolve consolidation check:** Read `sessions/evolve_signals.md`. Count signals since last `--- AUDITED ---` separator. Check date of last audit. If >20 signals OR >7 days since last audit, flag for nudge.
 
 **Deliver the briefing:**
 
@@ -93,7 +93,9 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 > **Specs:** [total count, any recently modified]
 > **Prototype:** [current version from apps/web-prototype/version.json if exists]
 > **Scheduled:** [any task results since last session, or "all clean"]
-> **Evolve:** [check ~/.claude/evolve/proposals/ — if any pending, show: "N upgrade proposals pending. Run /evolve proposals to review."]
+> **Jobs:** [active conductor jobs, if any — show job-id, goal, progress]
+> **Evolve:** [check ~/.claude/evolve/proposals/ — if any pending, show count]
+> **Evolve nudge:** [if >20 signals or >7 days: "{N} signals, {D} days since last audit. Run `/evolve audit`?"]
 > **Open items:** [unresolved review concerns, dead ends from scratchpad, pending decisions]
 >
 > **What mode?** think, design, simulate, build, review, ship, evolve

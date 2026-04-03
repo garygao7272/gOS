@@ -147,6 +147,27 @@ If any check fails, fix before proceeding. Do NOT bump with known issues.
 
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
+**Team decision:**
+- If feature touches 3+ systems (backend + frontend + tests): Create team `build-{feature-slug}` with named teammates
+- Otherwise: Sequential execution (current behavior — single session)
+
+**If team mode:**
+```
+TeamCreate(team_name="build-{feature-slug}")
+```
+- `backend` (sonnet, worktree) — API, data layer, types
+- `frontend` (sonnet, worktree) — screens, components, hooks
+- `tests` (haiku) — test files only
+- TaskCreate per phase with `blockedBy` — frontend blocks on backend's API contract
+- Backend sends API contract to frontend via `SendMessage(to="frontend", message="API types ready: {types}")`
+- Shutdown all after tests pass: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+
+**Subagent configuration (CC forked agent pattern):**
+- **Tool allowlist:** Read, Edit, Write, Bash, Grep, Glob (no WebSearch, no MCP unless needed)
+- **Turn budget:** 25 turns max per phase agent — prevents runaway loops
+- **Model:** sonnet for implementation, haiku for test scaffolding
+- **Cache-friendly prompt:** Use identical system prefix across phase agents (project context, CLAUDE.md) — vary only the phase-specific task suffix
+
 **Before building:**
 
 1. Read the relevant spec from `specs/`

@@ -278,6 +278,42 @@ Batch 2: [worker-3 ⏳]
 
 ---
 
+## Subagent Configuration Best Practices
+
+Learned from CC's forked agent pattern: minimize scope per worker for cost, speed, and safety.
+
+**Tool allowlists by worker type:**
+
+| Worker Type | Allowed Tools | Rationale |
+|-------------|---------------|-----------|
+| Research | Read, Grep, Glob, WebSearch, WebFetch | Read-only — no mutations |
+| Build | Read, Edit, Write, Bash, Grep, Glob | Full dev toolchain |
+| Review | Read, Grep, Glob | Read-only analysis |
+| Design | Read, Grep, Glob, WebFetch, MCP (Figma, Stitch) | Read + design tools |
+
+**Turn budgets:**
+
+| Worker Type | Max Turns | Rationale |
+|-------------|-----------|-----------|
+| Research | 10 | Focused queries, not exploration loops |
+| Build | 25 | Implementation needs iteration |
+| Review | 15 | Analysis + verdict |
+| Design | 20 | Exploration + creation |
+
+**Model selection:**
+
+| Worker Type | Model | Rationale |
+|-------------|-------|-----------|
+| Research (lightweight) | haiku | 90% capability at 3x savings |
+| Build (implementation) | sonnet | Best coding model |
+| Review (specialist) | haiku | Cost-efficient for structured analysis |
+| Review (lead synthesis) | opus | Needs deep reasoning for cross-examination |
+| Architecture decisions | opus | Maximum reasoning depth |
+
+**Cache-friendly prompts:** Workers in the same batch should share identical system prompt prefixes (project context, spec references) to maximize prompt cache hits. Vary only the task-specific suffix per worker.
+
+---
+
 ## Multi-Repo Support
 
 Plans can specify different repos per phase:

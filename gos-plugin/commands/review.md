@@ -14,7 +14,43 @@ description: "Review: code, test, design, gate, prove, e2e, coverage, council, d
 - **On code/spec fixes applied:** Log files changed to `Files Actively Editing`
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, prove, e2e, coverage, council, or dashboard?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, prove, e2e, coverage, council, dashboard, financial, content, candidate, or compliance?"
+
+**Output discipline (two-phase pattern):** For council synthesis and multi-pass reviews, do reasoning inside `<analysis>` tags (private — not shown to Gary). Produce the clean verdict, table, and recommendations inside `<output>` tags. Individual persona verdicts are already structured; this applies to the lead's synthesis and cross-examination resolution.
+
+---
+
+## Intent Gate (mandatory — runs before any sub-command)
+
+**Every sub-command except [skip-gate] ones must pass this gate:**
+
+### Step 1: RESTATE
+Restate what Gary asked for in your own words. This is the comprehension check.
+Keep it to 1-3 sentences. If anything is ambiguous, ask ONE clarifying question.
+
+> **I understand:** {restate the request in your own words}
+> **Clarification needed?** {one question, or "None — clear enough"}
+
+If you asked a question, wait for the answer before proceeding to Step 2.
+
+### Step 2: PLAN
+Present what you'll do, what you'll read/write, and what agents you'll use.
+
+> **Plan: Review > {sub-command}**
+> - **Scope:** {what will be reviewed, which passes/personas}
+> - **Reads:** {files/diff/data to consume}
+> - **Writes:** {verdict report destination}
+> - **Agents:** {N-agent team / single agent / council}
+> - **Output:** {format → APPROVE/CONCERN/BLOCK verdict}
+
+### Step 3: CONFIRM
+> **Go?**
+
+Wait for "yes", "go", "confirmed", "do it", "y", or similar. If Gary gives feedback, adjust the plan and re-present. Do NOT proceed without confirmation.
+
+**[skip-gate] sub-commands** (read-only, no side effects):
+- `dashboard` — read-only display of review state
+- Any sub-command with `--auto` flag (mobile dispatch)
 
 ---
 

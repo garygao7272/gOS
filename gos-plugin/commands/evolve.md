@@ -8,6 +8,8 @@ description: "Evolve — self-improve: audit health, upgrade commands, learn les
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, run `audit`.
 
+**Output discipline (two-phase pattern):** For audit, upgrade, and reflect sub-commands, use the analysis/output separation pattern. Do your reasoning and evidence gathering inside `<analysis>` tags (private — not shown to Gary). Produce the concise, actionable result inside `<output>` tags. This keeps Gary's view clean while preserving thorough analysis.
+
 ---
 
 ## Signal System — The Feedback Loop

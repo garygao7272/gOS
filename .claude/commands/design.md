@@ -132,6 +132,56 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a r
 
 ---
 
+## sketch <section-name>
+
+**Purpose:** Build a minimal visual draft of ONE section for Gary's approval before full implementation. This is the Visual Checkpoint from conductor Phase 3.5. Use this whenever you need Gary to SEE a design before you build it.
+
+**When to use:**
+- Before implementing any UI change in `apps/web-prototype/`
+- When the plan describes a new layout, component, or visual change
+- When you're unsure if your interpretation of the plan matches Gary's vision
+- As part of `/gos` conductor Phase 3.5
+
+**Process:**
+
+1. **Read the approved plan** — understand exactly what this section should contain
+2. **Read the design system** — `specs/Arx_4-2_Design_System.md` for tokens, `SOUL.md` for feel
+3. **Build ONLY the section** being sketched — not the full page:
+   - Option A: Modify the prototype temporarily (inject the section, screenshot, revert if rejected)
+   - Option B: Create a standalone draft in `apps/web-prototype/drafts/{section-name}.html`
+4. **Start or reload the preview server** (`preview_start` / `preview_eval → reload`)
+5. **Navigate to the section** and take a screenshot via `preview_screenshot`
+6. **Present to Gary** with explicit callouts:
+   ```
+   VISUAL CHECKPOINT: {section-name}
+   [screenshot]
+
+   Key design decisions:
+   - {decision 1}: {why}
+   - {decision 2}: {why}
+   - {decision 3}: {why}
+
+   Approve this visual? Or adjust before I build the full feature.
+   ```
+7. **Wait for approval.** Do NOT proceed to full implementation until Gary says "go" or gives adjustments.
+8. If adjustments requested → modify → re-screenshot → re-present
+9. Once approved → save screenshot reference path to scratchpad under `## Visual Checkpoints`
+
+**Output:** Screenshot shown to Gary + approval recorded in scratchpad. No file written to `outputs/`.
+
+**Anti-patterns:**
+- Do NOT skip this step for "small" visual changes — small changes compound into unrecognizable screens
+- Do NOT batch more than 3 sections per checkpoint — visual fatigue kills feedback quality
+- Do NOT present without callouts — Gary needs to know WHAT to look at, not just see a screen
+- Do NOT proceed on silence — explicit "go" or feedback required
+
+**Integration with conductor:**
+- `/gos` conductor Phase 3.5 calls `/design sketch` for each major visual change
+- Approval is logged in scratchpad and referenced during Phase 4 (Build)
+- During Phase 4, the builder compares their output against the approved sketch
+
+---
+
 ## Stage 1: research <topic or screen>
 
 **Purpose:** UX research before visual design. Personas, journey maps, pain points, usability findings.

@@ -827,10 +827,8 @@ For each major visual change in the approved plan:
 **The rule:** No code goes into the main prototype until Gary has seen and approved a visual of what it will look like.
 
 **Scratchpad logging:**
-
 ```markdown
 ## Visual Checkpoints
-
 - S0 Cold Start: APPROVED (sketch v2, after adjusting preset label sizes)
 - S2 Following Summary: APPROVED (sketch v1)
 - S3 Regime Warning: APPROVED (sketch v1)
