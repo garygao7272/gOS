@@ -1,4 +1,5 @@
 ---
+effort: low
 description: Start NanoClaw v2 — ECC's persistent, zero-dependency REPL with model routing, skill hot-load, branching, compaction, export, and metrics.
 ---
 

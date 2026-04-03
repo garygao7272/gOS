@@ -1,4 +1,5 @@
 ---
+effort: max
 description: "Review: code, test, design, gate, prove, e2e, coverage, council, dashboard — or any persona name directly"
 ---
 

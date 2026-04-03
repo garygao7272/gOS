@@ -1,4 +1,5 @@
 ---
+effort: medium
 description: "gOS — session entry, safety controls, session management: status, careful, freeze, save, resume, schedule, loop, session"
 ---
 

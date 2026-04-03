@@ -1,4 +1,5 @@
 ---
+effort: high
 description: "Design mode: quick sketch, variants, flow, full pipeline, system tokens, sync — visual and interaction design"
 ---
 
