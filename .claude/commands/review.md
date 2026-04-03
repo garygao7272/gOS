@@ -1,4 +1,5 @@
 ---
+effort: max
 description: "Review: code, test, design, gate, prove, e2e, coverage, council, dashboard — or any persona name directly"
 ---
 
@@ -15,6 +16,8 @@ description: "Review: code, test, design, gate, prove, e2e, coverage, council, d
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, prove, e2e, coverage, council, or dashboard?"
+
+**Output discipline (two-phase pattern):** For council synthesis and multi-pass reviews, do reasoning inside `<analysis>` tags (private — not shown to Gary). Produce the clean verdict, table, and recommendations inside `<output>` tags. Individual persona verdicts are already structured; this applies to the lead's synthesis and cross-examination resolution.
 
 ---
 

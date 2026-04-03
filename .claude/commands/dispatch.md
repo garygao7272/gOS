@@ -1,4 +1,5 @@
 ---
+effort: high
 description: "Dispatch — multi-session orchestration: spawn workers, monitor progress, synthesize results"
 ---
 
@@ -309,6 +310,42 @@ Batch 2: [worker-3 ⏳]
 4. **Maximum 5 parallel workers.** More than 5 causes API rate limits and context thrashing. If plan has >5 parallel phases, split into sub-batches of 5.
 5. **Token budget warning.** If a worker's output suggests it used excessive context (>50k tokens estimated), flag in synthesis as "high-cost worker — review for efficiency."
 6. **File ownership.** Workers should only modify files listed in their phase's `files:` field. If they need to modify other files, they should note it in output.md as a blocker rather than making unauthorized changes.
+
+## Subagent Configuration Best Practices
+
+Learned from CC's forked agent pattern: minimize scope per worker for cost, speed, and safety.
+
+**Tool allowlists by worker type:**
+
+| Worker Type | Allowed Tools | Rationale |
+|-------------|---------------|-----------|
+| Research | Read, Grep, Glob, WebSearch, WebFetch | Read-only — no mutations |
+| Build | Read, Edit, Write, Bash, Grep, Glob | Full dev toolchain |
+| Review | Read, Grep, Glob | Read-only analysis |
+| Design | Read, Grep, Glob, WebFetch, MCP (Figma, Stitch) | Read + design tools |
+
+**Turn budgets:**
+
+| Worker Type | Max Turns | Rationale |
+|-------------|-----------|-----------|
+| Research | 10 | Focused queries, not exploration loops |
+| Build | 25 | Implementation needs iteration |
+| Review | 15 | Analysis + verdict |
+| Design | 20 | Exploration + creation |
+
+**Model selection:**
+
+| Worker Type | Model | Rationale |
+|-------------|-------|-----------|
+| Research (lightweight) | haiku | 90% capability at 3x savings |
+| Build (implementation) | sonnet | Best coding model |
+| Review (specialist) | haiku | Cost-efficient for structured analysis |
+| Review (lead synthesis) | opus | Needs deep reasoning for cross-examination |
+| Architecture decisions | opus | Maximum reasoning depth |
+
+**Cache-friendly prompts:** Workers in the same batch should share identical system prompt prefixes (project context, spec references) to maximize prompt cache hits. Vary only the task-specific suffix per worker.
+
+---
 
 ## Deferred Permissions for Headless Workers
 

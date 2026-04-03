@@ -1,4 +1,5 @@
 ---
+effort: high
 description: "Refine — prebuild convergence loop: think, design, simulate, review, repeat until gaps close"
 ---
 

@@ -1,4 +1,5 @@
 ---
+effort: high
 description: "Design mode: research, sketch, ui, motion, system, audit, render, sync — 5-stage design pipeline with persona-driven audit"
 ---
 
@@ -264,16 +265,16 @@ Connect screens via `mcp__stitch__edit_screens` with navigation, transitions, ba
    Approve this visual? Or adjust before I build the full feature.
    ```
 
-6. Wait for approval — do NOT proceed without explicit "go"
+6. Wait for explicit "go" before proceeding
 7. If adjustments → modify → re-screenshot → re-present
 8. Save approved screenshot reference to scratchpad under `## Visual Checkpoints`
 
 **Anti-patterns:**
 
-- Do NOT skip for "small" changes — they compound
-- Do NOT batch more than 3 sections — visual fatigue kills feedback
-- Do NOT present without callouts — Gary needs to know WHAT to evaluate
-- Do NOT proceed on silence — explicit approval required
+- Always run approval gates regardless of change size — small changes compound
+- Batch maximum 3 sections per review pass — visual fatigue kills feedback
+- Always include callouts — Gary needs to know WHAT to evaluate
+- Wait for explicit approval before proceeding — silence is not consent
 
 ---
 

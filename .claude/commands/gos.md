@@ -1,4 +1,5 @@
 ---
+effort: medium
 description: "gOS — the conductor. Briefing, orchestration, session management. Give it a goal or a sub-command."
 ---
 
@@ -44,49 +45,32 @@ Parse the first word of `$ARGUMENTS` to route:
 
 Read `sessions/scratchpad.md`. If stale, empty, or from a previous session, initialize:
 
+> **Note:** CC's native SessionMemory (template at `~/.claude/session-memory/config/template.md`) now tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
+
 ```markdown
-# Session Scratchpad
+# Session State
 
-> **Purpose:** Survives context compaction. Written at checkpoints, re-read after compaction restores lost context.
-> **Lifecycle:** Cleared at `/gos`, written during session, ephemeral — never committed to git.
+> Supplement to CC SessionMemory. Only runtime flags and agent state live here.
+> Full task context, decisions, dead ends, and files modified are in SessionMemory.
 
----
+## Runtime Flags
 
-## Current Task
+- Careful mode: OFF
+- Freeze scope: none
+- Context: ~5%
+- Plan: (none)
+
+## Agent Roster
+
+(none active)
+
+## Trust Signals
+
+(none)
+
+## Pipeline Checkpoint
 
 (awaiting input)
-
-## Mode & Sub-command
-
-gOS > (awaiting routing)
-
-## Working State
-
-(empty)
-
-## Key Decisions Made This Session
-
-(none yet)
-
-## Dead Ends (don't retry)
-
-(none)
-
-## Files Actively Editing
-
-(none)
-
-## Important Values & References
-
-(none)
-
-## Agents Launched
-
-(none)
-
-## Next Steps
-
-(none)
 ```
 
 If the previous scratchpad contained valuable cross-session context (dead ends, important values), save those to persistent memory before clearing.
@@ -104,6 +88,7 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 5. `sessions/active.md` — any active/paused sessions
 6. Check scheduled task results via `mcp__scheduled-tasks__list_scheduled_tasks`
 7. Check active conductor jobs via `outputs/gos-jobs/*/status.md`
+8. **Evolve consolidation check:** Read `sessions/evolve_signals.md`. Count signals since last `--- AUDITED ---` separator. Check date of last audit. If >20 signals OR >7 days since last audit, flag for nudge.
 
 **Deliver the briefing:**
 
@@ -116,6 +101,7 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 > **Scheduled:** [any task results since last session, or "all clean"]
 > **Jobs:** [active conductor jobs, if any — show job-id, goal, progress]
 > **Evolve:** [check ~/.claude/evolve/proposals/ — if any pending, show count]
+> **Evolve nudge:** [if >20 signals or >7 days: "{N} signals, {D} days since last audit. Run `/evolve audit`?"]
 > **Open items:** [unresolved review concerns, dead ends from scratchpad, pending decisions]
 >
 > **What do you need?**
