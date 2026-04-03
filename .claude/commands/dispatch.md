@@ -310,6 +310,35 @@ Batch 2: [worker-3 ⏳]
 5. **Token budget warning.** If a worker's output suggests it used excessive context (>50k tokens estimated), flag in synthesis as "high-cost worker — review for efficiency."
 6. **File ownership.** Workers should only modify files listed in their phase's `files:` field. If they need to modify other files, they should note it in output.md as a blocker rather than making unauthorized changes.
 
+## Deferred Permissions for Headless Workers
+
+Workers spawned in headless mode (`-p` flag) can use the `defer` permission decision in PreToolUse hooks. This allows a worker to **pause** at a tool call that requires approval and **resume** later when the lead session or user provides a decision.
+
+**How it works:**
+
+1. A PreToolUse hook returns `"permissionDecision": "defer"` instead of `"allow"` or `"deny"`
+2. The headless worker pauses execution and saves state
+3. The lead session (or user) resumes the worker with `-p --resume`, at which point the hook re-evaluates
+
+**When to use defer (vs deny):**
+
+| Situation | Use |
+|-----------|-----|
+| Destructive command in headless worker | `defer` — let lead decide |
+| Sensitive file edit in headless worker | `defer` — let lead decide |
+| Destructive command in interactive session | `ask` — prompt user immediately |
+| Known-dangerous pattern (pipe to shell) | `deny` — always block |
+
+**Worker spawn with defer support:**
+
+When spawning headless workers, include this in the agent prompt:
+```
+If a tool call is deferred (paused for permission), log the pending action
+to your output.md and wait. The lead session will resume you after review.
+```
+
+The `protect-files.sh` hook auto-detects headless mode via `$CLAUDE_HEADLESS` env var and returns `defer` instead of `deny` for sensitive files, allowing the lead to review rather than hard-blocking.
+
 ---
 
 ## Multi-Repo Support

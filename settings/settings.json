@@ -6,12 +6,25 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
+        "if": "Bash(rm *) || Bash(git push *) || Bash(git reset *) || Bash(git clean *) || Bash(kubectl delete *) || Bash(docker system prune *)",
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command' | { read -r c; if echo \"$c\" | grep -qE '(node_modules|dist/|/build/|\\.next|__pycache__|\\.firecrawl)'; then echo '{}'; elif echo \"$c\" | grep -iqE '(rm\\s+(-[a-zA-Z]*f|-[a-zA-Z]*r|--force|--recursive)\\b|DROP\\s+TABLE|git\\s+push\\s+(--force|-f)\\b|git\\s+reset\\s+--hard|kubectl\\s+delete|docker\\s+system\\s+prune)'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"gOS careful: destructive command detected\"}}'; else echo '{}'; fi; }",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"gOS careful: destructive command detected\"}}'",
             "timeout": 5,
             "statusMessage": "gOS careful check"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "if": "Edit(.env*) || Edit(*.key) || Edit(*.pem) || Edit(*.p12) || Edit(*.pfx) || Edit(credentials.json) || Edit(secrets.yaml) || Edit(secrets.yml) || Write(.env*) || Write(*.key) || Write(*.pem) || Write(*.p12) || Write(*.pfx) || Write(credentials.json) || Write(secrets.yaml) || Write(secrets.yml)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"gOS protect: sensitive file blocked\"}}'",
+            "timeout": 5,
+            "statusMessage": "gOS protect-files check"
           }
         ]
       },
@@ -20,9 +33,96 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path' | { read -r f; if [ -f ~/.claude/freeze-scope.txt ]; then scope=$(cat ~/.claude/freeze-scope.txt); case \"$f\" in \"$scope\"*) echo '{}';; *) printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"gOS freeze: edit blocked — file outside frozen scope\"}}';; esac; else echo '{}'; fi; }",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/freeze-guard.sh\"",
             "timeout": 5,
             "statusMessage": "gOS freeze check"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/plan-gate.sh\"",
+            "timeout": 5,
+            "statusMessage": "gOS plan gate"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "if": "Bash(git commit *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/secret-scan.sh\"",
+            "timeout": 10,
+            "statusMessage": "gOS secret scan"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(git commit *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/post-commit-detect.sh\"",
+            "timeout": 10,
+            "statusMessage": "gOS spec drift check"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/spec-drift.sh\"",
+            "timeout": 5,
+            "statusMessage": "gOS spec sync reminder"
+          }
+        ]
+      }
+    ],
+    "FileChanged": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/file-changed-drift.sh\"",
+            "timeout": 5,
+            "statusMessage": "gOS file change monitor"
+          }
+        ]
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/permission-denied-handler.sh\"",
+            "timeout": 5,
+            "statusMessage": "gOS permission denied handler"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/scratchpad-checkpoint.sh\"",
+            "timeout": 10,
+            "statusMessage": "gOS session checkpoint"
           }
         ]
       }

@@ -60,8 +60,14 @@ print(ti.get('file_path', '') or ti.get('filePath', ''))
         BASENAME=$(basename "$FILE_PATH")
 
         # Block sensitive files
+        # In headless mode (dispatch workers), defer instead of deny
+        # so the lead session can review and approve
         case "$BASENAME" in
             .env|.env.*|*.key|*.pem|*.p12|*.pfx|credentials.json|secrets.yaml|secrets.yml)
+                if [ "${CLAUDE_HEADLESS:-}" = "1" ] || [ "${CLAUDE_PRINT_MODE:-}" = "1" ]; then
+                    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"defer","permissionDecisionReason":"gOS protect: sensitive file — deferred for lead review"}}'
+                    exit 0
+                fi
                 echo "BLOCKED: Cannot edit sensitive file: $BASENAME" >&2
                 exit 2
                 ;;
