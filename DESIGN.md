@@ -363,7 +363,22 @@ Unless overridden in a build card's `## Visual Spec`:
 | Slow | 300ms | `--duration-slow` | Page transitions, regime shifts |
 | Glacial | 500ms | `--duration-glacial` | Complex multi-step sequences |
 
-### 5.3 Easing Curves
+### 5.3 Screen Transitions
+
+Navigation between screens uses consistent transition types. Build cards reference these by name in `## Navigate`.
+
+| Transition | Animation | Duration | Easing | When |
+|-----------|-----------|----------|--------|------|
+| `push-right` | New screen slides in from right, current slides left | 300ms | ease-out | Standard forward navigation (list → detail) |
+| `push-left` | Reverse of push-right (back navigation) | 300ms | ease-out | Back button, swipe-back gesture |
+| `sheet-up` | Bottom sheet slides up, background dims to 0.6 | 350ms | iOS Sheet | Regime detail, filter panels, order entry |
+| `modal-center` | Fade + scale from 0.95 to 1.0, background dims | 200ms | ease-out | Destructive confirmations, alerts |
+| `fade` | Cross-fade between screens | 200ms | ease-out | Tab switching (no spatial relationship) |
+| `expand` | Card expands to fill screen from its position | 300ms | spring | Card → detail view (preserves spatial context) |
+
+> Build card `## Navigate` example: `To: C3 Asset Detail (push-right), Regime sheet (sheet-up)`
+
+### 5.4 Easing Curves
 
 | Curve | Value | CSS Variable | Usage |
 |-------|-------|-------------|-------|

@@ -85,6 +85,24 @@ Build cards reference these names instead of raw pixel values:
 
 **Feed mode toggle:** [My Feed] (selected) | [Discover]
 
+### 2.1b Boundary Fixtures: C1-R0 (test formatting at extremes)
+
+| Field | Scenario | Raw Value | Display Format | Notes |
+|-------|----------|-----------|---------------|-------|
+| equity | Zero | 0.00 | "$0.00" | First-time user, no deposits |
+| equity | Micro | 0.47 | "$0.47" | Dust amount after withdrawal |
+| equity | Large | 1234567.89 | "$1,234,567.89" | Whale account — verify comma grouping |
+| daily_pnl | Negative | -2847.50 | "−$2,847.50" | Use real minus U+2212, NOT hyphen |
+| daily_pnl | Zero | 0.00 | "$0.00" | Flat day — no color, no +/- |
+| daily_pnl_pct | Large loss | -34.7 | "(−34.7%)" | Drawdown event — must not overflow |
+| positions_open | None | 0 | "0 open" | Empty portfolio state |
+| positions_open | Many | 47 | "47 open" | Power user — verify truncation |
+| regime_state | crisis | "● Crisis" pill | Deep Orange #EA580C | Most alarming state — verify visual weight |
+| consensus_asset | Long name | PENDLE | "long PENDLE" | 6-char symbol — verify alignment |
+| earnings_daily | Negative day | -156.00 | "−$156" | Loss day — --color-negative |
+
+> **Purpose:** Run boundary fixtures through every prototype to verify formatting. If `$1,234,567.89` overflows the Hero text area or `−$2,847.50` doesn't use the real minus sign, the prototype fails the 3-Second Test.
+
 ---
 
 ## 3. Adding New Screen Fixtures

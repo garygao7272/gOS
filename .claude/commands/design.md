@@ -131,15 +131,17 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
 2. **If new:** Use template from `specs/Arx_0-1_Workflow_Workbook.md`
 3. **Run Gate -1** (Reference Research) — research how reference apps handle this screen
 4. **Run Gate 0** (State Matrix) — generate all scenarios before writing
-5. **Write the PRODUCT half:**
+5. **Write the REFERENCE section:**
+   - `## Reference Screenshots` — cite 2-3 specific screens from Arx_4-3 §1 tiers. Per reference: app, screen, what to adopt, where to surpass. Include AI tool instruction line.
+6. **Write the PRODUCT half:**
    - `## Why` — trace to JTBD + pain in Arx_2-1
    - `## What the User Does` — 3-7 numbered steps with S7/S2 variants
    - `## Data` — API source + computation for every visible element
    - `## States` — empty, loading, error, populated + persona variants
    - `## Acceptance (EARS)` — WHEN/SHALL testable criteria
-   - `## Navigate` — from/to with triggers
+   - `## Navigate` — from/to with triggers and transition type (`push-right`, `sheet-up`, `modal-center`, `fade`)
    - `## Verify` — test command
-6. **Write the VISUAL half:**
+7. **Write the VISUAL half:**
    - `## Feel` — reference a feel token from DESIGN.md §6.9 (e.g., `Feel: feel:home`). Only add overrides if this screen deviates from the screen-type default. Do NOT redefine motion, density, or temperature inline.
    - `## Layout (Stitch-ready)` — ASCII wireframe with auto-layout annotations (`column`/`row`, `fill-w`/`hug`, `gap=Npx`). Use named type levels (Hero, Title, Body, Caption, Data), NOT raw px values.
    - `## Components (from Arx_4-2)` — named component references

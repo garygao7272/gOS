@@ -5,6 +5,18 @@
   IA change: R0 Feed migrated into Home tab. C1 portfolio summary is sticky top; R0 feed scrolls below.
 -->
 
+## Reference Screenshots
+
+| Tier | App | Screen | Adopt | Surpass |
+|------|-----|--------|-------|---------|
+| 1 | Robinhood | Home portfolio summary | Calm equity display, single-line P&L, green/red simplicity | Add regime context — Robinhood shows numbers, Arx shows numbers + why |
+| 1 | Apple News | Morning digest feed | Card-based feed with editorial hierarchy, time-of-day relevance | Personalized by trading relationships, not just topics |
+| 2 | Linear | Project overview | Data density without noise — many items, clear hierarchy, calm palette | Match this density control for S2 mode |
+| 2 | Apple Stocks | My Symbols watchlist | iOS-native sparklines, price alignment with tabular nums, regime-colored tickers | Add signal intelligence layer on top of price data |
+| 3 | Telegram | Chat list | Speed of list rendering, smooth scroll, stagger animation on new items | Apply to feed card entrance choreography |
+
+> **AI tool instruction:** When generating this screen, produce output that beats Tier 1 apps in intelligence and matches Tier 2 apps in craft quality. If the result looks more like Bitget than Linear, iterate.
+
 ## Why
 > JTBD-SHARED-01: "What happened since I last checked? Am I going to be okay?"
 > Pain: High-frequency daily check-in split across two tabs (Home + Radar) added friction and context switching.
@@ -160,5 +172,11 @@ npm test -- --grep "C1-R0|home-feed|WYWA"
 ```
 
 ## Navigate
-- **From:** App launch (default), tab bar Home tap, any drill-down back navigation
-- **To:** Regime bottom sheet (regime pill tap), D2 Leader Profile (leader feed card tap), C3 Asset Detail (signal card [Details →]), Trade tab via `openTrade()` (signal card [Trade →]), D4 Copy Dashboard ([Manage →]), Traders tab (Discover CTA / J0 onboarding CTA)
+- **From:** App launch (`fade`), tab bar Home tap (`fade`), drill-down back (`push-left`)
+- **To:**
+  - Regime detail → `sheet-up` (regime pill tap)
+  - D2 Leader Profile → `push-right` (leader feed card tap)
+  - C3 Asset Detail → `push-right` (signal card [Details →])
+  - Trade hub → `sheet-up` via `openTrade()` (signal card [Trade →])
+  - D4 Copy Dashboard → `push-right` ([Manage →])
+  - Traders tab → `fade` (tab bar / Discover CTA)
