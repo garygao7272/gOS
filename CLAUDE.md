@@ -107,7 +107,7 @@ Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 | `/evolve`     | Are we getting better?        | gOS upgrades                                              |
 | `/refine`     | Is it tight enough?           | Gap-hunt + deepen loop until convergence                  |
 
-Plus utilities: `/aside` (side question), `/dispatch` (multi-session orchestration).
+Plus utility: `/aside` (side question).
 
 ### Execution Patterns
 

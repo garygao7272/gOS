@@ -78,9 +78,9 @@ Rules:
 | `/ship`     | Is it out?                            | commit, pr, deploy              | Commits, PRs, deployments              |
 | `/evolve`   | Are we getting better?                | audit, upgrade, learn           | Upgraded commands, retros              |
 | `/refine`   | Is it tight enough?                   | (loop — no sub-commands)        | Gap-hunt + deepen loop                 |
-| `/dispatch` | Can we parallelize?                   | (plan-file), status             | Multi-session orchestration            |
-
 Plus utility: `/aside` (side question).
+
+> **Parallel execution** is built into the conductor (Phase 4), not a separate command. The conductor auto-selects between 3 methods: Agents (shared files), Agents (worktree isolation), or Agent Teams (collaborative with messaging). See gos.md Phase 4 for the decision tree.
 
 ## Execution Patterns
 

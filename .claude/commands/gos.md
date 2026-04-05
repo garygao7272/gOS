@@ -813,33 +813,42 @@ For each major visual change in the approved plan:
 
 ### Phase 4 — Execution
 
-**Team decision (see gOS.md > Agent Teams Protocol):**
+**The conductor has 3 parallel execution methods.** Choose based on task characteristics:
 
-- If decomposition produces 3+ tasks: Create team `gos-job-{job-id}` with named teammates
-- If 1-2 tasks: Use ad-hoc subagents (cheaper)
+| Method | When to Use | How |
+|---|---|---|
+| **Agents (shared)** | Read-only tasks, independent outputs, no file conflicts | `Agent(prompt, run_in_background: true)` — fastest, cheapest |
+| **Agents (worktree)** | Tasks that write to overlapping files, need merge isolation | `Agent(prompt, isolation: "worktree")` — separate git branch |
+| **Agent Teams** | 3+ agents need to coordinate, share state, or message each other | `TeamCreate` + named teammates + `SendMessage` + task board |
 
-**If team mode:**
+**Decision tree:**
 
 ```
-TeamCreate(team_name="gos-job-{job-id}")
+How many parallel tasks?
+├── 1 task → Execute inline (no agents needed)
+├── 2-3 tasks
+│   ├── Do they write to the SAME files? → Agents (worktree)
+│   ├── Are they read-only or write to DIFFERENT files? → Agents (shared)
+│   └── Do they need to talk to each other? → Agent Teams
+└── 4+ tasks
+    ├── Independent (research, review, spec writing) → Agents (shared), batch of 3-5
+    ├── Dependent (build A before B) → Sequential agents, one at a time
+    └── Collaborative (frontend + backend + tests) → Agent Teams with SendMessage
 ```
 
-- Create TaskCreate per task from the graph, with `blockedBy` for dependencies
-- Spawn named teammates per task, model-routed (opus for review/synthesis, sonnet for implementation, haiku for formatting/docs)
-- Parallel tasks run as concurrent teammates claiming from the task board
-- Sequential tasks auto-unblock when upstream completes
-- If a teammate reports a blocker via `SendMessage`, route to the appropriate peer or resolve directly
-- Shutdown all teammates after last task completes: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+**Examples from this project:**
 
-**If subagent mode (1-2 tasks):**
+- Bake-off (3 design tools, same screen, different output files) → **Agents (shared)** ✓
+- Review council (12 persona agents, each produces a verdict) → **Agents (shared)** ✓
+- Build 5 screens in parallel (each writes different component files) → **Agents (shared)** ✓
+- Build frontend + backend for same feature (shared API contract) → **Agent Teams** (need to coordinate types)
+- Refactor module A while module B depends on it → **Agents (worktree)** (merge after both pass tests)
 
-1. **Parallel tasks** → Launch via Agent tool (parallel subagents), each embedding the relevant `/review` or `/build` command prompt
-2. **Sequential tasks** → Execute inline after dependencies complete
+**For all methods:**
 
-**For both modes:**
-
-- **Conditional tasks** → Evaluate the condition from previous task output, skip or execute accordingly
-- **Long-running jobs** → If the task graph will outlast a single session, use `mcp__scheduled-tasks` to persist execution across sessions
+- **Conditional tasks** → Evaluate condition from previous task output, skip or execute
+- **Long-running jobs** → Use `mcp__scheduled-tasks` to persist across sessions
+- **Model routing** → opus for review/synthesis, sonnet for implementation, haiku for formatting
 
 **Progress tracking** in `outputs/gos-jobs/{job-id}/status.md`:
 
