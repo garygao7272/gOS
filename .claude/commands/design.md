@@ -140,7 +140,7 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
    - `## Navigate` — from/to with triggers
    - `## Verify` — test command
 6. **Write the VISUAL half:**
-   - `## Feel` — target feel, motion choreography, density, reference, temperature budget, skeleton spec, haptics (MANDATORY — see Arx_4-3 §3 for feel targets per screen type)
+   - `## Feel` — reference a feel token from DESIGN.md §6.9 (e.g., `Feel: feel:home`). Only add overrides if this screen deviates from the screen-type default. Do NOT redefine motion, density, or temperature inline.
    - `## Layout (Stitch-ready)` — ASCII wireframe with auto-layout annotations (`column`/`row`, `fill-w`/`hug`, `gap=Npx`). Use named type levels (Hero, Title, Body, Caption, Data), NOT raw px values.
    - `## Components (from Arx_4-2)` — named component references
    - `## Visual Spec` — fixture pointer, icons (from DESIGN.md §3), embellishments (from DESIGN.md §4), interactions (from DESIGN.md §5), tab bar treatment

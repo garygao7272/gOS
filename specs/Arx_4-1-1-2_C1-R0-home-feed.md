@@ -20,37 +20,11 @@
 
 ## Feel
 
-- **Target:** Command center — your world at a glance, personalized, alive
-- **Density:** S7 medium-low (4 cards visible), S2 medium-high (8 cards, denser data)
-- **Reference:** "Robinhood home's calm confidence with Apple News's morning digest intelligence"
-- **Temperature:** T0 80% (obsidian bg, chamber cards, starlight text) | T1 15% (regime bar at 40%, sparklines, timestamps) | T2 4% (P&L numbers in gain/loss color) | T3 1% (none on this screen — no Execute button)
+**Token:** `feel:home` (see DESIGN.md §6.9)
 
-### Motion Choreography (on-load)
-
-| Order | Element | Animation | Delay | Duration | Easing |
-|-------|---------|-----------|-------|----------|--------|
-| 1 | Regime bar | instant render | 0ms | 0ms | — |
-| 2 | Portfolio header | fade-in from cache | 0ms | 100ms | ease-out |
-| 3 | Status dot | appear + pulse begins | 100ms | 200ms | ease-out |
-| 4 | Feed mode toggle | fade-in | 150ms | 150ms | ease-out |
-| 5 | WYWA card (if shown) | fade-up | 200ms | 200ms | spring |
-| 6 | Feed cards | fade-up stagger | 250ms | 200ms each, 50ms stagger | spring |
-
-### Skeleton (loading state)
-
-- Header: shimmer rectangle fill-w h=80px (equity placeholder 120x32px + pill 80x24px)
-- Feed cards: 3x shimmer cards, each 358x120px, gap=12px
-- Card skeleton: icon-circle 40px (left) + 2 text lines (right, 60% and 40% width)
-- Shimmer: left-to-right, 1.5s, rgba(255,255,255,0.04) → rgba(255,255,255,0.08)
-
-### Haptics
-
-| Trigger | Haptic | iOS API |
-|---------|--------|---------|
-| Pull-to-refresh | impact medium | UIImpactFeedbackGenerator(.medium) |
-| Filter chip tap | impact light | UIImpactFeedbackGenerator(.light) |
-| WYWA dismiss | — | none |
-| Card tap (navigate) | — | none |
+**Overrides:**
+- T3 Hot: 0% (no Execute button on this screen)
+- Motion addition: WYWA card fade-up at 200ms if absence ≥8h (not in shared token)
 
 ---
 

@@ -475,9 +475,46 @@ Score each dimension 1-5 before shipping any screen. Fix any ≤ 2.
 - Between cards in group: 12px. Between groups: 24px+. Between sections: 48px + separator.
 - Screen edge: 16px — never 0, never 8px.
 
-### 6.9 Taste Baseline (per build card)
+### 6.9 Feel Tokens by Screen Type
 
-Each build card should record when it last passed litmus tests. When revisiting a screen with `/design ui`, compare against baseline:
+Like color tokens, feel is defined once and referenced by name. Build cards declare `Feel: Home` — they don't redefine motion, density, or temperature.
+
+| Screen Type | Feel Token | Target Feel | Motion | Density | Temperature | Must Beat |
+|-------------|-----------|-------------|--------|---------|-------------|-----------|
+| **Home/Feed** | `feel:home` | Command center — your world at a glance, alive | Regime bar instant → header fade 100ms → cards stagger 50ms | S7 low (4 cards), S2 high (8 cards) | T0 80%, T1 15%, T2 4%, T3 0% | Robinhood home + Apple News |
+| **Discovery** | `feel:discovery` | Curated boutique — few choices, each earned | Cards arrive with presence, slight parallax on scroll | S7 low (4-6 featured), S2 full list | T0 85%, T1 10%, T2 4%, T3 1% | Airbnb search + Phantom |
+| **Profile** | `feel:profile` | Investor factsheet — credible, earned authority | Data count-up on load, equity curve draws itself | Medium | T0 75%, T1 15%, T2 8%, T3 2% | Mercury + Bloomberg |
+| **Copy Setup** | `feel:copy-setup` | Commitment moment — deliberate, no ambiguity | Steps lock in with haptic, progress bar prominent | Low (one decision/step) | T0 85%, T1 10%, T2 4%, T3 1% | Robinhood first trade |
+| **Trade** | `feel:trade` | Cockpit — focused, one action dominates | Precise, mechanical, responsive | High (S2 everything visible) | T0 70%, T1 15%, T2 10%, T3 5% | Bloomberg + Binance |
+| **Manage** | `feel:manage` | Control room — accessible, nothing noisy | Functional transitions, no animation waste | Medium-high | T0 80%, T1 15%, T2 4%, T3 1% | iOS Settings + Revolut |
+| **Onboarding** | `feel:onboard` | First handshake — warm, confident, fast | Progressive reveal, one idea per screen, reward at end | Very low (one thing/screen) | T0 85%, T1 10%, T2 3%, T3 2% | Phantom + Robinhood |
+| **Markets** | `feel:markets` | Library — organized, scannable, data-rich | Type-ahead instant, list rows enter fast | S2 high, S7 medium | T0 75%, T1 15%, T2 8%, T3 2% | TradingView + Moomoo |
+
+**Shared defaults (inherit unless overridden):**
+
+| Property | Default |
+|----------|---------|
+| Skeleton | Shimmer L→R 1.5s, shapes match populated layout, rgba(255,255,255,0.04→0.08) |
+| Pull-to-refresh | Haptic medium + spinner + reload |
+| Card press | scale(0.985), 200ms ease |
+| Error banner | Slide down 200ms, content dims to 0.6 opacity |
+| Haptic: filter chip | impact light |
+| Haptic: trade executed | notification success |
+| Haptic: error | notification error |
+
+**Build card usage:** Instead of defining a full `## Feel` section, cards reference the token:
+
+```markdown
+## Feel
+Feel: feel:home
+Override: T3 Hot 0% (no Execute button on this screen)
+```
+
+Override only what differs from the screen type default.
+
+### 6.10 Taste Baseline (per build card)
+
+Each build card records when it last passed litmus tests:
 
 ```markdown
 ## Taste Baseline
@@ -486,7 +523,7 @@ Each build card should record when it last passed litmus tests. When revisiting 
 - Reference beat: Robinhood (cleaner density), Bitget (better visual hierarchy)
 ```
 
-If a future edit causes any dimension to drop below baseline, flag it before shipping.
+If a future edit drops any dimension below baseline, flag before shipping.
 
 ---
 
