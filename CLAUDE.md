@@ -65,6 +65,33 @@ Arx/
 - **Features**: Trace back to a user pain in `specs/Arx_2-1`. No upstream pain = question the feature.
 - **Duplication**: Link to specs, don't copy content between files.
 
+## Build Cards — The Atomic Unit of Product Work
+
+A build card (`specs/Arx_4-1-1-X_*.md`) replaces epics, user stories, screen specs, and design handoff docs. One file per screen, containing everything needed to understand, design, build, and test it.
+
+| Section | Replaces | Purpose |
+|---------|----------|---------|
+| `## Reference Screenshots` | Mood boards, design brief | Tier 1-3 app references with adopt/surpass per screen |
+| `## Why` | Epic description | JTBD + pain trace to Arx_2-1 — no upstream pain = question the screen |
+| `## What the User Does` | User stories | Numbered steps with S7/S2 variants |
+| `## Feel` | Design brief | Feel token reference (`feel:home`) from DESIGN.md §6.9 + overrides |
+| `## Layout` | Screen spec / wireframe | ASCII wireframe with auto-layout annotations (`column`, `fill-w`, `gap=12px`) |
+| `## Data` | Data requirements | API source + computation for every visible element |
+| `## States` | QA spec | 8-state matrix: default, empty, loading, error, partial, overflow, stale, crisis |
+| `## Navigate` | Navigation spec | From/to with transition types (`push-right`, `sheet-up`, `fade`) |
+| `## Acceptance` | Acceptance criteria | EARS format (WHEN/SHALL) — testable, not vague |
+| `## Visual Spec` | Design handoff | Fixture pointer + icons/embellishments/interactions from DESIGN.md §3-5 |
+
+**Three-layer architecture:**
+
+```
+Journey Maps (Arx_3-3)           → WHY (emotional arc across screens)
+Master Architecture (Arx_4-1-1-0) → HOW screens connect (navigation graph)
+Build Cards (Arx_4-1-1-X)        → WHAT each screen is (everything else)
+```
+
+Build cards are consumed by humans (`/review`), AI design tools (`/design ui`), and code generators (`/build`). One format, three consumers.
+
 ## Audience & Personas
 
 - **P1 Jake** (Strategic Learner, beachhead): Mid-capital ($10K-$100K), T3-T4 skill, wants signal clarity
