@@ -94,31 +94,31 @@ On compaction: re-read `sessions/scratchpad.md` to restore lost context.
 
 Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 
-| Command       | Question                   | Output                                                    |
-| ------------- | -------------------------- | --------------------------------------------------------- |
-| `/gos`        | Am I set up?               | Session state, safety hooks                               |
-| `/gos <goal>` | What do you need? (Jarvis) | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
-| `/think`      | What and why?              | `outputs/think/` → `specs/`                               |
-| `/design`     | What does it look like?    | `outputs/think/design/` → `specs/`                        |
-| `/simulate`   | What could happen?         | `outputs/briefings/`                                      |
-| `/build`      | How do we make it?         | `apps/`                                                   |
-| `/review`     | Is it good?                | Verdicts, fixes, reports                                  |
-| `/ship`       | Is it out?                 | Commits, PRs, deployments                                 |
-| `/evolve`     | Are we getting better?     | gOS upgrades                                              |
-| `/refine`     | Is it tight enough?        | Gap-hunt + deepen loop until convergence                  |
+| Command       | Question                      | Output                                                    |
+| ------------- | ----------------------------- | --------------------------------------------------------- |
+| `/gos`        | Am I set up?                  | Session state, safety hooks                               |
+| `/gos <goal>` | What do you need? (Jarvis)    | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
+| `/think`      | What and why?                 | `outputs/think/` → `specs/`                               |
+| `/design`     | What are we building? (card, ui, system) | Build cards → `specs/`, visuals → Figma/prototypes |
+| `/simulate`   | What could happen?            | `outputs/briefings/`                                      |
+| `/build`      | How do we code it?            | `apps/`                                                   |
+| `/review`     | Is it good?                   | Verdicts, fixes, reports                                  |
+| `/ship`       | Is it out?                    | Commits, PRs, deployments                                 |
+| `/evolve`     | Are we getting better?        | gOS upgrades                                              |
+| `/refine`     | Is it tight enough?           | Gap-hunt + deepen loop until convergence                  |
 
-Plus utility: `/aside` (side question).
+Plus utilities: `/aside` (side question), `/dispatch` (multi-session orchestration).
 
 ### Execution Patterns
 
-- **Think mode** → Swarm (3-5 parallel agents) → `outputs/think/` (staging) → promote to `specs/`
-- **Design mode** → Phase pipeline (Stitch sketch → variants → full swarm → HTML bridge)
-- **Simulate mode** → Engine execution (MiroFish for markets, Dux for general simulation)
-- **Build mode** → Sequential (plan → code → test → verify → commit). Fresh context executors for large tasks.
-- **Review mode** → Adversarial. Swarm for council, sequential for single persona. Fix-First auto-fixes.
+- **Think mode** → Swarm (3-5 parallel agents) → `outputs/think/` (staging) → promote to `specs/`. Includes all research (market, competitor, user, UX).
+- **Design mode** → `card` (author build card spec+visual), `ui` (Figma MCP/AIDesigner/Stitch → prototype), `system` (tokens+components).
+- **Simulate mode** → `market` (MiroFish + backtest), `scenario` (what-if + Dux engine).
+- **Build mode** → Sequential (feature, fix, refactor). TDD always-on. One agent, one task, one commit.
+- **Review mode** → `code` (PR), `design` (visual audit), `gate` (pre-ship, absorbs test/e2e/coverage), `council` (multi-persona), `eval` (command quality).
 - **Refine mode** → Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
-- **Ship mode** → Pipeline (commit → PR → deploy → docs). Blocks if review dashboard not CLEARED.
-- **Evolve mode** → Signal-driven. Accumulate accept/rework/reject signals, audit weekly.
+- **Ship mode** → Pipeline (commit → PR → deploy). Blocks if review gate not PASSED.
+- **Evolve mode** → Signal-driven. `audit` (health check), `upgrade` (rewrite commands), `learn` (manual teaching).
 
 ### Spec Sync After Implementation
 

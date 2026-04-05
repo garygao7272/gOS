@@ -90,7 +90,9 @@ Launch 3 named teammates:
 
 ## research <question>
 
-**Purpose:** Deep market, competitor, or user research grounded in evidence.
+> **Includes UX research** (absorbed from the former `/design research`). All research — market, competitor, user, AND UX — lives here under `/think research`.
+
+**Purpose:** Deep market, competitor, user, or UX research grounded in evidence.
 
 **Input:** Research question (e.g., "what do retail crypto traders actually want from copy trading?")
 
@@ -158,9 +160,11 @@ Launch 6 named teammates (all on `sonnet` except blue-hat on `opus`):
 
 ## spec <topic>
 
-**Purpose:** Write or update a spec file based on upstream thinking (discover, research, decide outputs).
+> **Strategy specs only.** Build cards are authored via `/design card`, not `/think spec`. Use this for strategy-layer specs: Arx_2-1 (personas), Arx_3-2 (PRD), Arx_3-3 (journeys), Arx_3-4 (epic map), Arx_4-2 (design system).
 
-**Input:** Topic or spec file to update (e.g., "write the copy trading spec" or "update specs/Arx_4-1-1-6")
+**Purpose:** Write or update a strategy spec file based on upstream thinking (discover, research, decide outputs).
+
+**Input:** Topic or spec file to update (e.g., "update personas in Arx_2-1" or "write the PRD section on revenue model")
 
 **Process:**
 

@@ -1,6 +1,6 @@
 ---
 effort: max
-description: "Review: code, test, design, gate, prove, e2e, coverage, council, dashboard — or any persona name directly"
+description: "Review: code, design, gate, council, eval — or any persona name directly"
 ---
 
 # Review — Quality Assurance → specs/ + apps/
@@ -15,7 +15,9 @@ description: "Review: code, test, design, gate, prove, e2e, coverage, council, d
 - **On code/spec fixes applied:** Log files changed to `Files Actively Editing`
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, prove, e2e, coverage, council, or dashboard?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, design, gate, council, or eval?"
+
+> **Simplified (v2):** `test`/`prove`/`e2e`/`coverage` all folded into `gate` (pre-ship quality gate runs everything). `dashboard` folded into `/gos status`. `eval` absorbed from the former `/evaluate` command.
 
 **Output discipline (two-phase pattern):** For council synthesis and multi-pass reviews, do reasoning inside `<analysis>` tags (private — not shown to Gary). Produce the clean verdict, table, and recommendations inside `<output>` tags. Individual persona verdicts are already structured; this applies to the lead's synthesis and cross-examination resolution.
 

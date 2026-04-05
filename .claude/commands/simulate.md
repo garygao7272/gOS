@@ -1,6 +1,6 @@
 ---
 effort: max
-description: "Simulate: market (MiroFish), scenario (what-if), backtest (historical), dux (full engine)"
+description: "Simulate: market (MiroFish + backtest), scenario (what-if + Dux engine)"
 ---
 
 # Simulate — Forward-Looking Intelligence → outputs/
@@ -14,7 +14,9 @@ description: "Simulate: market (MiroFish), scenario (what-if), backtest (histori
 - **After output:** Log file paths and sizes to `Files Actively Editing`
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of simulation? market (MiroFish), scenario (what-if), backtest (historical), or dux (full engine)?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of simulation? market (MiroFish, includes backtest) or scenario (what-if, powered by Dux)?"
+
+> **Simplified (v2):** `backtest` folded into `market` (use `market --backtest`). `dux` folded into `scenario` (Dux is the engine powering scenario analysis).
 
 **Output pipeline (shared):** MD → optionally HTML → optionally PDF (for briefings). See Output Pipeline section below.
 

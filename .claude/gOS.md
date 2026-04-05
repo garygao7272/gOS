@@ -67,29 +67,30 @@ Rules:
 
 ## 8 Verbs + 1 Utility
 
-| Verb        | Question                | Produces                          |
-| ----------- | ----------------------- | --------------------------------- |
-| `/gos`      | Am I set up?            | Session state, safety hooks       |
-| `/think`    | What and why?           | Documents, decisions, specs       |
-| `/design`   | What does it look like? | Screens, flows, motion specs      |
-| `/simulate` | What could happen?      | Scenarios, probabilities, signals |
-| `/build`    | How do we make it?      | Code, tests, components           |
-| `/review`   | Is it good?             | Verdicts, fixes, reports          |
-| `/ship`     | Is it out?              | Commits, PRs, deployments         |
-| `/evolve`   | Are we getting better?  | Upgraded commands, retros         |
-| `/refine`   | Is it tight enough?     | Gap-hunt + deepen loop            |
+| Verb        | Question                              | Sub-commands                    | Produces                               |
+| ----------- | ------------------------------------- | ------------------------------- | -------------------------------------- |
+| `/gos`      | Am I set up?                          | status, save, resume, schedule, careful, freeze | Session state, orchestration |
+| `/think`    | What and why?                         | research, discover, decide, spec, intake | Documents, decisions, strategy specs |
+| `/design`   | What are we building?                 | card, ui, system                | Build cards, Figma/HTML prototypes, tokens |
+| `/simulate` | What could happen?                    | market, scenario                | MiroFish/Dux scenarios, signals        |
+| `/build`    | How do we code it?                    | feature, fix, refactor          | Production code, tests, components     |
+| `/review`   | Is it good?                           | code, design, gate, council, eval | Verdicts, fixes, reports             |
+| `/ship`     | Is it out?                            | commit, pr, deploy              | Commits, PRs, deployments              |
+| `/evolve`   | Are we getting better?                | audit, upgrade, learn           | Upgraded commands, retros              |
+| `/refine`   | Is it tight enough?                   | (loop — no sub-commands)        | Gap-hunt + deepen loop                 |
+| `/dispatch` | Can we parallelize?                   | (plan-file), status             | Multi-session orchestration            |
 
-Plus utilities: `/aside` (side question), `/eval` (command quality measurement), `/dispatch` (multi-session orchestration).
+Plus utility: `/aside` (side question).
 
 ## Execution Patterns
 
-- **Think mode:** Team-based research (3-5 named agents with adversarial cross-examination) → outputs/think/ → promote to specs/
-- **Design mode:** Phase pipeline (Stitch sketch → variants → team swarm for full → HTML bridge)
-- **Simulate mode:** Team-based scenarios (bull vs bear builders + adjudication) for markets, Dux for general simulation
-- **Build mode:** Sequential (plan → code → test → verify → commit). Teams for multi-system features (backend + frontend + tests with SendMessage coordination).
-- **Review mode:** Team-based council with live adjudication. Sequential for single persona. Specialists for high-risk code.
-- **Ship mode:** Pipeline (commit → PR → deploy → docs). Blocks if review dashboard not CLEARED.
-- **Evolve mode:** Signal-driven. Accumulate accept/rework/reject signals, audit weekly, upgrade data-driven.
+- **Think mode:** Team-based research (3-5 agents) → outputs/think/ → promote to specs/. Includes all research (market, competitor, user, UX).
+- **Design mode:** `card` (author build card spec+visual), `ui` (Figma MCP/AIDesigner/Stitch → prototype), `system` (tokens+components+sync).
+- **Simulate mode:** `market` (MiroFish + backtest), `scenario` (what-if + Dux engine).
+- **Build mode:** Sequential (feature, fix, refactor). TDD always-on. One agent, one task, one commit.
+- **Review mode:** `code` (PR), `design` (visual audit), `gate` (pre-ship, absorbs test/e2e/coverage), `council` (multi-persona), `eval` (command quality).
+- **Ship mode:** Pipeline (commit → PR → deploy). Blocks if review gate not PASSED.
+- **Evolve mode:** Signal-driven. `audit` (health check), `upgrade` (rewrite commands), `learn` (manual teaching).
 - **Refine mode:** Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
 
 ## Agent Teams Protocol

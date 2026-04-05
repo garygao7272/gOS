@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Evolve — self-improve: audit health, upgrade commands, learn lessons, reflect on principles"
+description: "Evolve — self-improve: audit health, upgrade commands, learn lessons"
 ---
 
 # Evolve — Self-Improvement Engine

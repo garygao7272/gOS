@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Build: plan, prototype, feature, component, fix, tdd, refactor — outputs to apps/"
+description: "Build: feature, fix, refactor — outputs to apps/"
 ---
 
 # Build — Engineering → apps/
@@ -19,7 +19,9 @@ description: "Build: plan, prototype, feature, component, fix, tdd, refactor —
 - **On test failure:** Write failure details and attempted fix to `Dead Ends (don't retry)` if abandoned
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? plan, prototype, feature, component, fix, tdd, or refactor?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? feature, fix, or refactor?"
+
+> **Simplified (v2):** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature` (a component is a small feature). `tdd` → always-on within `feature`, not a separate sub-command.
 
 ---
 

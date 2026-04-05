@@ -19,25 +19,16 @@ Parse the first word of `$ARGUMENTS` to route:
 
 ## Routing Table
 
-| Argument                    | Action                                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------------ |
-| _(empty)_                   | Briefing → "What do you need?" → conductor handles the response                                  |
-| `status`                    | Dashboard: active sessions, branch, review state, scheduled tasks, recent evolve signals         |
-| `careful`                   | Toggle PreToolUse destructive-command warning                                                    |
-| `freeze <dir>`              | Scope-lock edits to a directory                                                                  |
-| `save`                      | Save session state to file                                                                       |
-| `resume`                    | Restore most recent saved session                                                                |
-| `schedule`                  | Sub-commands: list, add, pause, resume, remove                                                   |
-| `loop <interval> <command>` | Start recurring command execution                                                                |
-| `session`                   | Sub-commands: list, claim, handoff, close                                                        |
-| `claw`                      | Sub-commands: list, start, stop, log, resolve                                                    |
-| `jobs`                      | List active/completed conductor jobs                                                             |
-| `finance`                   | Financial services: model, deck, audit, comps, dcf, earnings, deal, portfolio                    |
-| `last`                      | Show last session's key decisions                                                                |
-| `diff`                      | Show uncommitted changes                                                                         |
-| `pulse`                     | One-line status: branch, uncommitted count, last commit                                          |
-| `refine <topic> [N]`        | Invoke `/refine` skill with remaining args. Prebuild convergence: think→design→simulate→review×N |
-| _anything else_             | **Conductor Mode** — treat as a seed goal, enter the 5-phase orchestration flow                  |
+| Argument       | Action                                                                          |
+| -------------- | ------------------------------------------------------------------------------- |
+| _(empty)_      | Briefing → "What do you need?" → conductor handles the response                 |
+| `status`       | Dashboard: sessions, branch, review state, scheduled tasks, evolve signals      |
+| `careful`      | Toggle PreToolUse destructive-command warning                                   |
+| `freeze <dir>` | Scope-lock edits to a directory                                                 |
+| `save`         | Save session state to file                                                      |
+| `resume`       | Restore most recent saved session                                               |
+| `schedule`     | Sub-commands: list, add, pause, resume, remove                                  |
+| _anything else_ | **Conductor Mode** — treat as a seed goal, enter the 5-phase orchestration flow |
 
 ---
 
