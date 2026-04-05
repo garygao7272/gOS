@@ -7,7 +7,7 @@
 **Status:** Active
 **Prototype:** [deploy-five-peach.vercel.app](https://deploy-five-peach.vercel.app) — Arx_Mobile_WebApp_v1.0 (deploy/index.html) — single-file HTML/CSS/JS interactive prototype, mobile-native viewport with browser history navigation
 **Design System Reference:** `Arx_4-2_Design_System.md` (all tokens, colors, typography, spacing, motion referenced by name, not redefined here)
-**Mock Data & Visual Registry:** `Arx_4-1-1-8_Mock_Data_Fixtures.md` (canonical mock data, icon registry, embellishment registry — all design tools must use these exact values)
+**Mock Data:** `Arx_4-1-1-8_Mock_Data_Fixtures.md` (canonical mock data fixtures). **Visual Registry:** `DESIGN.md` §3 (icons), §4 (embellishments), §5 (interactions) — all design tools must use these exact values.
 **Lucid Interaction Reference:** `Arx_6-1_Lucid_Interaction_Design_System.md` (unified Lucid interaction patterns — Hint, Card, Global ◆ — color tokens, CSS, migration checklist)
 
 > **What this file IS:** The structural blueprint of the Arx mobile app. It defines how 7 modules compose into a cohesive product, how users navigate between them, what components are shared globally, and what frameworks underpin multiple screens.
@@ -215,8 +215,8 @@ These components appear on every (or most) post-authentication screens. They are
 | Trending Down | Red        | "TRENDING ↓" + confidence %  | `#EF4444`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
 | Range-bound   | Blue       | "RANGE-BOUND" + confidence % | `#3B82F6`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
 | Transition    | Amber      | "TRANSITION" + confidence %  | `#F59E0B`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
-| Compression   | Purple     | "COMPRESSION" + confidence % | `#8B5CF6`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
-| Crisis        | Deep Red   | "CRISIS" + confidence %      | `#DC2626`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
+| Compression   | Teal       | "COMPRESSION" + confidence % | `#0D9488`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
+| Crisis        | Deep Orange| "CRISIS" + confidence %      | `#EA580C`       | Expand → regime detail sheet | Color transition 300ms ease-in-out + pulse                      |
 
 **Interactions:**
 

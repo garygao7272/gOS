@@ -22,7 +22,7 @@
 ```
 [viewport: 390x844, safe-area: top 59px, bottom 34px]
 
-REGIME BAR: 4px, full width, regime state color (see Arx_4-1-1-8 §2)
+REGIME BAR: 4px, full width, regime state color (see DESIGN.md §1.6)
 
 STICKY HEADER: glass Level 2
   ├── Label: "PORTFOLIO" (Caption, --color-text-secondary)
@@ -53,12 +53,12 @@ SCROLLABLE CONTENT: --color-bg background
   ├── FEED CARDS (each: glass card, 16px radius, icon circle + badge + content)
   │   Card types: #1 Regime, #3 Consensus, #5 Smart Money, #7 Divergence,
   │               #8a Trader Move, #9 Earnings, #10 Recovery
-  │   Icon + embellishment per card: see Arx_4-1-1-8 §2.2, §3.1
+  │   Icon + embellishment per card: see DESIGN.md §3.2, §4.1
   │
   └── EMPTY STATE (J0/J1)
       └── Discover mode CTA: "Follow leaders to see your feed" + [Explore Traders →]
 
-FOOTER: Tab bar — trade-button = elevated-circle (see Arx_4-1-1-8 §2.1)
+FOOTER: Tab bar — trade-button = elevated-circle (see DESIGN.md §3.1)
 ```
 
 ## Data
@@ -109,13 +109,13 @@ FOOTER: Tab bar — trade-button = elevated-circle (see Arx_4-1-1-8 §2.1)
 ## Visual Spec
 
 Fixture: C1-R0 (see Arx_4-1-1-8 §4.1 for all mock data values)
-Icons: see Arx_4-1-1-8 §2.2 (feed card icons) + §2.1 (tab bar)
+Icons: see DESIGN.md §3.2 (feed card icons) + §3.1 (tab bar)
 Embellishments:
   - WYWA: accent-border left 3px #10B981, icon-circle green
   - Daily Earnings (#9): accent-border top 3px --color-gain, icon-circle lime
   - Recovery (#10): accent-border left 3px --color-loss, icon-circle red
   - Divergence (#7): accent-border left 3px --color-warning, icon-circle amber
-  - All other cards: icon-circle only (per Arx_4-1-1-8 §2.2), no accent borders
+  - All other cards: icon-circle only (per DESIGN.md §3.2), no accent borders
   - section-header: "TODAY'S INTELLIGENCE" before first feed card
 Interactions:
   - RegimePill tap → bottomSheet(regime-detail)

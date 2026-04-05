@@ -74,7 +74,9 @@
 | Token | Hex | CSS Variable | Purpose |
 |-------|-----|-------------|---------|
 | Positive | `#A6FF4D` | `--color-positive` | Gains, bullish, up trends |
+| Positive Subtle | `rgba(166,255,77,0.08)` | `--color-positive-subtle` | Profit row tint, gain card bg |
 | Negative | `#FF6B7F` | `--color-negative` | Losses, bearish, alerts |
+| Negative Subtle | `rgba(255,107,127,0.08)` | `--color-negative-subtle` | Loss row tint, risk card bg |
 | Warning | `#FFB847` | `--color-warning` | Caution, pending |
 | Info | `#4DB8FF` | `--color-info` | Informational, neutral |
 
@@ -116,6 +118,17 @@
 | Caption | 11px | 600 | Sans | 0.06em | Badges, overlines |
 | Data | 14px | 600 | Mono | 0 | Prices, percentages, counts |
 | Data-sm | 12-13px | 500 | Mono | 0 | Secondary data values |
+
+**Numeric formatting (mandatory for all financial data):**
+
+```css
+/* All price, PnL, percentage, and count elements */
+font-variant-numeric: lining-nums tabular-nums;
+```
+
+- **Tabular nums:** Decimals align in columns. Without this, price lists look broken.
+- **Minus sign:** Use real minus `−` (U+2212), not hyphen-minus `-` (U+002D). The real minus aligns optically with the plus sign.
+- **Precision:** Prices show instrument-native precision (BTC: 1dp, altcoins: 4dp). PnL always 2dp.
 
 **Fonts:**
 
@@ -444,11 +457,36 @@ Run on EVERY screen before ship. Any fail = screen not ready.
 - Weight order: size > color saturation > elevation > position > animation.
 - Execute Trade button is ALWAYS the heaviest element on any screen where it appears.
 
-### 6.7 Negative Space
+### 6.7 Feel Pass Calibration
+
+Score each dimension 1-5 before shipping any screen. Fix any ≤ 2.
+
+| Dimension | 2 (Fail) | 4 (Good) |
+|-----------|----------|----------|
+| **Scroll Rhythm** | 6+ same-height cards in a row, no visual anchors | Every 3-4 cards broken by a section header or different card type |
+| **Optical Weight** | Two elements compete for attention (CTA and hero metric both saturated) | One clear heaviest element per scroll frame, identifiable without reading |
+| **Negative Space** | Cards touch edges, 8px gaps everywhere, no breathing room | 16px edges, 24px between groups, space feels intentional |
+| **Typography Hierarchy** | Cover the colors — hierarchy disappears (everything same weight/size) | Cover the colors — hierarchy still clear from weight and size alone |
+| **Motion Narrative** | Everything appears simultaneously, no choreography | First: regime bar, then: portfolio header, then: cards stagger in |
+
+### 6.8 Negative Space
 
 - Negative space is DESIGNED, not leftover. If you can't explain why space exists, layout isn't finished.
 - Between cards in group: 12px. Between groups: 24px+. Between sections: 48px + separator.
 - Screen edge: 16px — never 0, never 8px.
+
+### 6.9 Taste Baseline (per build card)
+
+Each build card should record when it last passed litmus tests. When revisiting a screen with `/design ui`, compare against baseline:
+
+```markdown
+## Taste Baseline
+- Litmus passed: 2026-04-06
+- Feel Pass: Rhythm 4, Weight 4, Space 4, Type 5, Motion 3
+- Reference beat: Robinhood (cleaner density), Bitget (better visual hierarchy)
+```
+
+If a future edit causes any dimension to drop below baseline, flag it before shipping.
 
 ---
 

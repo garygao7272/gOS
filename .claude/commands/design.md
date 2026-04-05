@@ -29,15 +29,16 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If matches card/u
 
 ## Before Designing (always)
 
-1. Read `specs/Arx_4-3_Design_Taste.md` for judgment framework and feel targets **(READ FIRST)**
-2. Read `specs/Arx_4-2_Design_System.md` for existing tokens
-3. Read `DESIGN.md` for agent-consumable design language
-4. Read `apps/web-prototype/SOUL.md` for design philosophy
+1. Read `DESIGN.md` — the complete agent-consumable design language **(READ THIS ONLY for most tasks)**
+2. Consult `specs/Arx_4-3_Design_Taste.md` only when making judgment calls not covered by DESIGN.md §6
+3. Consult `specs/Arx_4-2_Design_System.md` only when you need token details beyond DESIGN.md §1
 
-**Anti-slop rules (mandatory — see 4-3 §6 for the full list):**
+> **Why DESIGN.md first:** It's 380 lines synthesizing 2800 lines of 4-2 + 320 lines of 4-3. Reading all three wastes context. DESIGN.md is the compiled output — go to sources only for edge cases.
+
+**Anti-slop rules (mandatory — see DESIGN.md §6.3 and 4-3 §6 for full list):**
 
 - **Blacklist visuals:** Purple gradients, 3-column feature grids, generic hero sections, stock imagery, glassmorphism cards, floating abstract shapes
-- **Blacklist fonts:** Inter, Roboto, Poppins (unless explicitly chosen by Gary)
+- **Blacklist fonts:** Roboto, Poppins (Geist is primary; Inter is acceptable as system fallback only)
 - **SAFE vs RISK framing:** For every design decision, label it SAFE (conventional, expected) or RISK (bold, differentiated). Default to RISK unless Gary says otherwise.
 - **The AI test:** "If it looks like it was made by AI, reject it."
 - **Reference floor:** Robinhood/eToro/Bitget/Phantom (S7), Moomoo/Webull/Binance (S2) are the MINIMUM. Beat them.
@@ -86,6 +87,23 @@ Score each dimension 1-5. **Fix any ≤ 2 before proceeding.**
 
 Then run the **5 Premium Litmus Tests** from `specs/Arx_4-3_Design_Taste.md` §2 on the complete screen.
 If any litmus test fails, fix before proceeding.
+
+---
+
+---
+
+## Gate Enforcement (NON-NEGOTIABLE)
+
+Before outputting any design artifact, verify this checklist. If any gate was skipped, go back and run it. Do not proceed.
+
+```
+[ ] Gate -1 DONE: Reference research logged in scratchpad (3+ apps researched)
+[ ] Gate 0 DONE: State matrix generated and approved
+[ ] Gate 3c DONE: Feel Pass scored (all dimensions ≥ 3/5)
+[ ] Litmus DONE: 5 Premium Litmus Tests all PASS
+```
+
+**If context is tight and gates feel expensive:** Gate -1 can use cached research from a previous session for the same screen type. Gates 0, 3c, and Litmus cannot be cached — they must run on the current artifact.
 
 ---
 
@@ -194,7 +212,7 @@ If any litmus test fails, fix before proceeding.
 - `system add` — Add a new token or component to Arx_4-2 → regenerate DESIGN.md
 - `system update` — Modify existing token values (propagate to all files)
 - `system audit` — Check consistency across all design sources. Report drift.
-- `system sync` — Regenerate DESIGN.md from Arx_4-2 + Arx_4-3 + build card Visual Specs
+- `system sync` — Regenerate DESIGN.md (procedure below)
 
 **Sync targets (when tokens change, propagate to ALL):**
 
@@ -203,6 +221,17 @@ If any litmus test fails, fix before proceeding.
 3. `DESIGN.md` — **AUTO-GENERATED** from 4-2 + 4-3 + build card registries. Never hand-edit.
 4. Figma variables — via `figma:figma-generate-library` or `use_figma` with `get_variable_defs`
 5. `apps/web-prototype` CSS `:root` variables
+
+### system sync procedure
+
+1. Read `specs/Arx_4-2_Design_System.md` §2 (colors), §3 (typography), §4 (spacing), §5 (elevation), §7 (motion), §8 (icons)
+2. Read `specs/Arx_4-3_Design_Taste.md` §1 (reference floor), §2 (litmus tests), §3 (feel targets), §6 (anti-patterns)
+3. Scan all `specs/Arx_4-1-1-*` build cards for icon and embellishment additions not yet in DESIGN.md
+4. Regenerate `DESIGN.md` with 7-section structure, updating the `Last generated:` date in the header
+5. Verify: diff the new DESIGN.md against the old — report what changed
+6. If Figma MCP available: compare Figma variables against DESIGN.md §1 tokens — report drift
+
+> **When to run:** After any edit to 4-2 or 4-3. After adding a new build card with new icons/embellishments. Before any `/design ui` session.
 
 **Tools:** Style Dictionary, Figma MCP (get_variable_defs, use_figma, search_design_system), shadcn MCP, design-sync skill.
 
