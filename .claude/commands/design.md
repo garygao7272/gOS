@@ -140,7 +140,8 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
    - `## Navigate` — from/to with triggers
    - `## Verify` — test command
 6. **Write the VISUAL half:**
-   - `## Layout (Stitch-ready)` — using named type levels from Arx_4-2 (Hero, Title, Body, Caption, Data), NOT raw px values. Reference design tokens by name.
+   - `## Feel` — target feel, motion choreography, density, reference, temperature budget, skeleton spec, haptics (MANDATORY — see Arx_4-3 §3 for feel targets per screen type)
+   - `## Layout (Stitch-ready)` — ASCII wireframe with auto-layout annotations (`column`/`row`, `fill-w`/`hug`, `gap=Npx`). Use named type levels (Hero, Title, Body, Caption, Data), NOT raw px values.
    - `## Components (from Arx_4-2)` — named component references
    - `## Visual Spec` — fixture pointer, icons (from DESIGN.md §3), embellishments (from DESIGN.md §4), interactions (from DESIGN.md §5), tab bar treatment
 7. **Create/update mock data fixture** in `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
@@ -166,10 +167,16 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
 | **Stitch MCP** | Material-style clean exploration, alternative directions | HTML via stitch-design skill with DESIGN.md injection |
 | **HTML prototype** (fallback) | When MCPs unavailable | Single file in `apps/web-prototype/drafts/` |
 
+**Pre-flight checks (before any generation):**
+
+- [ ] `.aidesigner/DESIGN.md` exists? If not → `cp DESIGN.md .aidesigner/DESIGN.md`
+- [ ] Figma file has variable collections? If not → run Step 3-4 from Q1 plan (create variables + components via `use_figma`)
+- [ ] Build card has `## Feel` section? If not → add it before generating visuals
+
 **Process:**
 
-1. **Read the build card** + fixture data from Arx_4-1-1-8
-2. **Read design system:** DESIGN.md, Arx_4-2, Arx_4-3 taste
+1. **Read the build card** (including `## Feel` section) + fixture data from Arx_4-1-1-8
+2. **Read design system:** DESIGN.md (primary — 380 lines, sufficient for most tasks)
 3. **Run Gate -1** (if not already done for this screen)
 4. **Generate visual** via chosen tool(s):
    - Feed build card content + design tokens + fixture data as context

@@ -18,31 +18,70 @@
 5. Taps feed mode toggle [My Feed] / [Discover] to switch between relationship-based and signal-based content
 6. Pull-to-refresh → haptic + feed reload
 
+## Feel
+
+- **Target:** Command center — your world at a glance, personalized, alive
+- **Density:** S7 medium-low (4 cards visible), S2 medium-high (8 cards, denser data)
+- **Reference:** "Robinhood home's calm confidence with Apple News's morning digest intelligence"
+- **Temperature:** T0 80% (obsidian bg, chamber cards, starlight text) | T1 15% (regime bar at 40%, sparklines, timestamps) | T2 4% (P&L numbers in gain/loss color) | T3 1% (none on this screen — no Execute button)
+
+### Motion Choreography (on-load)
+
+| Order | Element | Animation | Delay | Duration | Easing |
+|-------|---------|-----------|-------|----------|--------|
+| 1 | Regime bar | instant render | 0ms | 0ms | — |
+| 2 | Portfolio header | fade-in from cache | 0ms | 100ms | ease-out |
+| 3 | Status dot | appear + pulse begins | 100ms | 200ms | ease-out |
+| 4 | Feed mode toggle | fade-in | 150ms | 150ms | ease-out |
+| 5 | WYWA card (if shown) | fade-up | 200ms | 200ms | spring |
+| 6 | Feed cards | fade-up stagger | 250ms | 200ms each, 50ms stagger | spring |
+
+### Skeleton (loading state)
+
+- Header: shimmer rectangle fill-w h=80px (equity placeholder 120x32px + pill 80x24px)
+- Feed cards: 3x shimmer cards, each 358x120px, gap=12px
+- Card skeleton: icon-circle 40px (left) + 2 text lines (right, 60% and 40% width)
+- Shimmer: left-to-right, 1.5s, rgba(255,255,255,0.04) → rgba(255,255,255,0.08)
+
+### Haptics
+
+| Trigger | Haptic | iOS API |
+|---------|--------|---------|
+| Pull-to-refresh | impact medium | UIImpactFeedbackGenerator(.medium) |
+| Filter chip tap | impact light | UIImpactFeedbackGenerator(.light) |
+| WYWA dismiss | — | none |
+| Card tap (navigate) | — | none |
+
+---
+
 ## Layout (Stitch-ready)
 ```
 [viewport: 390x844, safe-area: top 59px, bottom 34px]
 
-REGIME BAR: 4px, full width, regime state color (see DESIGN.md §1.6)
+REGIME BAR: row, fill-w, h=4px, regime-color bg (see DESIGN.md §1.6)
 
-STICKY HEADER: glass Level 2
+STICKY HEADER: column, fill-w, hug-h, glass Level 2, px=16px, py=12px
   ├── Label: "PORTFOLIO" (Caption, --color-text-secondary)
-  ├── Equity: "$12,450.00" (Hero mono, --color-text-primary)
-  ├── Daily P&L: "+$487.00 (+2.3%)" (Data, --color-gain)
-  ├── Status dot: 10px, gain/amber/loss by risk state (pulsing glow)
-  ├── Regime pill: "● Trending" (Body-sm, regime state color — NOT --color-primary)
-  └── Position count: "3 open" (Body, --color-text-secondary)
+  ├── row: fill-w, gap=8px, align=center
+  │    ├── Equity: "$12,450.00" (Hero mono, --color-text-primary)
+  │    └── Daily P&L: "+$487.00 (+2.3%)" (Data, --color-gain)
+  ├── row: fill-w, gap=8px, align=center
+  │    ├── Status dot: 10px, gain/amber/loss by risk state (pulsing glow)
+  │    ├── Regime pill: "● Trending" (Body-sm, regime state color — NOT --color-primary)
+  │    └── Position count: "3 open" (Body, --color-text-secondary), align=right
 
-FEED MODE TOGGLE: segmented control, below sticky header
+FEED MODE TOGGLE: row, fill-w, hug-h, mx=16px, mt=12px
   ├── [My Feed]: selected, bg rgba(179,141,244,0.2), text --color-primary
   └── [Discover]: unselected, text --color-text-secondary
   (hidden when user has no relationships J0/J1)
 
-FILTER CHIPS: horizontal scroll, 32px height (CANONICAL — do not modify labels)
+FILTER CHIPS: row, scroll-x, hug-h, h=32px, gap=8px, px=16px
   └── [All] [Market] [Consensus] [Moves] [My Copies]
 
-SECTION HEADER: "TODAY'S INTELLIGENCE" (Caption, 0.1em spacing, line extending right)
+SECTION HEADER: row, fill-w, hug-h, px=16px, mt=16px
+  └── "TODAY'S INTELLIGENCE" (Caption, 0.1em spacing, line extending right)
 
-SCROLLABLE CONTENT: --color-bg background
+SCROLLABLE CONTENT: column, fill-w, gap=12px, px=16px, bg=--color-bg
   ├── WYWA CARD (pinned, conditional: absence ≥8h, accent-border left 3px #10B981)
   │   ├── Icon: lucide:check-circle in 40px circle bg rgba(16,185,129,0.12)
   │   ├── Header: "WHILE YOU WERE AWAY" (Caption) + "8h" (Label, right)
