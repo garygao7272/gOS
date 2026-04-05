@@ -11,7 +11,7 @@ description: "Design: card (author build card), ui (visualize via Figma/AIDesign
 
 | Sub-command | Question | Tools | Output |
 |---|---|---|---|
-| `card` | What are we building? | Specs, fixtures, Arx_4-1-1-8 | `specs/Arx_4-1-1-X_*.md` + fixture entry |
+| `card` | What are we building? | Specs, fixtures, DESIGN.md | `specs/Arx_4-1-1-X_*.md` + fixture entry |
 | `ui` | What does it look like? | Figma MCP, AIDesigner, Stitch, shadcn | Figma file, HTML prototype, screenshots |
 | `system` | Are tokens consistent? | Style Dictionary, Arx_4-2, DESIGN.md, Figma MCP | Updated design system files |
 
@@ -124,7 +124,7 @@ If any litmus test fails, fix before proceeding.
 6. **Write the VISUAL half:**
    - `## Layout (Stitch-ready)` — using named type levels from Arx_4-2 (Hero, Title, Body, Caption, Data), NOT raw px values. Reference design tokens by name.
    - `## Components (from Arx_4-2)` — named component references
-   - `## Visual Spec` — fixture pointer, icons (from Arx_4-1-1-8), embellishments, interactions, tab bar treatment
+   - `## Visual Spec` — fixture pointer, icons (from DESIGN.md §3), embellishments (from DESIGN.md §4), interactions (from DESIGN.md §5), tab bar treatment
 7. **Create/update mock data fixture** in `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
 8. **Run Build Card QA** checklist from Arx_0-1
 9. **Run Gate 3c** (Feel Pass) on the Layout section
@@ -157,8 +157,8 @@ If any litmus test fails, fix before proceeding.
    - Feed build card content + design tokens + fixture data as context
    - Viewport: 390x844 (iPhone 14 Pro)
    - All values from fixture (exact — no improvisation)
-   - All icons from Arx_4-1-1-8 icon registry
-   - All embellishments from Arx_4-1-1-8 embellishment registry
+   - All icons from DESIGN.md §3 icon registry
+   - All embellishments from DESIGN.md §4 embellishment registry
 5. **Screenshot** at 390x844
 6. **Run Gate 3c** (Feel Pass) — score 5 dimensions, fix any ≤ 2
 7. **Run 5 Premium Litmus Tests** from Arx_4-3 §2
@@ -191,15 +191,16 @@ If any litmus test fails, fix before proceeding.
 
 **Sub-actions:**
 
-- `system add` — Add a new token or component to Arx_4-2 + DESIGN.md + Arx_4-1-1-8 icon/embellishment registries
+- `system add` — Add a new token or component to Arx_4-2 → regenerate DESIGN.md
 - `system update` — Modify existing token values (propagate to all files)
 - `system audit` — Check consistency across all design sources. Report drift.
+- `system sync` — Regenerate DESIGN.md from Arx_4-2 + Arx_4-3 + build card Visual Specs
 
 **Sync targets (when tokens change, propagate to ALL):**
 
-1. `specs/Arx_4-2_Design_System.md` — canonical source of truth
-2. `DESIGN.md` — agent-friendly version
-3. `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md` — type scale reference + icon/embellishment registries
+1. `specs/Arx_4-2_Design_System.md` — canonical source of truth (human-edited)
+2. `specs/Arx_4-3_Design_Taste.md` — taste framework (human-edited)
+3. `DESIGN.md` — **AUTO-GENERATED** from 4-2 + 4-3 + build card registries. Never hand-edit.
 4. Figma variables — via `figma:figma-generate-library` or `use_figma` with `get_variable_defs`
 5. `apps/web-prototype` CSS `:root` variables
 
@@ -208,8 +209,9 @@ If any litmus test fails, fix before proceeding.
 **Audit checks:**
 - Token values match across all 5 targets
 - Component names match between Arx_4-2, build cards, and Figma
-- Icon registry in Arx_4-1-1-8 covers all card types referenced in build cards
+- Icon registry in DESIGN.md §3 covers all card types referenced in build cards
 - No hardcoded colors in build card Layout sections (should be token names)
+- DESIGN.md is in sync with 4-2 + 4-3 sources (check generated header date)
 
 ---
 
