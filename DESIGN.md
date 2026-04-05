@@ -2,7 +2,7 @@
 
 <!-- AUTO-GENERATED from specs/Arx_4-2 + specs/Arx_4-3 + build card Visual Specs.
      Do NOT hand-edit. Regenerate with `/design system sync`.
-     Sources: Arx_4-2_Design_System.md (v5.7), Arx_4-3_Design_Taste.md, Arx_4-1-1-8 registries.
+     Sources: Arx_4-2_Design_System.md (v5.7), Arx_4-3_Design_Taste.md.
      Last generated: 2026-04-06 -->
 
 > Agent-friendly design language for Stitch MCP, Figma MCP, AIDesigner, and all AI design tools.
