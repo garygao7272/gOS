@@ -1,0 +1,57 @@
+{
+  "respectGitignore": true,
+  "enableAllProjectMcpServers": true,
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
+  },
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "Write(*)",
+      "Bash",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "mcp__*"
+    ],
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -fd*)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(npm publish*)",
+      "Bash(kill *)",
+      "Bash(killall *)"
+    ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before stopping: Check if TodoWrite has incomplete tasks. If yes, say 'You have incomplete tasks — continue?' If sessions/evolve_signals.md exists and this was a gOS session, scan the last few exchanges and append any unlogged signals (accept/rework/reject/love/skip/repeat) with today's date. Keep it to one line per signal."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before compaction: Scan recent conversation for evolve signals (accept/rework/reject/love/skip/repeat from gOS commands) and append any unlogged ones to sessions/evolve_signals.md. Also update sessions/scratchpad.md with current task state so it survives compaction.",
+            "once": true
+          }
+        ]
+      }
+    ]
+  }
+}

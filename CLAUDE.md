@@ -64,6 +64,7 @@ Arx/
 - **Design tokens**: Use CSS variables from `specs/Arx_4-2_Design_System.md`, don't hardcode colors/fonts/spacing.
 - **Features**: Trace back to a user pain in `specs/Arx_2-1`. No upstream pain = question the feature.
 - **Duplication**: Link to specs, don't copy content between files.
+- **Excel/XLSX**: NEVER use openpyxl for writing. Use OfficeCLI (`~/bin/officecli`) for edits + LibreOffice headless (`soffice --headless`) for full recalc verification. See `.claude/skills/financial-modeling/SKILL.md`.
 
 ## Build Cards — The Atomic Unit of Product Work
 
