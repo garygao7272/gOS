@@ -2,6 +2,8 @@
 name: Evolve Audit 2026-04-03
 description: First real evolve audit — signal capture broken (91% noise), 22 real signals, 4 recommendations
 type: project
+valid_from: 2026-04-03
+valid_to: open
 ---
 
 # Evolve Audit — 2026-04-03

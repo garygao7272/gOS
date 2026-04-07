@@ -123,7 +123,13 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
 
 ## Plan Gate (mandatory — runs before ANY sub-command)
 
-Before executing any design sub-command, present this to Gary and WAIT for confirmation:
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check Active Feedback Rules (especially design taste, feel tokens, code-first pipeline)
+2. Search L2 memory files for keywords matching this design task (e.g., "design", "feel", "pipeline", "taste", screen name)
+3. If L2 mentions past design corrections, approved approaches, or dead ends — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
 
 > **PLAN:** [1-line restatement of what you'll design — comprehension check]
 > **STEPS:**

@@ -11,6 +11,8 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 
 **Loading order:** L0 → L1 → (task-relevant L2 files) → L3 only if L2 insufficient.
 
+**Temporal validity:** Every memory file has `valid_from` and `valid_to` in frontmatter. `valid_to: open` means still current. A specific date means the fact may be stale — verify before acting on it. When loading, check `valid_to` first.
+
 ---
 
 ## L0 — Identity (always loaded)

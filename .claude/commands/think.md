@@ -48,7 +48,13 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 ## Plan Gate (mandatory — runs before ANY sub-command)
 
-Before executing any think sub-command, present this to Gary and WAIT for confirmation:
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check Active Feedback Rules and Known Gaps
+2. Search L2 memory files for keywords matching this research topic (e.g., if researching competitors, search for "competitor", "landscape")
+3. If L2 mentions prior research, dead ends, or past decisions on this topic — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
 
 > **PLAN:** [1-line restatement of what you'll think about — comprehension check]
 > **STEPS:**

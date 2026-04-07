@@ -58,7 +58,13 @@ This is lightweight. One line per signal. Takes 5 seconds to append. But over we
 
 ## Plan Gate (mandatory — runs before ANY sub-command)
 
-Before executing any evolve sub-command, present this to Gary and WAIT for confirmation:
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check for recent audit results and pending proposals
+2. Search L2 memory files for "evolve", "audit", "upgrade", "signal" — load latest evolve audit results
+3. If L2 mentions past audit findings, signal quality issues, or pending upgrades — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
 
 > **PLAN:** [1-line restatement of what you'll evolve — comprehension check]
 > **STEPS:**

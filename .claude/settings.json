@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "SESSION END PROTOCOL: 1) Check TodoWrite for incomplete tasks — if yes, say 'You have incomplete tasks — continue?' 2) Scan last few exchanges for any unlogged evolve signals and append to sessions/evolve_signals.md. 3) Update memory/L1_essential.md 'Current Focus' with what was done this session. 4) Run 3-question self-debrief: a) What approach worked that should be reused? b) What failed that should be avoided? c) Did Gary correct me in a way that reveals a preference? If any non-trivial answers, write to appropriate memory/ file. 5) Update sessions/scratchpad.md with final state."
+            "prompt": "SESSION END PROTOCOL (L2 Pattern Extraction): 1) Check TodoWrite for incomplete tasks — if yes, say 'You have incomplete tasks — continue?' 2) Scan the FULL conversation for unlogged evolve signals and append to sessions/evolve_signals.md with '| timestamp | command | sub-cmd | signal | context |' format. 3) Update memory/L1_essential.md 'Current Focus' with what was done this session. 4) PATTERN EXTRACTION — run this 3-question self-debrief: a) 'What approach WORKED that should be reused?' → if non-trivial, write to memory/ as a procedure (type: feedback, name: procedure_*.md) with valid_from date b) 'What approach FAILED that should be avoided?' → if non-trivial, write to memory/ as a dead-end (type: feedback) with valid_from date c) 'Did Gary CORRECT me in a way that reveals a preference?' → if yes, check if an existing feedback_*.md covers this — update it, or create a new one with valid_from date. 5) After writing any new memory files, update memory/MEMORY.md index with a one-line pointer. 6) Update sessions/scratchpad.md with final state including context estimate."
           }
         ]
       }
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "BLOCKING SAVE BEFORE COMPACTION: This is mandatory — do ALL of these before allowing compaction: 1) Scan recent conversation for evolve signals and append unlogged ones to sessions/evolve_signals.md. 2) Update sessions/scratchpad.md with FULL current task state, key decisions, dead ends, and files being edited — this is the only bridge across compaction. 3) Update memory/L1_essential.md 'Current Focus' section. 4) If any plan is in progress, write the current step number and plan state to scratchpad. 5) Write a 1-line checkpoint to scratchpad: 'COMPACTION CHECKPOINT: {what was being done} at {step}'. Only after ALL steps complete should compaction proceed.",
+            "prompt": "BLOCKING SAVE BEFORE COMPACTION: This is mandatory — do ALL of these before allowing compaction: 1) Scan recent conversation for evolve signals and append unlogged ones to sessions/evolve_signals.md. 2) Update sessions/scratchpad.md with FULL current task state, key decisions, dead ends, and files being edited — this is the only bridge across compaction. 3) Update memory/L1_essential.md 'Current Focus' section. 4) If any plan is in progress, write the current step number and plan state to scratchpad. 5) Update scratchpad 'Context' field to 'POST-COMPACTION (~15%)' so the next phase knows budget was reset. 6) Write a 1-line checkpoint to scratchpad: 'COMPACTION CHECKPOINT: {what was being done} at {step}'. Only after ALL steps complete should compaction proceed.",
             "once": true
           }
         ]

@@ -2,6 +2,8 @@
 name: Gary Gao — Soul File
 description: Comprehensive profile of Gary Gao (高南) — identity, background, personality, objectives, skills, traits, strengths, weaknesses, interests, and working preferences. The definitive reference for how to collaborate with him.
 type: user
+valid_from: 2026-03-15
+valid_to: open
 ---
 
 # Gary Gao (高南) — Soul File

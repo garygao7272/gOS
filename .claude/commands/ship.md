@@ -13,7 +13,13 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 ## Plan Gate (mandatory — runs before ANY sub-command)
 
-Before executing any ship sub-command, present this to Gary and WAIT for confirmation:
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check for any blockers or pending reviews
+2. Search L2 memory files for keywords matching this ship target (e.g., "deploy", "ship", "PR", "commit")
+3. If L2 mentions past shipping issues, blocked deploys, or process corrections — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
 
 > **PLAN:** [1-line restatement of what you'll ship — comprehension check]
 > **SCOPE:** [which files/commits will be shipped]

@@ -2,6 +2,8 @@
 name: Code-First Design Pipeline
 description: Design pipeline is code-first (HTML prototype → preview verify → Figma recreation), not Figma-first. Proven 2026-04-06.
 type: feedback
+valid_from: 2026-04-06
+valid_to: open
 ---
 
 # Code-First Design Pipeline Beats Figma-First

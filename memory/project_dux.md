@@ -2,6 +2,8 @@
 name: Dux Simulation Engine
 description: Building Dux (Latin for leader/guide), a general-purpose all-paths simulation engine in ~/Documents/Claude Working Folder/Dux
 type: project
+valid_from: 2026-03-20
+valid_to: open
 ---
 
 **Dux** — general-purpose simulation engine that takes a seed scenario, builds a knowledge graph (Palantir Ontology-inspired), branches into multiple futures (Graph-of-Thoughts), simulates with LLM agents (Concordia-inspired), and finds the best path (MCTS/Beam Search).

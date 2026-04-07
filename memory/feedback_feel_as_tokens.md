@@ -2,6 +2,8 @@
 name: Feel as Tokens
 description: Feel targets should be abstracted as shared tokens (like colors), not redefined per build card. Gary corrected the approach of writing full Feel sections per card.
 type: feedback
+valid_from: 2026-04-06
+valid_to: open
 ---
 
 # Feel as Shared Tokens, Not Per-Card Definitions

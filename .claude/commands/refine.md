@@ -36,7 +36,13 @@ Each cycle combines two strategies:
 
 ## Plan Gate (mandatory — runs before starting the loop)
 
-Before executing the refine loop, present this to Gary and WAIT for confirmation:
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check for relevant feedback rules and known gaps in the target area
+2. Search L2 memory files for keywords matching this refine target (e.g., topic name, screen name, spec area)
+3. If L2 mentions past refine sessions, convergence issues, or corrections — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
 
 > **PLAN:** [1-line restatement of what you'll refine — comprehension check]
 > **SCOPE:** [which specs/designs/simulations are in scope]

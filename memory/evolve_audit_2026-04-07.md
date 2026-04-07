@@ -2,6 +2,8 @@
 name: Evolve Audit 2026-04-07
 description: Third audit (manual) + scheduled re-run — 12 new signals from 2026-04-06, all commands healthy, but critical data quality gap: 30+ financial modeling sessions with zero signal coverage
 type: project
+valid_from: 2026-04-07
+valid_to: open
 ---
 
 # Evolve Audit — 2026-04-07

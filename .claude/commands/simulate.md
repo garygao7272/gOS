@@ -26,7 +26,13 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 ## Plan Gate (mandatory — runs before ANY sub-command)
 
-Before executing any simulate sub-command, present this to Gary and WAIT for confirmation:
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check for relevant market context or known data gaps
+2. Search L2 memory files for keywords matching this simulation (e.g., "simulate", "MiroFish", "backtest", "scenario", market name)
+3. If L2 mentions past simulation results, data quality issues, or methodology corrections — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
 
 > **PLAN:** [1-line restatement of what you'll simulate — comprehension check]
 > **STEPS:**
