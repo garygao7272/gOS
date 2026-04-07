@@ -100,8 +100,25 @@ if command -v soffice &>/dev/null; then check_cmd "LibreOffice" "soffice"
 elif [[ "$MODE" != "check" ]]; then install_cmd "LibreOffice" "brew install --cask libreoffice"
 else echo -e "  ${WARN} LibreOffice: not found (optional)"; ((WARNINGS++)); fi
 
-[[ -d "$WORKING_DIR/MiroFish" ]] && echo -e "  ${PASS} MiroFish" || { echo -e "  ${WARN} MiroFish: not found"; ((WARNINGS++)); }
-[[ -d "$WORKING_DIR/Dux" ]] && echo -e "  ${PASS} Dux" || { echo -e "  ${WARN} Dux: not found"; ((WARNINGS++)); }
+# Dux — simulation engine
+if [[ -d "$WORKING_DIR/Dux" ]]; then
+    echo -e "  ${PASS} Dux"
+elif [[ "$MODE" != "check" ]] && command -v gh &>/dev/null; then
+    echo -e "  ${INFO} Cloning Dux (simulation engine)..."
+    gh repo clone garygao7272/Dux "$WORKING_DIR/Dux" -- --quiet 2>/dev/null && echo -e "  ${PASS} Dux (cloned)" && ((INSTALLED++)) || { echo -e "  ${WARN} Dux: clone failed (check repo access)"; ((WARNINGS++)); }
+else
+    echo -e "  ${WARN} Dux: not found — clone with: gh repo clone garygao7272/Dux \"$WORKING_DIR/Dux\""; ((WARNINGS++))
+fi
+
+# MiroFish — backtesting engine
+if [[ -d "$WORKING_DIR/MiroFish" ]]; then
+    echo -e "  ${PASS} MiroFish"
+elif [[ "$MODE" != "check" ]] && command -v gh &>/dev/null; then
+    echo -e "  ${INFO} Cloning MiroFish (backtesting engine)..."
+    gh repo clone garygao7272/MiroFish "$WORKING_DIR/MiroFish" -- --quiet 2>/dev/null && echo -e "  ${PASS} MiroFish (cloned)" && ((INSTALLED++)) || { echo -e "  ${WARN} MiroFish: clone failed (check repo access)"; ((WARNINGS++)); }
+else
+    echo -e "  ${WARN} MiroFish: not found — clone with: gh repo clone garygao7272/MiroFish \"$WORKING_DIR/MiroFish\""; ((WARNINGS++))
+fi
 
 # ════════════════════════════════════════════════════════════════
 # PHASE 3: Toolkit MCP Servers
@@ -307,10 +324,12 @@ if [[ "$MODE" == "bootstrap" ]]; then
     echo "    cd ${TARGET_DIR} && claude"
     echo "    /design system sync"
     echo ""
-    echo -e "${BOLD}Step 4: Clone Sister Projects${NC} (if needed)"
+    echo -e "${BOLD}Step 4: Verify Sister Projects${NC}"
+    echo -e "  Dux and MiroFish should have been auto-cloned above."
+    echo -e "  If not (private repo / no access), clone manually:"
     echo ""
-    echo "    git clone <dux-repo> ${WORKING_DIR}/Dux"
-    echo "    git clone <mirofish-repo> ${WORKING_DIR}/MiroFish"
+    echo "    gh repo clone garygao7272/Dux ${WORKING_DIR}/Dux"
+    echo "    gh repo clone garygao7272/MiroFish ${WORKING_DIR}/MiroFish"
     echo ""
     echo -e "${BOLD}Step 5: Verify${NC}"
     echo ""
