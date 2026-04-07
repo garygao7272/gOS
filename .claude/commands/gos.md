@@ -203,8 +203,8 @@ Save full session state to `~/.claude/sessions/{date}-{slug}.md`.
 - Decisions made — extract from scratchpad's "Key Decisions" section
 - What was rejected — extract from scratchpad's "Dead Ends" section
 
-**Part B — Record signals:**
-Scan the conversation and log signals to project memory `evolve_signals.md`:
+**Part B — Record signals (MANDATORY — never skip this):**
+Scan the ENTIRE conversation (not just recent exchanges) and log signals to `sessions/evolve_signals.md`:
 
 | Signal | Look For                                            |
 | ------ | --------------------------------------------------- |
@@ -215,7 +215,11 @@ Scan the conversation and log signals to project memory `evolve_signals.md`:
 | repeat | Same instruction given twice — gOS didn't learn     |
 | skip   | Gary jumped past a prescribed step                  |
 
+**Be thorough.** Every gOS verb invocation in the session should generate at least one signal. If you invoked `/think` and Gary accepted the output, that's an `accept`. If he said "great", that's a `love`. Missing signals means /evolve audit has incomplete data.
+
 If any `repeat` signals detected: immediately update the relevant command file or memory.
+
+**Signal count check:** After logging, report: "Logged {N} signals from this session ({breakdown})." If N=0, re-scan — you likely missed implicit accepts.
 
 **Part C — Save to memory:**
 
@@ -813,42 +817,42 @@ For each major visual change in the approved plan:
 
 ### Phase 4 — Execution
 
-**The conductor has 3 parallel execution methods.** Choose based on task characteristics:
+**Use the Multi-Agent Framework** (`.claude/agents/README.md`) to choose execution method.
 
-| Method | When to Use | How |
-|---|---|---|
-| **Agents (shared)** | Read-only tasks, independent outputs, no file conflicts | `Agent(prompt, run_in_background: true)` — fastest, cheapest |
-| **Agents (worktree)** | Tasks that write to overlapping files, need merge isolation | `Agent(prompt, isolation: "worktree")` — separate git branch |
-| **Agent Teams** | 3+ agents need to coordinate, share state, or message each other | `TeamCreate` + named teammates + `SendMessage` + task board |
+**Complexity gate** — score the task (see framework README §1):
 
-**Decision tree:**
+| Score | Method | Example |
+|-------|--------|---------|
+| **0-3** | **Solo** (inline) | Fix typo, update one spec, quick lookup |
+| **4-6** | **Ad-hoc agents** (fire-and-forget) | Research 3 topics, review 2 files, parallel reads |
+| **7-10** | **Team** (from registry) | Build feature across systems, full pipeline, council |
 
-```
-How many parallel tasks?
-├── 1 task → Execute inline (no agents needed)
-├── 2-3 tasks
-│   ├── Do they write to the SAME files? → Agents (worktree)
-│   ├── Are they read-only or write to DIFFERENT files? → Agents (shared)
-│   └── Do they need to talk to each other? → Agent Teams
-└── 4+ tasks
-    ├── Independent (research, review, spec writing) → Agents (shared), batch of 3-5
-    ├── Dependent (build A before B) → Sequential agents, one at a time
-    └── Collaborative (frontend + backend + tests) → Agent Teams with SendMessage
-```
+**If solo (0-3):** Execute inline. No agents needed.
 
-**Examples from this project:**
+**If ad-hoc (4-6):** `Agent(prompt, run_in_background: true)` for independent tasks, `Agent(prompt, isolation: "worktree")` for overlapping file writes. No coordination needed.
 
-- Bake-off (3 design tools, same screen, different output files) → **Agents (shared)** ✓
-- Review council (12 persona agents, each produces a verdict) → **Agents (shared)** ✓
-- Build 5 screens in parallel (each writes different component files) → **Agents (shared)** ✓
-- Build frontend + backend for same feature (shared API contract) → **Agent Teams** (need to coordinate types)
-- Refactor module A while module B depends on it → **Agents (worktree)** (merge after both pass tests)
+**If team (7-10):** Load template from `.claude/agents/team-registry.md`:
+1. `TeamCreate(team_name="gos-{verb}-{slug}")`
+2. Spawn roster agents per template (`.claude/agents/{role}.md`)
+3. `TaskCreate()` per work item with `blockedBy` dependencies
+4. Agents coordinate via `SendMessage` (see framework README §3)
+5. Conflict resolution per framework README §4
+6. Shutdown per framework README §5
+
+**Team templates available:**
+
+| Template | Agents | When |
+|----------|--------|------|
+| `think-swarm` | 3-5 researchers + cross-exam lead | Research with adversarial validation |
+| `build-squad` | architect + engineers + verifier | Multi-system feature build |
+| `review-panel` | batched waves with veto protocol | Council review, gate checks |
+| `full-pipeline` | researcher → architect → engineer → reviewer → verifier | Complex goals, `/refine` |
 
 **For all methods:**
 
 - **Conditional tasks** → Evaluate condition from previous task output, skip or execute
 - **Long-running jobs** → Use `mcp__scheduled-tasks` to persist across sessions
-- **Model routing** → opus for review/synthesis, sonnet for implementation, haiku for formatting
+- **Model routing** → opus for architect/review, sonnet for implementation/research, haiku for verification/formatting
 
 **Progress tracking** in `outputs/gos-jobs/{job-id}/status.md`:
 

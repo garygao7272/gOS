@@ -442,114 +442,48 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 **Purpose:** Full multi-persona review with live adjudication via native Agent Teams.
 
-**Team Mode (always):** Council always uses Agent Teams — the adversarial cross-examination is the core value.
+**Team Mode (always):** Council uses the `review-panel` template from `.claude/agents/team-registry.md`.
 
-```
-TeamCreate(team_name="review-council-{date}")
-```
+Load the template for full details: waves, agents, task flow, verdict protocol, and shutdown.
 
-**Model routing:** User personas on `sonnet` (2x vote weight). Specialists on `haiku` (cost-efficient). Contrarian on `sonnet`. Lead stays on `opus` for synthesis.
+**Key points (summary from registry):**
 
-**Veto protocol:** `crypto-sec` teammate has mid-stream veto power. If crypto-sec sends `SendMessage(to="lead", message="VETO: {reason}")`, the lead immediately halts all other teammates and surfaces the veto to Gary before continuing.
+- **Wave 1** (4 user personas, 2x vote weight): S2 Jake, S7 Sarah, S1 Alex, S3 Marcus — all spawned as `reviewer` agents with persona-specific prompts
+- **Wave 2** (4 specialists, 1x weight): crypto-sec, performance, UX (`designer` agent), data — spawned after Wave 1 completes. **Early termination:** if Wave 1 issues a BLOCK, skip Wave 2.
+- **Wave 3** (1 contrarian, 1x weight): challenge consensus, find overlooked risks
+- **Veto:** `crypto-sec` BLOCK is absolute. Any Wave 1 user BLOCK → overall BLOCK.
+- **Adjudication:** Conductor routes conflicts via `SendMessage` cross-examination between disagreeing agents.
 
-**Adjudication:** After all verdicts are in, the lead (you) identifies disagreements between personas. For each disagreement, use `SendMessage` to route the conflict:
+**Persona definitions** (spawn prompts for each reviewer agent):
 
-- "s2-jake says APPROVE but crypto-sec says BLOCK on {issue}. crypto-sec, respond to Jake's rationale."
-- After cross-examination, synthesize the final verdict with the additional evidence.
+| Persona | Type | Review Lens |
+|---------|------|-------------|
+| s2-jake | User | "Would Jake use this daily and does it save him time?" |
+| s7-sarah | User | "Would Sarah set this up and feel safer?" |
+| s1-alex | User | "Does this keep Alex engaged AND prevent blow-up?" |
+| s3-marcus | User | "Does this degrade execution quality or privacy?" |
+| crypto-sec | Specialist | Key management, transaction signing, MEV, input validation |
+| trader-ux | Specialist | Order entry flow, price display, position management |
+| risk-analyst | Specialist | Margin calculations, liquidation warnings, leverage guards |
+| mobile-perf | Specialist | Bundle size, render performance, network efficiency |
+| contrarian | Strategic | Pre-mortem, kill shot, wargame, steel man |
 
-**Shutdown:** After synthesis is complete:
-
-```
-SendMessage(to="*", message={type: "shutdown_request"})
-TeamDelete
-```
-
-**Process:**
-
-1. **Launch ALL personas as named teammates.** Group into 3 waves:
-
-   **Wave 1 — User personas (4 agents, 2x vote weight):**
-   - **s2-jake:** Strategic Learner, mid-capital ($10K-$100K), T3-T4 skill, wants signal clarity. Review lens: "Would Jake use this daily and does it save him time?"
-   - **s7-sarah:** Capital allocator, follows signals, wants simplicity and trust. Review lens: "Would Sarah set this up and feel safer?"
-   - **s1-alex:** Gambler, $800 account, C1 skill, 35% win rate. Review lens: "Does this keep Alex engaged AND prevent blow-up?"
-   - **s3-marcus:** Disciplined trader, $250K, C4 Systems Thinker, 20yr experience. Review lens: "Does this degrade execution quality or privacy?"
-
-   **Wave 2 — Specialist personas (8 agents):**
-   - **trader-ux:** Trading UX specialist — order entry flow, price display, position management, mobile ergonomics
-   - **crypto-sec:** Crypto security engineer — key management, transaction signing, MEV, input validation
-   - **risk-analyst:** Quantitative risk analyst — margin calculations, liquidation warnings, leverage guards
-   - **signal-analyst:** Signal quality analyst — taxonomy compliance, data pipeline integrity, false positive risk
-   - **hl-protocol:** Hyperliquid protocol specialist — builder codes, API rate limits, order types, vault integration
-   - **mobile-perf:** Mobile performance engineer — bundle size, render performance, network efficiency, load time
-   - **compliance:** Financial compliance specialist — KYC/AML, risk disclosures, fee transparency, jurisdictional restrictions
-   - **design-variant:** Design system compliance — Stone/Water color domains, information density, citadel emotional resonance
-
-   **Wave 3 — Strategic persona (1 agent):**
-   - **contrarian:** Devil's advocate — pre-mortem, kill shot, wargame, steel man
-
-2. **Each persona follows this protocol:**
-   a. Load persona definition and adopt the specialist's expertise
-   b. Research phase — search for current best practices and evidence
-   c. Evaluate through persona's lens — every finding has severity, evidence, fix, location
-   d. Issue verdict: APPROVE / CONCERN / BLOCK
-   e. Include Steel Man ("strongest argument FOR") and Kill Shot ("single biggest risk")
-
-3. **Collect all 12 verdicts**
-
-4. **Synthesize with weighted voting:**
-   - User personas get **2x weight** (if users don't want it, nothing else matters)
-   - Any user persona BLOCK → **BLOCK** (product-market fit failure)
-   - crypto-sec BLOCK → **BLOCK** (security is non-negotiable)
-   - Any other specialist BLOCK → **CONCERN** escalated to HIGH
-   - contrarian BLOCK → **CONCERN** with mandatory Steel Man response
-   - Cross-reference: Do Jake (S2) and Sarah (S7) want DIFFERENT things? Note the tension.
-
-5. **Output council summary:**
+**Output format:**
 
 ```markdown
 ## Council Review: {target}
 
 ### Verdicts
 
-| Persona        | Type       | Verdict   | Kill Shot  | Weight |
-| -------------- | ---------- | --------- | ---------- | ------ |
-| s2-jake        | User       | {verdict} | {one-line} | 2x     |
-| s7-sarah       | User       | {verdict} | {one-line} | 2x     |
-| s1-alex        | User       | {verdict} | {one-line} | 2x     |
-| s3-marcus      | User       | {verdict} | {one-line} | 2x     |
-| trader-ux      | Specialist | {verdict} | {one-line} | 1x     |
-| crypto-sec     | Specialist | {verdict} | {one-line} | 1x     |
-| risk-analyst   | Specialist | {verdict} | {one-line} | 1x     |
-| signal-analyst | Specialist | {verdict} | {one-line} | 1x     |
-| hl-protocol    | Specialist | {verdict} | {one-line} | 1x     |
-| mobile-perf    | Specialist | {verdict} | {one-line} | 1x     |
-| compliance     | Specialist | {verdict} | {one-line} | 1x     |
-| design-variant | Specialist | {verdict} | {one-line} | 1x     |
-| contrarian     | Strategic  | {verdict} | {one-line} | 1x     |
+| Persona | Type | Verdict | Kill Shot | Weight |
+|---------|------|---------|-----------|--------|
+| {name} | {type} | {APPROVE/CONCERN/BLOCK} | {one-line} | {1x/2x} |
 
 ### Weighted Synthesis
 
 **Overall: {APPROVE / CONCERN / BLOCK}**
 
-- User consensus: {summary}
-- Specialist consensus: {summary}
-- Strategic assessment: {summary}
-
-### Top 3 Findings (across all personas)
-
-1. {finding} — raised by {persona(s)} — severity: {level}
-2. {finding} — raised by {persona(s)} — severity: {level}
-3. {finding} — raised by {persona(s)} — severity: {level}
-
-### Tensions
-
-{where Jake and Sarah disagree, where specialists conflict}
-
-### Recommended Actions
-
-1. {action} — {urgency}
-2. {action} — {urgency}
-3. {action} — {urgency}
+### Top 3 Findings + Recommended Actions
 ```
 
 ---

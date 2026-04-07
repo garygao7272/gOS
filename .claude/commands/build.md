@@ -153,20 +153,14 @@ If any check fails, fix before proceeding. All checks MUST pass before bumping.
 
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
-**Team decision:**
-- If feature touches 3+ systems (backend + frontend + tests): Create team `build-{feature-slug}` with named teammates
-- Otherwise: Sequential execution (current behavior — single session)
+**Team decision** (see `.claude/agents/README.md` complexity gate):
+- Score 7+ → Load `build-squad` template from `.claude/agents/team-registry.md`
+- Score 0-6 → Sequential execution (single session, current behavior)
 
-**If team mode:**
-```
-TeamCreate(team_name="build-{feature-slug}")
-```
-- `backend` (sonnet, worktree) — API, data layer, types
-- `frontend` (sonnet, worktree) — screens, components, hooks
-- `tests` (haiku) — test files only
-- TaskCreate per phase with `blockedBy` — frontend blocks on backend's API contract
-- Backend sends API contract to frontend via `SendMessage(to="frontend", message="API types ready: {types}")`
-- Shutdown all after tests pass: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+**If team mode (`build-squad`):**
+Spawns: `architect` (opus) → `engineer` x2 (sonnet, worktree) → `verifier` (haiku).
+Architect produces API contract first, then backend + frontend work in parallel.
+Full task flow, handoff protocol, and shutdown in `team-registry.md § build-squad`.
 
 **Before building:**
 
