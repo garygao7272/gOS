@@ -1,191 +1,57 @@
 {
+  "respectGitignore": true,
+  "enableAllProjectMcpServers": true,
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
+  },
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "Write(*)",
+      "Bash",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "mcp__*"
+    ],
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -fd*)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(npm publish*)",
+      "Bash(kill *)",
+      "Bash(killall *)"
+    ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "if": "Bash(rm *) || Bash(git push *) || Bash(git reset *) || Bash(git clean *) || Bash(kubectl delete *) || Bash(docker system prune *)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"gOS careful: destructive command detected\"}}'",
-            "timeout": 5,
-            "statusMessage": "gOS careful check"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "if": "Edit(.env*) || Edit(*.key) || Edit(*.pem) || Edit(*.p12) || Edit(*.pfx) || Edit(credentials.json) || Edit(secrets.yaml) || Edit(secrets.yml) || Write(.env*) || Write(*.key) || Write(*.pem) || Write(*.p12) || Write(*.pfx) || Write(credentials.json) || Write(secrets.yaml) || Write(secrets.yml)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"gOS protect: sensitive file blocked\"}}'",
-            "timeout": 5,
-            "statusMessage": "gOS protect-files check"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/freeze-guard.sh\"",
-            "timeout": 5,
-            "statusMessage": "gOS freeze check"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/plan-gate.sh\"",
-            "timeout": 5,
-            "statusMessage": "gOS plan gate"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "if": "Bash(git commit *)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/secret-scan.sh\"",
-            "timeout": 10,
-            "statusMessage": "gOS secret scan"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "if": "Bash(git commit *)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/post-commit-detect.sh\"",
-            "timeout": 10,
-            "statusMessage": "gOS spec drift check"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/spec-drift.sh\"",
-            "timeout": 5,
-            "statusMessage": "gOS spec sync reminder"
-          }
-        ]
-      }
-    ],
-    "FileChanged": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/file-changed-drift.sh\"",
-            "timeout": 5,
-            "statusMessage": "gOS file change monitor"
-          }
-        ]
-      }
-    ],
-    "PermissionDenied": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/permission-denied-handler.sh\"",
-            "timeout": 5,
-            "statusMessage": "gOS permission denied handler"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
-        "matcher": "",
         "hooks": [
           {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/scratchpad-checkpoint.sh\"",
-            "timeout": 10,
-            "statusMessage": "gOS session checkpoint"
+            "type": "prompt",
+            "prompt": "Before stopping: Check if TodoWrite has incomplete tasks. If yes, say 'You have incomplete tasks — continue?' If sessions/evolve_signals.md exists and this was a gOS session, scan the last few exchanges and append any unlogged signals (accept/rework/reject/love/skip/repeat) with today's date. Keep it to one line per signal."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before compaction: Scan recent conversation for evolve signals (accept/rework/reject/love/skip/repeat from gOS commands) and append any unlogged ones to sessions/evolve_signals.md. Also update sessions/scratchpad.md with current task state so it survives compaction.",
+            "once": true
           }
         ]
       }
     ]
-  },
-  "enabledPlugins": {
-    "firecrawl@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true,
-    "kotlin-lsp@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true,
-    "linear@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "figma@claude-plugins-official": true,
-    "vercel@claude-plugins-official": true,
-    "mobile-design-engine@local-plugins": true,
-    "investment-banking@financial-services-plugins": true,
-    "financial-analysis@financial-services-plugins": true,
-    "equity-research@financial-services-plugins": true,
-    "private-equity@financial-services-plugins": true,
-    "wealth-management@financial-services-plugins": true,
-    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
-    "claude-mem@thedotmack": true,
-    "skill-creator@claude-plugins-official": true,
-    "firebase@claude-plugins-official": true,
-    "everything-claude-code@everything-claude-code": true
-  },
-  "extraKnownMarketplaces": {
-    "local-plugins": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/REPLACE_WITH_YOUR_USERNAME/claude-plugins"
-      }
-    },
-    "financial-services-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/financial-services-plugins"
-      }
-    },
-    "ui-ux-pro-max-skill": {
-      "source": {
-        "source": "github",
-        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
-      }
-    },
-    "thedotmack": {
-      "source": {
-        "source": "github",
-        "repo": "thedotmack/claude-mem"
-      }
-    },
-    "everything-claude-code": {
-      "source": {
-        "source": "github",
-        "repo": "affaan-m/everything-claude-code"
-      }
-    }
   }
 }
