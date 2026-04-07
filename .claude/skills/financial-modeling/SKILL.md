@@ -18,7 +18,7 @@ openpyxl silently corrupts complex Excel files:
 
 ## Tool: OfficeCLI
 
-Binary: `~/bin/officecli` (v1.0.37, macOS ARM64)
+Binary: `/Users/garyg/Documents/Claude Working Folder/toolkit/officecli` (v1.0.37, macOS ARM64)
 Docs: https://github.com/iOfficeAI/OfficeCLI
 
 ### Core Commands
@@ -82,7 +82,7 @@ From Gary's feedback (memory/feedback_financial_modeling_v2.md):
 ## Precision Workflow (MANDATORY for Financial Models)
 
 Two tools, two roles:
-- **OfficeCLI** (`~/bin/officecli`) = fast read/write/edit (the hands). 150+ functions, auto-evaluates.
+- **OfficeCLI** (`/Users/garyg/Documents/Claude Working Folder/toolkit/officecli`) = fast read/write/edit (the hands). 150+ functions, auto-evaluates.
 - **LibreOffice headless** (`soffice`) = full recalculation (the auditor). ~500 functions, near-Excel parity.
 
 ```

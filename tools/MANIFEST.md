@@ -23,9 +23,18 @@
 
 | Tool | Version | Path | Install | Health Check | Used By |
 |------|---------|------|---------|-------------|---------|
-| **OfficeCLI** | 1.0.37 | `~/bin/officecli` | Download from [GitHub releases](https://github.com/iOfficeAI/OfficeCLI/releases) | `~/bin/officecli --version` | Financial modeling skill |
+| **OfficeCLI** | 1.0.37 | `toolkit/officecli` | Download from [GitHub releases](https://github.com/iOfficeAI/OfficeCLI/releases) | `~/bin/officecli --version` | Financial modeling skill |
 | **LibreOffice** | 26.2+ | `soffice` (via brew) | `brew install --cask libreoffice` | `soffice --version` | Formula recalculation (precision verify) |
 | **Vercel CLI** | latest | Via npx | `npm install -g vercel` (optional) | `npx vercel --version` | `/ship deploy`, prototype deploy |
+
+### Project-Specific Engines
+
+| Tool | Type | Path/Repo | Install | Used By |
+|------|------|-----------|---------|---------|
+| **MiroFish** | Python module | `~/Documents/Claude Working Folder/MiroFish/` | Project-specific | `/simulate market` — backtesting + regime detection |
+| **Dux** | Python app (separate repo) | `~/Documents/Claude Working Folder/Dux/` | Clone from Dux repo | `/simulate scenario` — MCTS/beam search strategic simulation |
+| **WPS Office** | macOS app (installed) | `/Applications/wpsoffice.app` | Pre-installed | Manual spreadsheet viewing (no CLI recalc) |
+| **Claude Desktop** | macOS app | `/Applications/Claude.app` | Download from claude.ai | Session teleport, Chrome extension, `/remote-control` |
 
 ---
 
@@ -44,14 +53,23 @@
 
 | Server | Command | Dependencies | Install | Health Check | Used By |
 |--------|---------|-------------|---------|-------------|---------|
-| **Hyperliquid** | `node tools/hyperliquid-mcp/index.js` | Node.js | `cd tools/hyperliquid-mcp && npm install` | `node tools/hyperliquid-mcp/index.js --help` | `/simulate market`, live data |
+| **Hyperliquid** | `node toolkit/hyperliquid-mcp/index.js` | Node.js | `cd toolkit/hyperliquid-mcp && npm install` | `node toolkit/hyperliquid-mcp/index.js --help` | `/simulate market`, live data |
 | **Playwright** | `npx @playwright/mcp@latest` | Node.js, Chromium | `npx playwright install chromium` | `npx @playwright/mcp@latest --help` | `/review e2e`, UI testing |
 | **Discord** | `npx -y mcp-discord` | Node.js | None (npx auto-installs) | N/A | Community monitoring |
 | **Telegram** | `npx -y @overpod/mcp-telegram` | Node.js | None (npx auto-installs) | N/A | Community monitoring |
-| **Notte** | `tools/notte-env/bin/python -m notte_mcp.server` | Python venv | `python3 -m venv tools/notte-env && source tools/notte-env/bin/activate && pip install notte-mcp` | `tools/notte-env/bin/python -c "import notte_mcp"` | Anti-detection scraping |
-| **Spec-RAG** | `tools/spec-rag-env/bin/python tools/spec-rag-mcp/server.py` | Python venv, LanceDB | `python3 -m venv tools/spec-rag-env && source tools/spec-rag-env/bin/activate && pip install -r tools/spec-rag-mcp/requirements.txt` | `tools/spec-rag-env/bin/python -c "import lancedb"` | Semantic spec search |
-| **Sources** | `tools/sources-env/bin/python tools/sources-mcp/server.py` | Python venv | `python3 -m venv tools/sources-env && source tools/sources-env/bin/activate && pip install -r tools/sources-mcp/requirements.txt` | `tools/sources-env/bin/python -c "import trafilatura"` | `/think intake`, `/simulate` |
+| **Notte** | `toolkit/notte-env/bin/python -m notte_mcp.server` | Python venv | `python3 -m venv toolkit/notte-env && source toolkit/notte-env/bin/activate && pip install notte-mcp` | `toolkit/notte-env/bin/python -c "import notte_mcp"` | Anti-detection scraping |
+| **Spec-RAG** | `toolkit/spec-rag-env/bin/python toolkit/spec-rag-mcp/server.py` | Python venv, LanceDB | `python3 -m venv toolkit/spec-rag-env && source toolkit/spec-rag-env/bin/activate && pip install -r toolkit/spec-rag-mcp/requirements.txt` | `toolkit/spec-rag-env/bin/python -c "import lancedb"` | Semantic spec search |
+| **Sources** | `toolkit/sources-env/bin/python toolkit/sources-mcp/server.py` | Python venv | `python3 -m venv toolkit/sources-env && source toolkit/sources-env/bin/activate && pip install -r toolkit/sources-mcp/requirements.txt` | `toolkit/sources-env/bin/python -c "import trafilatura"` | `/think intake`, `/simulate` |
 | **Stitch** | `node tools/stitch-proxy.mjs` | Node.js | None | N/A | `/design ui` (broken — see dead ends) |
+
+### Available via npx (auto-install, not in `.mcp.json`)
+
+| Server | Command | Purpose | Used By |
+|--------|---------|---------|---------|
+| **Context7** | `npx -y @upstash/context7-mcp` | Up-to-date library docs (prevents hallucinated APIs) | `/think research`, `/build` |
+| **DeepWiki** | `npx -y deepwiki-mcp` | Structured wiki docs for any GitHub repo | `/think research` |
+| **Firecrawl** | `npx -y firecrawl-mcp` | Competitor crawling, web scraping | `/think research` |
+| **Exa** | Requires API key + MCP setup | Neural search for research | `/think research`, `/think discover` |
 
 ### CC Plugins (auto-connected, no local install)
 
@@ -151,8 +169,13 @@ Arx/
 ├── apps/
 │   ├── web-prototype/        ← Single-file HTML prototype
 │   └── mobile/               ← React Native app
-├── tools/                    ← Custom MCP servers + this manifest
-│   ├── MANIFEST.md           ← This file
+├── tools/
+│   └── MANIFEST.md           ← This file (toolbox manifest)
+│
+│ (Shared tools live OUTSIDE the project at ~/Documents/Claude Working Folder/toolkit/)
+│
+│ toolkit/                    ← Shared cross-project tools
+│   ├── officecli             ← OfficeCLI binary (Excel read/write/formula eval)
 │   ├── hyperliquid-mcp/      ← Hyperliquid data MCP
 │   ├── spec-rag-mcp/         ← Semantic spec search MCP
 │   ├── sources-mcp/          ← Twitter/YouTube/blog intelligence MCP

@@ -64,7 +64,7 @@ Arx/
 - **Design tokens**: Use CSS variables from `specs/Arx_4-2_Design_System.md`, don't hardcode colors/fonts/spacing.
 - **Features**: Trace back to a user pain in `specs/Arx_2-1`. No upstream pain = question the feature.
 - **Duplication**: Link to specs, don't copy content between files.
-- **Excel/XLSX**: NEVER use openpyxl for writing. Use OfficeCLI (`~/bin/officecli`) for edits + LibreOffice headless (`soffice --headless`) for full recalc verification. See `.claude/skills/financial-modeling/SKILL.md`.
+- **Excel/XLSX**: NEVER use openpyxl for writing. Use OfficeCLI (`/Users/garyg/Documents/Claude Working Folder/toolkit/officecli`) for edits + LibreOffice headless (`soffice --headless`) for full recalc verification. See `.claude/skills/financial-modeling/SKILL.md`.
 
 ## Build Cards — The Atomic Unit of Product Work
 
@@ -188,6 +188,14 @@ Use `${ENV_VAR}` syntax for secrets in `.mcp.json`.
 6. **One landing at a time.** Swarm for research, merge implementation sequentially.
 7. **Stay engaged.** Exit gates prevent disengagement regressions.
 8. **CLI-accessible stack.** One-line CLI pointers beat verbose docs.
+
+## Palace Protocol — Memory Verification Rules
+
+Before responding about any person, project, past event, or prior decision:
+1. **Search first, never guess.** Query `memory/` files or `spec-rag` MCP before answering from recall. If unsure, say "let me check" and look it up.
+2. **Verify before recommending.** If memory names a file path, check it exists. If it names a function or flag, grep for it. Memory says "X exists" is not the same as "X exists now."
+3. **Invalidate stale facts.** If what you find contradicts what memory says, trust what you observe now — update or remove the stale memory.
+4. **After each session.** Update memory with new decisions, corrections, and dead ends before stopping.
 
 ## Key Technical Context
 

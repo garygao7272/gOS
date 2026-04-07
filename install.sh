@@ -7,6 +7,9 @@
 
 set -euo pipefail
 
+# Toolkit location — shared tools live outside any single project
+TOOLKIT="$HOME/Documents/Claude Working Folder/toolkit"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -39,9 +42,9 @@ check_cmd() {
     local cmd="$2"
     local version_flag="${3:---version}"
 
-    if eval "$cmd" "$version_flag" &>/dev/null; then
+    if "$cmd" "$version_flag" &>/dev/null; then
         local ver
-        ver=$(eval "$cmd" "$version_flag" 2>&1 | head -1)
+        ver=$("$cmd" "$version_flag" 2>&1 | head -1)
         echo -e "  ${PASS} ${name}: ${ver}"
         return 0
     else
@@ -148,23 +151,39 @@ fi
 echo -e "\n${CYAN}2. CLI Tools${NC}"
 
 # OfficeCLI
-if [[ -x "$HOME/bin/officecli" ]]; then
-    check_cmd "OfficeCLI" "$HOME/bin/officecli"
+if [[ -x "$TOOLKIT/officecli" ]]; then
+    check_cmd "OfficeCLI" "$TOOLKIT/officecli"
 elif ! $CHECK_ONLY; then
     echo -e "  ${INFO} Installing OfficeCLI..."
-    mkdir -p "$HOME/bin"
+    mkdir -p "$TOOLKIT"
     if [[ "$ARCH" == "arm64" ]]; then
         OFFICECLI_ASSET="officecli-mac-arm64"
     else
         OFFICECLI_ASSET="officecli-mac-x64"
     fi
-    curl -sL -o "$HOME/bin/officecli" \
+    curl -sL -o "$TOOLKIT/officecli" \
         "https://github.com/iOfficeAI/OfficeCLI/releases/latest/download/${OFFICECLI_ASSET}"
-    chmod +x "$HOME/bin/officecli"
-    check_cmd "OfficeCLI" "$HOME/bin/officecli"
+    chmod +x "$TOOLKIT/officecli"
+    check_cmd "OfficeCLI" "$TOOLKIT/officecli"
 else
     echo -e "  ${FAIL} OfficeCLI: not found at ~/bin/officecli"
     ((ERRORS++))
+fi
+
+# MiroFish (project engine — check only, no auto-install)
+if [[ -d "$TOOLKIT/../MiroFish" ]] || python3 -c "import mirofish" &>/dev/null 2>&1; then
+    echo -e "  ${PASS} MiroFish: available"
+else
+    echo -e "  ${WARN} MiroFish: not found (needed for /simulate market)"
+    ((WARNINGS++))
+fi
+
+# Dux (separate repo — check only)
+if [[ -d "$HOME/Documents/Dux" ]] || [[ -d "../Dux" ]]; then
+    echo -e "  ${PASS} Dux: found"
+else
+    echo -e "  ${WARN} Dux: not found (needed for /simulate scenario)"
+    ((WARNINGS++))
 fi
 
 # LibreOffice
@@ -252,9 +271,9 @@ done
 echo -e "\n${CYAN}5. Python Virtual Environments${NC}"
 
 VENVS=(
-    "tools/spec-rag-env"
-    "tools/sources-env"
-    "tools/notte-env"
+    "$TOOLKIT/spec-rag-env"
+    "$TOOLKIT/sources-env"
+    "$TOOLKIT/notte-env"
 )
 
 for venv in "${VENVS[@]}"; do
@@ -282,19 +301,19 @@ done
 echo -e "\n${CYAN}6. MCP Servers${NC}"
 
 # Hyperliquid MCP
-if [[ -f "tools/hyperliquid-mcp/index.js" ]]; then
-    if [[ -d "tools/hyperliquid-mcp/node_modules" ]]; then
+if [[ -f "$TOOLKIT/hyperliquid-mcp/index.js" ]]; then
+    if [[ -d "$TOOLKIT/hyperliquid-mcp/node_modules" ]]; then
         echo -e "  ${PASS} Hyperliquid MCP (installed)"
     elif ! $CHECK_ONLY; then
         echo -e "  ${INFO} Installing Hyperliquid MCP deps..."
-        (cd tools/hyperliquid-mcp && npm install --quiet 2>/dev/null)
+        (cd "$TOOLKIT/hyperliquid-mcp" && npm install --quiet 2>/dev/null)
         echo -e "  ${PASS} Hyperliquid MCP"
     else
         echo -e "  ${WARN} Hyperliquid MCP: found but node_modules missing"
         ((WARNINGS++))
     fi
 else
-    echo -e "  ${WARN} Hyperliquid MCP: tools/hyperliquid-mcp/index.js not found"
+    echo -e "  ${WARN} Hyperliquid MCP: $TOOLKIT/hyperliquid-mcp/index.js not found"
     ((WARNINGS++))
 fi
 
