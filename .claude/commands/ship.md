@@ -11,6 +11,32 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 ---
 
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+Before executing any ship sub-command, present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll ship — comprehension check]
+> **SCOPE:** [which files/commits will be shipped]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **MEMORY:** [check L1_essential.md — "last ship: ...", "blocked by: ..."]
+> **RISK:** [biggest risk — shipping is irreversible for pushes/deploys]
+> **ROLLBACK:** [how to undo — "git revert", "Vercel rollback", etc.]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" and scope is a single commit.
+
+---
+
 ## (no args) — Full Ship Sequence
 
 The complete delivery pipeline. Run when work is done and ready to go out.

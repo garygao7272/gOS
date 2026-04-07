@@ -34,6 +34,30 @@ Each cycle combines two strategies:
 
 ---
 
+## Plan Gate (mandatory — runs before starting the loop)
+
+Before executing the refine loop, present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll refine — comprehension check]
+> **SCOPE:** [which specs/designs/simulations are in scope]
+> **ITERATIONS:** [target iteration count and convergence criteria]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **MEMORY:** [check L1_essential.md — "last refine on this topic: ...", "known gaps: ..."]
+> **RISK:** [biggest risk — e.g., "scope too broad, may not converge in N iterations"]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each cycle
+3. Begin execution, updating TodoWrite as each cycle completes
+
+---
+
 ## Execution Pipeline
 
 ### Phase 0: Initialize

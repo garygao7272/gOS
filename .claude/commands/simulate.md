@@ -24,6 +24,31 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 ---
 
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+Before executing any simulate sub-command, present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll simulate — comprehension check]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **DATA:** [which MCP data sources will be queried — Hyperliquid, sources, etc.]
+> **MEMORY:** [check L1_essential.md — "last simulation: ...", "known data gap: ..."]
+> **RISK:** [biggest assumption — e.g., "assumes market data is fresh"]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" or this is a scheduled auto-run.
+
+---
+
 ## market [period]
 
 **Purpose:** MiroFish market simulation. Run market regime detection, scenario generation, and trade recommendations across asset classes.

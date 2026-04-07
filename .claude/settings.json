@@ -32,12 +32,22 @@
     "pr": ""
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "SIGNAL CAPTURE: Scan Gary's message for evolve signals. If his message responds to a gOS command output, detect: accept (used output, moved on), rework ('change', 'not quite', 'try again', 'simplify'), reject ('no', 'scratch that', 'wrong'), love ('perfect', 'great', 'exactly', 'hell yes'), repeat (same instruction as 2-3 turns ago), skip (jumped past a prescribed step). If detected, append ONE line to sessions/evolve_signals.md: '| {time} | {command} | {sub-cmd} | {signal} | {brief context} |'. Do NOT ask Gary about this — capture silently. If no signal detected, do nothing."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Before stopping: Check if TodoWrite has incomplete tasks. If yes, say 'You have incomplete tasks — continue?' If sessions/evolve_signals.md exists and this was a gOS session, scan the last few exchanges and append any unlogged signals (accept/rework/reject/love/skip/repeat) with today's date. Keep it to one line per signal."
+            "prompt": "SESSION END PROTOCOL: 1) Check TodoWrite for incomplete tasks — if yes, say 'You have incomplete tasks — continue?' 2) Scan last few exchanges for any unlogged evolve signals and append to sessions/evolve_signals.md. 3) Update memory/L1_essential.md 'Current Focus' with what was done this session. 4) Run 3-question self-debrief: a) What approach worked that should be reused? b) What failed that should be avoided? c) Did Gary correct me in a way that reveals a preference? If any non-trivial answers, write to appropriate memory/ file. 5) Update sessions/scratchpad.md with final state."
           }
         ]
       }
@@ -47,7 +57,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Before compaction: Scan recent conversation for evolve signals (accept/rework/reject/love/skip/repeat from gOS commands) and append any unlogged ones to sessions/evolve_signals.md. Also update sessions/scratchpad.md with current task state so it survives compaction.",
+            "prompt": "BLOCKING SAVE BEFORE COMPACTION: This is mandatory — do ALL of these before allowing compaction: 1) Scan recent conversation for evolve signals and append unlogged ones to sessions/evolve_signals.md. 2) Update sessions/scratchpad.md with FULL current task state, key decisions, dead ends, and files being edited — this is the only bridge across compaction. 3) Update memory/L1_essential.md 'Current Focus' section. 4) If any plan is in progress, write the current step number and plan state to scratchpad. 5) Write a 1-line checkpoint to scratchpad: 'COMPACTION CHECKPOINT: {what was being done} at {step}'. Only after ALL steps complete should compaction proceed.",
             "once": true
           }
         ]

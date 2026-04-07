@@ -32,8 +32,41 @@ Parse the first word of `$ARGUMENTS` to route:
 
 ---
 
-## Step 0: Initialize Scratchpad (always runs first)
+### Conductor Plan Gate (mandatory for freeform goals)
 
+When Gary gives a freeform goal (not a known sub-command), decompose it before executing:
+
+> **GOAL:** [restate the goal in your own words — comprehension check]
+> **DECOMPOSITION:**
+> 1. [verb] [sub-command] [target] — [why this first]
+> 2. [verb] [sub-command] [target] — [depends on #1 because...]
+> 3. [verb] [sub-command] [target] — [why]
+> **PARALLEL:** [which steps can run concurrently, if any]
+> **MEMORY:** [check L1_essential.md — anything relevant to this goal]
+> **ESTIMATE:** [context cost — light (<30%) / medium (30-60%) / heavy (>60%, suggest dispatch)]
+> **RISK:** [biggest assumption or thing that could go wrong]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Execute steps in order, routing each to the appropriate verb
+4. After all steps: summarize results, propose next actions
+
+**Skip gate ONLY if:** Gary explicitly says "just do it".
+
+---
+
+## Step 0: Load Memory + Initialize Scratchpad (always runs first)
+
+**Memory loading (mandatory, before anything else):**
+1. Read `memory/L0_identity.md` — identity kernel (≤100 tokens, always)
+2. Read `memory/L1_essential.md` — active state + feedback rules (≤800 tokens, always)
+3. Scan L1 for task-relevant L2 pointers — if current task relates to a feedback rule or project, load that L2 file
+4. Only query L3 (claude-mem / spec-rag) when L2 doesn't have the answer
+
+**Scratchpad initialization:**
 Read `sessions/scratchpad.md`. If stale, empty, or from a previous session, initialize:
 
 > **Note:** CC's native SessionMemory (template at `~/.claude/session-memory/config/template.md`) now tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.

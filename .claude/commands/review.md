@@ -23,6 +23,30 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 ---
 
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+Before executing any review sub-command, present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll review — comprehension check]
+> **SCOPE:** [files/diff/specs being reviewed — be specific]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **MEMORY:** [check L1_essential.md — "known issues with this area: ...", "feedback rule: ..."]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" or review scope is already fully specified (e.g., `/review code` on a single commit).
+
+---
+
 ## code
 
 **Purpose:** 2-pass PR review with Fix-First pattern. Use code-reviewer agent. If security findings, also invoke security-reviewer agent.

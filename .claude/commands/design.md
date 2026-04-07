@@ -121,6 +121,31 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
 
 ---
 
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+Before executing any design sub-command, present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll design — comprehension check]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **REFS:** [which reference apps are relevant — from Arx_4-3 §1]
+> **MEMORY:** [check L1_essential.md + relevant L2 files — "last design session: ...", "feedback rule: ..."]
+> **RISK:** [biggest assumption or thing that could go wrong]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" or the task is a quick token update.
+
+---
+
 ## card <screen>
 
 **Purpose:** Author or update a complete build card for a screen. The build card is the SINGLE SOURCE OF TRUTH for what gets built — combining product requirements and visual specification.
@@ -160,55 +185,160 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
 
 **Purpose:** Generate a visual prototype from an enriched build card. Produces APPROVAL ARTIFACTS, not production code. Gary reviews the visual and approves before `/build` writes production code.
 
-**Tool selection (auto or explicit):**
+**Pipeline: Code-First, Figma-Second.**
 
-| Tool | When to Use | Output |
-|---|---|---|
-| **Figma MCP** (primary) | Production-quality, token-bound, component-aware | Figma file URL via `figma:figma-generate-design` |
-| **AIDesigner MCP** | Rapid creative exploration, rich embellishments | HTML + PNG via `generate_design` + `refine_design` |
-| **Stitch MCP** | Material-style clean exploration, alternative directions | HTML via stitch-design skill with DESIGN.md injection |
-| **HTML prototype** (fallback) | When MCPs unavailable | Single file in `apps/web-prototype/drafts/` |
+The 2026 paradigm: build in code first (fastest iteration, real interactions, Apple-level craft), then push to Figma for design handoff. This inverts the traditional design→code flow.
 
-**Pre-flight checks (before any generation):**
+```
+Build Card → HTML Prototype (code-first) → Preview Verify → Approve → Figma Recreation
+     ↑              ↑                            ↑
+   specs/      DESIGN.md +              Claude Preview at
+               Apple Craft Ref           390×844 viewport
+```
 
-- [ ] `.aidesigner/DESIGN.md` exists? If not → `cp DESIGN.md .aidesigner/DESIGN.md`
-- [ ] Figma file has variable collections? If not → run Step 3-4 from Q1 plan (create variables + components via `use_figma`)
-- [ ] Build card has `## Feel` section? If not → add it before generating visuals
+**Tool priority (primary → fallback):**
 
-**Process:**
+| Priority | Tool | When | Output |
+|---|---|---|---|
+| **1 (Primary)** | HTML prototype + Claude Preview | Always — fastest iteration, real interactions | `apps/web-prototype/{screen}.html` |
+| **2 (Handoff)** | Figma MCP `use_figma` | After approval — design system components | Figma file URL |
+| **3 (Explore)** | AIDesigner MCP | Creative exploration, moodboarding | HTML + PNG |
+| **4 (Alt)** | Stitch MCP | Alternative directions | HTML via stitch-design skill |
 
-1. **Read the build card** (including `## Feel` section) + fixture data from Arx_4-1-1-8
-2. **Read design system:** DESIGN.md (primary — 380 lines, sufficient for most tasks)
-3. **Run Gate -1** (if not already done for this screen)
-4. **Generate visual** via chosen tool(s):
-   - Feed build card content + design tokens + fixture data as context
-   - Viewport: 390x844 (iPhone 14 Pro)
-   - All values from fixture (exact — no improvisation)
-   - All icons from DESIGN.md §3 icon registry
-   - All embellishments from DESIGN.md §4 embellishment registry
-5. **Screenshot** at 390x844
-6. **Run Gate 3c** (Feel Pass) — score 5 dimensions, fix any ≤ 2
-7. **Run 5 Premium Litmus Tests** from Arx_4-3 §2
-8. **Present to Gary:**
-   ```
-   VISUAL CHECKPOINT: {screen}
-   [screenshot or Figma URL]
+**Pre-flight checks:**
 
-   Key design decisions:
-   - {decision 1}: {why}
-   - {decision 2}: {why}
+- [ ] Build card exists for this screen? If not → run `card` first
+- [ ] Build card has `## Feel` section? If not → add feel token reference
+- [ ] DESIGN.md is current? Check `Last generated:` date in header
+- [ ] Apple Craft Reference exists? `outputs/think/design/Apple_Design_Craft_Reference.md`
 
-   Tool used: {Figma MCP / AIDesigner / Stitch / HTML}
-   Approve this visual? Or adjust before we build.
-   ```
-9. **Wait for approval.** Do NOT proceed to `/build` until Gary says "go" or gives adjustments.
-10. If adjustments → modify → re-screenshot → re-present
+### The Code-First Pipeline
 
-**For flows:** Generate linked screens. Each screen follows the same process.
+#### Step 1: Gather Context (parallel reads)
 
-**Motion/animation:** If the card's Visual Spec defines animations (e.g., `card-entry: fade-up 200ms stagger(50ms)`), the HTML prototype should demonstrate them. Figma designs note them as annotations.
+Read in parallel:
+- Build card: `specs/Arx_4-1-1-{module}_{screen}.md`
+- Design system: `DESIGN.md` (primary, 380 lines)
+- Apple craft: `outputs/think/design/Apple_Design_Craft_Reference.md` (animation curves, glass specs, micro-interactions)
+- Fixture data: `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
+- Feel token: look up the card's `## Feel` token in DESIGN.md §6.9
 
-**Output:** Figma file URL, HTML file path, or screenshots for approval.
+#### Step 2: Generate HTML Prototype
+
+Dispatch a subagent with `mode: bypassPermissions` to write a single self-contained HTML file.
+
+**Agent prompt must include:**
+- Full build card content (layout, data, states, components, acceptance)
+- ALL design tokens from DESIGN.md §1 (surfaces, colors, text, borders, semantic, regime)
+- Apple craft specs: animation curves, spring presets, glass tiers, micro-interactions
+- Typography stack: Inter + JetBrains Mono from Google Fonts CDN
+- Viewport: `<meta name="viewport" content="width=390">` + 390×844 frame
+- Fixture data: exact values from Arx_4-1-1-8 (no improvisation)
+
+**Mandatory prototype features (from Apple Craft Reference):**
+
+| Feature | Spec |
+|---|---|
+| Loading skeleton | 1.5-2s shimmer, left-to-right gradient sweep, then stagger-reveal |
+| Price tick flash | 150ms color flash + 400ms fade to neutral, every 1.5-2s |
+| List stagger-in | Items fade + slide up, 40ms stagger between rows |
+| Card tap feedback | Scale to 0.97-0.98 on press, spring back 200ms |
+| Glass cards | `backdrop-filter: blur(20px) saturate(150%)`, 3-layer shadow, stone-tinted |
+| Tab indicator slide | 250ms spring easing between tab positions |
+| Sparkline draw | SVG path draws left-to-right, 600ms ease-out-expo |
+| Swipe-to-action | Touch swipe left reveals action button, 200ms |
+| Search focus expand | Bar expands, Cancel appears, background dims, 300ms |
+| All state transitions | Every state change animated — no instant visual pops |
+
+**Mandatory CSS tokens:**
+```css
+--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+--ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+--ease-spring: cubic-bezier(0.17, 0.89, 0.32, 1.28);
+--duration-instant: 100ms;
+--duration-fast: 200ms;
+--duration-normal: 300ms;
+--duration-slow: 500ms;
+```
+
+**Output:** `apps/web-prototype/{screen-slug}.html`
+
+#### Step 3: Preview Verify
+
+1. Start preview server: `preview_start` → `arx-prototype`
+2. Navigate to the screen: `preview_eval` → `window.location.href = 'http://localhost:8080/{screen-slug}.html'`
+3. Set viewport: `preview_resize` → 390×844
+4. Wait for load + animations: 3-4 seconds
+5. Screenshot: `preview_screenshot`
+6. Check console: `preview_console_logs` → no errors
+7. Test interactions: `preview_click` on tabs, search, cards
+8. Screenshot after interaction to verify animation states
+
+**Quality checklist (from screenshot):**
+- [ ] Dark violet surfaces, no pure black/white/navy
+- [ ] Stone for actions, Water for data — never mixed
+- [ ] Glass cards have visible blur + 3-layer shadow
+- [ ] Prices in mono font with tabular-nums
+- [ ] Real minus (−) not hyphen (-)
+- [ ] Positive green, Negative red on data only
+- [ ] 44px minimum touch targets
+- [ ] Content within 390px, safe areas respected
+- [ ] Regime indicators visible and color-coded
+- [ ] Typography hierarchy clear from weight/size alone
+
+#### Step 4: Run Design Gates
+
+1. **Gate 3c: Feel Pass** — Score 1-5 on scroll rhythm, optical weight, negative space, typography hierarchy, motion narrative. Fix any ≤ 2.
+2. **5 Premium Litmus Tests** from Arx_4-3 §2.
+3. If issues found → edit HTML → re-preview → re-screenshot → re-check.
+
+#### Step 5: Present for Approval
+
+```
+VISUAL CHECKPOINT: {screen}
+[screenshot from Claude Preview]
+
+Interactions demonstrated: {list}
+Apple craft applied: {skeleton, price ticks, stagger-in, glass, springs}
+
+Key design decisions:
+- {decision 1}: {why}
+- {decision 2}: {why}
+
+Feel Pass: {scores}/5 per dimension
+Litmus: {PASS/FAIL per test}
+
+Approve this visual? Or adjust before we build.
+```
+
+Wait for approval. Do NOT proceed to `/build` or Figma until Gary says "go."
+
+#### Step 6: Figma Recreation (post-approval, optional)
+
+After approval, recreate in Figma using design system components for handoff.
+
+1. Load `figma:figma-use` + `figma:figma-generate-design` skills
+2. Use existing Figma file: `pG8iP5irNjYfGbkce31d9V`
+3. Create new page named `{Screen ID} — {Screen Name}`
+4. Build incrementally (one section per `use_figma` call):
+   - Import components from the Components page by key
+   - Bind variables (colors, spacing, radii) — never hardcode hex
+   - Use auto-layout on all containers
+   - Return all created node IDs
+5. Screenshot each section for verification
+6. Screenshot full screen, compare against HTML prototype
+
+**Figma API gotchas (from research):**
+- Set `layoutSizingHorizontal/Vertical = 'FILL'` AFTER `appendChild`
+- Colors: 0-1 range (divide hex by 255)
+- Font loading: `await figma.loadFontAsync({ family: "Inter", style: "Semi Bold" })` — note the space in "Semi Bold"
+- Fills are immutable arrays — clone, modify, reassign
+- `setBoundVariableForPaint` returns a NEW paint — capture it
+- Page context resets between calls — always `await figma.setCurrentPageAsync(page)` first
+
+**For flows:** Generate linked screens. Each screen follows the same pipeline.
+
+**Output:** HTML prototype path + (optionally) Figma file URL.
 
 ---
 

@@ -106,6 +106,24 @@ Commit after every meaningful change — small, frequent commits.
 Move files to `Archive/` instead of deleting. Commit current state before overwriting.
 Don't use `git reset --hard` or `git push --force` without explicit approval.
 
+## Plan Gate (enforced on every command)
+
+Every gOS command presents a lightweight plan before executing. No exceptions.
+Format: PLAN (1-line restatement) → STEPS (numbered) → MEMORY (relevant L1/L2) → RISK → CONFIDENCE → Confirm?
+After confirmation: write plan to scratchpad, create TodoWrite items, execute step by step.
+Skip only if Gary says "just do it" or the task is trivially atomic.
+
+## Memory Architecture (4 layers)
+
+```
+L0: Identity (≤100 tok)  — ALWAYS loaded. memory/L0_identity.md
+L1: Essential (≤800 tok) — ALWAYS loaded. memory/L1_essential.md — updated every save
+L2: On-Demand (search)   — Loaded when relevant via Palace Protocol
+L3: Deep Search           — claude-mem + spec-rag. Semantic query.
+```
+
+Loading order: L0 → L1 → task-relevant L2 → L3 only if L2 insufficient.
+
 ## Session Scratchpad
 
 The scratchpad (`sessions/scratchpad.md`) bridges context compaction. Three memory layers:
