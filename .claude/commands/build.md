@@ -31,7 +31,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 1. Read `memory/L1_essential.md` — check Active Feedback Rules and Known Gaps
 2. Search L2 memory files for keywords matching this task (e.g., if building trade screen, search for "trade", "build", "prototype")
 3. If L2 mentions a dead end, feedback correction, or past approach for this area — surface it in the MEMORY field below
-4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+4. **Reinforcement (L3):** If a past approach got `accept`/`love` signals, reuse it. If it got `rework`/`reject`, apply the correction.
+5. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
 
 Then present this to Gary and WAIT for confirmation:
 
@@ -53,6 +54,48 @@ After confirmation:
 3. Begin execution step by step, updating TodoWrite as each completes
 
 **Skip gate ONLY if:** Gary explicitly says "just do it" or the task is trivially small (e.g., a 1-line typo fix).
+
+## Checkpoint/Rollback (RE1 — before risky multi-file edits)
+
+Before any operation that touches >2 files or makes structural changes:
+
+1. **Create checkpoint:** `git stash push -m "checkpoint: {what you're about to do}"`
+2. **Log in scratchpad:** `CHECKPOINT: stash@{0} — {description} — {timestamp}`
+3. **Proceed with edits**
+4. **On success:** drop the stash (`git stash drop`) — it was insurance
+5. **On failure:** `git stash pop` to restore pre-edit state, log the failure in Dead Ends
+
+**When to checkpoint:**
+- Multi-file refactors
+- Spec reorganizations
+- Prototype screen rewrites
+- Any build step where ROLLBACK in the Plan Gate says "git stash pop"
+
+**When NOT to checkpoint (too lightweight):**
+- Single file edits
+- Adding new files (just delete them on failure)
+- Documentation-only changes
+
+---
+
+## Action Verification (mandatory after every significant action)
+
+After each action, verify it succeeded before proceeding to the next step:
+
+| Action | Verification |
+|--------|-------------|
+| Edit/Write file | Read the file back — confirm the change is present and correct |
+| git commit | Run `git log --oneline -1` — confirm commit message matches |
+| Agent spawn | Check agent returned a result — parse for errors or empty output |
+| MCP tool call | Check response is valid, not an error object |
+| Test run | Parse output for pass/fail — don't assume green |
+| Deploy | Check deployment URL responds |
+
+**On verification failure:**
+1. Log the failure in scratchpad under `Dead Ends`
+2. If retry is likely to succeed (transient error): retry once
+3. If retry won't help (logic error, wrong approach): stop and surface to Gary
+4. Never silently proceed past a failed action
 
 ---
 

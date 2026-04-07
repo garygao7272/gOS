@@ -42,6 +42,13 @@ When Gary gives a freeform goal (not a known sub-command), decompose it into a d
 3. Query claude-mem if L2 doesn't surface relevant history
 4. Surface findings: "Note: last time you tried X, you hit Y. Adjusting approach."
 
+**Step 1.5 — Reinforcement Check (L3 — do more of what works):**
+If memory search from Step 1 found a past approach for a similar task:
+- If it got `accept` or `love` signals → reuse that approach as the default plan
+- If it got `rework` or `reject` signals → load the correction and apply it to the new plan
+- If procedure memory exists for this task type → follow the procedure
+- Surface to Gary: "Last time we did [similar task], [approach] worked well. Using it again."
+
 **Step 2 — Decomposition using verb primitives:**
 
 Every step in the decomposition MUST map to one of the 8 gOS verbs. This forces structured execution:
@@ -73,6 +80,16 @@ Every step in the decomposition MUST map to one of the 8 gOS verbs. This forces 
 > **CONFIDENCE:** [high/medium/low] — [1-line reason]
 >
 > **Confirm?** [y / modify / abort]
+
+**Step 3.5 — Devil's Advocate Pass (R1 — 30-second adversarial check after Gary confirms):**
+
+Before executing, silently ask yourself these 4 questions:
+1. **Am I assuming something exists?** (file, API, function, MCP) — verify it does
+2. **Am I expanding scope?** Does my plan do more than what Gary asked? Strip extras.
+3. **Am I repeating a known failure?** Check Dead Ends in scratchpad and L2 memory
+4. **Would a contrarian disagree?** If yes, surface the concern: "One risk: {what}. Proceeding anyway because {why}."
+
+If any answer reveals a real problem: amend the plan before executing. Don't ask Gary again unless the amendment is material.
 
 **Step 4 — After confirmation:**
 1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
@@ -624,13 +641,25 @@ Tool Discovery:
   Firebase     ⚠️  (not logged in — run firebase_login if needed)
 ```
 
-**Fallback rules (add to each command's preamble):**
+**Graceful Degradation Map (A3):**
 
-- If Firecrawl down → use WebFetch + WebSearch
-- If Notte down → use Firecrawl for scraping
-- If Hyperliquid MCP down → use WebSearch for market data
-- If Context7 down → use WebFetch on docs directly
-- If Figma down → use Stitch only for design work
+When an MCP tool call fails or times out, use the fallback immediately — don't retry more than once:
+
+| Primary MCP | Fallback | Commands Affected |
+|------------|----------|-------------------|
+| Hyperliquid (`get_ticker`, etc.) | WebFetch to `api.hyperliquid.xyz` endpoints | `/simulate`, `/think research` |
+| Figma MCP (`get_design_context`) | `get_screenshot` API or Stitch proxy | `/design ui` |
+| spec-rag (`search_specs`) | Grep on `specs/` directory directly | All commands |
+| sources MCP (`fetch_all_sources`) | WebSearch + WebFetch on RSS feeds | `/simulate`, `/think intake` |
+| Claude Preview (`preview_*`) | Manual verification via Chrome MCP | `/build`, `/review` |
+| Context7 | WebFetch on vendor docs directly | `/build feature` |
+| Linear MCP | WebFetch on Linear API or skip | `/gos status` |
+
+**Degradation protocol:**
+1. First call fails → retry once with 10s timeout
+2. Second fail → switch to fallback immediately
+3. Log degradation in scratchpad: "MCP {name} down — using {fallback}"
+4. Continue execution — never block on a down MCP
 
 Commands should check tool availability before using MCP tools and gracefully degrade.
 

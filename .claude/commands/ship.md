@@ -41,6 +41,19 @@ After confirmation:
 
 **Skip gate ONLY if:** Gary explicitly says "just do it" and scope is a single commit.
 
+## Action Verification (mandatory — shipping is irreversible)
+
+After each ship action, verify before proceeding:
+
+| Action | Verification |
+|--------|-------------|
+| git commit | `git log --oneline -1` — confirm message and file count |
+| git push | Check remote tracking: `git log origin/main..HEAD` should be empty after push |
+| PR create | Verify PR URL is accessible and description is correct |
+| Deploy | Hit the deployment URL — confirm it responds with expected content |
+
+**On failure:** Stop immediately. Do not retry push/deploy without explicit confirmation.
+
 ---
 
 ## (no args) — Full Ship Sequence
