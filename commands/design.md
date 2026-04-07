@@ -1,331 +1,362 @@
 ---
-description: "Design mode: quick sketch, variants, flow, full pipeline, render to code, system tokens, sync — visual and interaction design"
+effort: high
+description: "Design: card (author build card), ui (visualize via Figma/AIDesigner/Stitch MCPs), system (design tokens + components)"
 ---
 
-# Design Mode — Visual + Interaction Design -> outputs/think/design/ -> specs/
+# Design — Build Card + Visual Design → specs/ + Figma + prototypes
 
-**All visual and interaction design work. Extracted from /think as a top-level verb because design deserves its own command.**
+**Design owns the build card — the central artifact of the Arx 3-layer workflow. It authors cards, generates visual prototypes, and maintains the design system.**
+
+**3 sub-commands:**
+
+| Sub-command | Question | Tools | Output |
+|---|---|---|---|
+| `card` | What are we building? | Specs, fixtures, DESIGN.md | `specs/Arx_4-1-1-X_*.md` + fixture entry |
+| `ui` | What does it look like? | Figma MCP, AIDesigner, Stitch, shadcn | Figma file, HTML prototype, screenshots |
+| `system` | Are tokens consistent? | Style Dictionary, Arx_4-2, DESIGN.md, Figma MCP | Updated design system files |
+
+Parse the first word of `$ARGUMENTS` to determine sub-command. If matches card/ui/system → route. If no match → ask: "What kind of design? card (author build card), ui (visualize it), or system (update tokens)?"
 
 **Output routing:**
 
-| Sub-command | Output To | Then |
-|-------------|-----------|------|
-| `quick` | `outputs/think/design/{slug}.md` | Suggest: "Go deeper with variants or full pipeline?" |
-| `variants` | `outputs/think/design/{slug}-variants.md` | Suggest: "Refine winner with full swarm?" |
-| `flow` | `outputs/think/design/{slug}-flow.md` | Suggest: "Promote to `specs/Arx_4-1-X`?" |
-| `full` / default | `outputs/think/design/{slug}.md` | Suggest: "Promote to `specs/Arx_4-1-X_{Slug}.md`?" |
-| `render` | Code scaffold in `apps/` | Ready for `/build feature` |
-| `system` | Direct update to `specs/Arx_4-2_Design_System.md` | No staging |
-| `sync` | Bidirectional sync | No output file |
+| Sub-command | Output To |
+|---|---|
+| `card` | `specs/Arx_4-1-1-{module}_{screen}.md` + fixture in `Arx_4-1-1-8` |
+| `ui` | Figma file URL, `apps/web-prototype/drafts/{screen}.html`, or screenshots |
+| `system` | Direct update to `specs/Arx_4-2_Design_System.md` + `DESIGN.md` |
 
-**Before designing (always):**
-1. Read `specs/Arx_4-2_Design_System.md` for existing tokens
-2. Read `DESIGN.md` for Stitch-consumable design language
-3. Read `apps/web-prototype/SOUL.md` for design philosophy
+---
 
-**Anti-slop rules (mandatory):**
+## Before Designing (always)
+
+1. Read `DESIGN.md` — the complete agent-consumable design language **(READ THIS ONLY for most tasks)**
+2. Consult `specs/Arx_4-3_Design_Taste.md` only when making judgment calls not covered by DESIGN.md §6
+3. Consult `specs/Arx_4-2_Design_System.md` only when you need token details beyond DESIGN.md §1
+
+> **Why DESIGN.md first:** It's 380 lines synthesizing 2800 lines of 4-2 + 320 lines of 4-3. Reading all three wastes context. DESIGN.md is the compiled output — go to sources only for edge cases.
+
+**Anti-slop rules (mandatory — see DESIGN.md §6.3 and 4-3 §6 for full list):**
+
 - **Blacklist visuals:** Purple gradients, 3-column feature grids, generic hero sections, stock imagery, glassmorphism cards, floating abstract shapes
-- **Blacklist fonts:** Inter, Roboto, Poppins (unless explicitly chosen by Gary)
+- **Blacklist fonts:** Roboto, Poppins (Geist is primary; Inter is acceptable as system fallback only)
 - **SAFE vs RISK framing:** For every design decision, label it SAFE (conventional, expected) or RISK (bold, differentiated). Default to RISK unless Gary says otherwise.
-- **The AI test:** "If it looks like it was made by AI, reject it." Every screen must have a specific, opinionated point of view that a generic model would not produce.
+- **The AI test:** "If it looks like it was made by AI, reject it."
+- **Reference floor:** Robinhood/eToro/Bitget/Phantom (S7), Moomoo/Webull/Binance (S2) are the MINIMUM. Beat them.
+
+---
+
+## Three Mandatory Gates (NON-SKIPPABLE)
+
+These gates apply to BOTH `card` and `ui` sub-commands. They run before, during, and after the design pipeline.
+
+### Gate -1: REFERENCE RESEARCH (before any visual decisions)
+
+Before any screen spec or visual design decision:
+
+1. Read `specs/Arx_4-3_Design_Taste.md` §1 for the reference floor
+2. Search 3+ reference implementations of the pattern being designed
+3. For each: what they do well, where they fall short, what Arx should surpass
+4. Present: "Here's how [apps] handle this. Here's where Arx beats them."
+5. Gary picks direction before spec writing begins.
+
+Sources: App Store screenshots, Mobbin, Dribbble, competitor apps, WebSearch.
+**This gate cannot be skipped.** "I already know how this works" is not an excuse — research every time.
+
+### Gate 0: STATE MATRIX (before any spec writing)
+
+Before writing ANY screen spec, generate the complete state matrix:
+
+```
+{screen} × {journey-state} × {data-state} × {edge-case} = all scenarios
+```
+
+Use the template from `specs/Arx_4-3_Design_Taste.md` §8.
+Present matrix for approval. This is the SCENARIO CONTRACT — every cell must be addressed in the spec.
+
+### Gate 3c: FEEL PASS (after functional spec, before shipping)
+
+After the spec/visual is complete but BEFORE declaring done:
+
+Score each dimension 1-5. **Fix any ≤ 2 before proceeding.**
+
+1. **SCROLL RHYTHM:** Where does the eye rest? Breathing points every 3-4 cards?
+2. **OPTICAL WEIGHT:** Heaviest element matches most important information?
+3. **NEGATIVE SPACE:** Empty space is earned (intentional) not lazy (forgot)?
+4. **TYPOGRAPHY HIERARCHY:** Hierarchy readable from weight/size alone (cover colors)?
+5. **MOTION NARRATIVE:** What enters first? Does choreography tell a story?
+
+Then run the **5 Premium Litmus Tests** from `specs/Arx_4-3_Design_Taste.md` §2 on the complete screen.
+If any litmus test fails, fix before proceeding.
+
+---
+
+---
+
+## Gate Enforcement (NON-NEGOTIABLE)
+
+Before outputting any design artifact, verify this checklist. If any gate was skipped, go back and run it. Do not proceed.
+
+```
+[ ] Gate -1 DONE: Reference research logged in scratchpad (3+ apps researched)
+[ ] Gate 0 DONE: State matrix generated and approved
+[ ] Gate 3c DONE: Feel Pass scored (all dimensions ≥ 3/5)
+[ ] Litmus DONE: 5 Premium Litmus Tests all PASS
+```
+
+**If context is tight and gates feel expensive:** Gate -1 can use cached research from a previous session for the same screen type. Gates 0, 3c, and Litmus cannot be cached — they must run on the current artifact.
+
+---
 
 **Plan mode by default.** Present the design approach before executing. Wait for approval.
 
-**Scratchpad checkpoints.** Update `sessions/scratchpad.md` at these moments:
+**Scratchpad checkpoints.** Update `sessions/scratchpad.md`:
+
 - **On entry:** Write current task, mode (`Design > {sub-command}`), and input
+- **After Gate -1:** Log reference research findings to `Working State`
+- **After Gate 0:** Log state matrix to `Working State`
 - **After plan approval:** Write the approved approach to `Working State`
 - **After each agent completes:** Log agent name + key output to `Agents Launched`
+- **After Gate 3c:** Log feel pass scores and litmus results to `Working State`
 - **After synthesis:** Write design decisions to `Key Decisions Made This Session`
-- **On dead end:** Append to `Dead Ends (don't retry)`
-- **After compaction:** Re-read `sessions/scratchpad.md` to restore state
-
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of design? quick sketch, variant exploration, flow prototype, or full design?"
 
 ---
 
-## quick <description>
+## card <screen>
 
-**Purpose:** Phase 0 only. Fast visual sketch via Stitch MCP. Get something on screen in under a minute.
+**Purpose:** Author or update a complete build card for a screen. The build card is the SINGLE SOURCE OF TRUTH for what gets built — combining product requirements and visual specification.
 
 **Process:**
 
-1. Read `DESIGN.md` and inject it as context for Stitch generation
-2. Call `mcp__stitch__list_projects` to find or create an Arx project
-3. Call `mcp__stitch__generate_screen_from_text` with:
-   - The design description as prompt
-   - Device: MOBILE
-   - Include DESIGN.md content in the prompt for style guidance
-4. Call `mcp__stitch__get_screen` to retrieve the HTML output
-5. Present the Stitch screen to Gary
+1. **Check if card exists:** Look for `specs/Arx_4-1-1-{module}_{screen}.md`
+2. **If new:** Use template from `specs/Arx_0-1_Workflow_Workbook.md`
+3. **Run Gate -1** (Reference Research) — research how reference apps handle this screen
+4. **Run Gate 0** (State Matrix) — generate all scenarios before writing
+5. **Write the REFERENCE section:**
+   - `## Reference Screenshots` — cite 2-3 specific screens from Arx_4-3 §1 tiers. Per reference: app, screen, what to adopt, where to surpass. Include AI tool instruction line.
+6. **Write the PRODUCT half:**
+   - `## Why` — trace to JTBD + pain in Arx_2-1
+   - `## What the User Does` — 3-7 numbered steps with S7/S2 variants
+   - `## Data` — API source + computation for every visible element
+   - `## States` — empty, loading, error, populated + persona variants
+   - `## Acceptance (EARS)` — WHEN/SHALL testable criteria
+   - `## Navigate` — from/to with triggers and transition type (`push-right`, `sheet-up`, `modal-center`, `fade`)
+   - `## Verify` — test command
+7. **Write the VISUAL half:**
+   - `## Feel` — reference a feel token from DESIGN.md §6.9 (e.g., `Feel: feel:home`). Only add overrides if this screen deviates from the screen-type default. Do NOT redefine motion, density, or temperature inline.
+   - `## Layout (Stitch-ready)` — ASCII wireframe with auto-layout annotations (`column`/`row`, `fill-w`/`hug`, `gap=Npx`). Use named type levels (Hero, Title, Body, Caption, Data), NOT raw px values.
+   - `## Components (from Arx_4-2)` — named component references
+   - `## Visual Spec` — fixture pointer, icons (from DESIGN.md §3), embellishments (from DESIGN.md §4), interactions (from DESIGN.md §5), tab bar treatment
+7. **Create/update mock data fixture** in `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
+8. **Run Build Card QA** checklist from Arx_0-1
+9. **Run Gate 3c** (Feel Pass) on the Layout section
 
-**Output:** Show the screen. Then ask:
+**Output:** Complete build card at `specs/Arx_4-1-1-{module}_{screen}.md`
 
-> Quick sketch done. Want to:
-> - **Variants** — explore 3-5 alternatives?
-> - **Full** — run the design swarm for production-grade specs?
-> - **Iterate** — refine this specific screen?
-
-Write sketch notes to `outputs/think/design/{slug}.md`.
-
----
-
-## variants <screen-ref> [refine|explore|reimagine] [layout|color|typography|content]
-
-**Purpose:** Phase 0.5. Generate 3-5 variants via Stitch to systematically explore the design space.
-
-**Input:**
-- `screen-ref`: Screen ID from a previous Stitch generation, or a description to generate fresh
-- Creative range (optional, default `explore`):
-  - `refine` — subtle tweaks, same structure
-  - `explore` — balanced, new directions within constraints
-  - `reimagine` — radical departures, break assumptions
-- Aspects to vary (optional, default all):
-  - `layout` — restructure information hierarchy
-  - `color` — alternative color treatments within the design system
-  - `typography` — font pairing and scale experiments
-  - `content` — alternative copy, data density, information architecture
-
-**Process:**
-
-1. If `screen-ref` is not a Stitch screen ID, first generate a base screen via `quick`
-2. Call `mcp__stitch__generate_variants` with:
-   - Screen ID(s) from the base screen
-   - Creative range: REFINE | EXPLORE | REIMAGINE
-   - Aspects: LAYOUT, COLOR_SCHEME, IMAGES, TEXT_FONT, TEXT_CONTENT
-   - Count: 3-5 variants
-3. Retrieve all variant screens
-4. Present them side by side with labels (A, B, C, D, E)
-5. For each variant, note what's SAFE vs RISK about it
-
-**Output:** User picks a winner (or requests another round). Write variant analysis to `outputs/think/design/{slug}-variants.md`.
-
-Then ask: "Want to refine the winner with the full design swarm?"
+**Exit gate:** "This card ready for `/design ui`? All sections complete, fixture created, QA passed?"
 
 ---
 
-## flow <screen-ids...>
+## ui <screen|flow>
 
-**Purpose:** Phase 0.75. Connect multiple screens into a navigable prototype.
+**Purpose:** Generate a visual prototype from an enriched build card. Produces APPROVAL ARTIFACTS, not production code. Gary reviews the visual and approves before `/build` writes production code.
 
-**Input:** 2+ screen references (Stitch IDs, descriptions, or spec references like "Arx_4-1-1-3")
+**Pipeline: Code-First, Figma-Second.**
 
-**Process:**
-
-1. Call `mcp__stitch__list_screens` to find referenced screens
-2. If any screens don't exist yet, generate them via `quick`
-3. Call `mcp__stitch__edit_screens` to add navigation connections:
-   - Define tap targets and their destinations
-   - Set transition types (slide, fade, modal)
-   - Add back navigation
-4. Present the connected flow for review
-5. Map the flow to spec structure (which Arx_4-1-X screens are represented)
-
-**Output:** Connected prototype. Write flow documentation to `outputs/think/design/{slug}-flow.md`. Suggest: "Promote to `specs/Arx_4-1-1-0_Navigation_and_IA.md` update?"
-
----
-
-## full <brief>
-
-**Purpose:** Complete design pipeline from sketch to production-ready specs. This is the default if no sub-command matches.
-
-If `$ARGUMENTS` doesn't start with a recognized sub-command (quick, variants, flow, system, sync), treat the entire argument as a design brief and run the full pipeline.
-
-### Phase 0: Stitch Quick Sketch
-
-Run the same process as `quick` above. Present the sketch. Then proceed automatically to Phase 1-3 unless Gary says stop.
-
-### Phase 1-3: Full Design Swarm
-
-**Launch 3 agents in parallel:**
-
-1. **Agent 1 (mobile-design-engine):** Invoke the mobile-design-engine skill with the full 6-phase pipeline:
-   - Phase 0: Deep Discovery (5+ rounds of questioning)
-   - Phase 1: Research (iOS HIG, Material Design 3, benchmark apps)
-   - Phase 2: UX Architecture (screen inventory, flows, density classification)
-   - Phase 3: Screen Design (pixel-level specs, all states)
-   - Phase 4: Animation Design (motion language, spring parameters, delight moments)
-   - Phase 5: Prototype (deployable React + Tailwind + Framer Motion)
-   - If a Stitch screen exists from Phase 0, pass its HTML as starting context. The agent refines rather than starting from scratch.
-
-2. **Agent 2 (ui-ux-pro-max):** Invoke the ui-ux-pro-max skill. Focus on:
-   - Design system generation (67 styles, 161 palettes, 57 font pairings)
-   - Industry-specific reasoning (fintech/crypto rules)
-   - Anti-pattern detection
-   - Pre-delivery checklist
-   - If variants were generated in Phase 0.5, evaluate all variants for design system compliance.
-
-3. **Agent 3 (Anthropic Design Suite):** Use anthropic-skills in sequence:
-   - design-discovery -> user research and problem framing
-   - design-interaction -> interaction patterns and affordances
-   - design-ui-animation -> motion and micro-interaction specifications
-   - canvas-design -> visual mockup generation
-   - This agent provides the "Anthropic taste" — bold, non-generic, anti-AI-aesthetic.
-
-**Synthesis:** Compare all 3 outputs. For each design decision:
-
-- If all 3 agree -> adopt
-- If 2 agree, 1 differs -> adopt majority, note the minority view
-- If all 3 differ -> present options to Gary with recommendation
-- Always pick the bolder, more opinionated choice over the safe one
-
-### Phase 4: Stitch -> HTML Bridge
-
-After the swarm synthesis, convert the winning design into prototype-ready code:
-
-1. Extract HTML/CSS from the Stitch screen (`get_screen`)
-2. Remap Stitch MD3 color tokens to Arx CSS variables (primary -> Stone, surface -> Chamber, etc.)
-3. Remove gradients, replace pure white with Starlight, add safe-area handling
-4. Add Geist Mono / JetBrains Mono for numeric data
-5. Output as a draft in `apps/web-prototype/drafts/` ready for `/build prototype` integration
-
-**Exit Gate:** "Can you show the screen where the user feels relief from their pain?" — if not, the design doesn't solve the problem yet.
-
-**Output:** Write design specs to `outputs/think/design/{feature_slug}.md`. Then suggest: "Promote to `specs/Arx_4-1-X_{Slug}.md`?" If new design tokens were introduced, suggest updating `specs/Arx_4-2_Design_System.md`. If new screens were added, suggest updating `specs/Arx_4-1-0_Experience_Design_Index.md`.
-
----
-
-## system
-
-**Purpose:** Update design system tokens. Manage the canonical design language.
-
-**Process:**
-
-1. Read `specs/Arx_4-2_Design_System.md` in full
-2. Read `DESIGN.md` for current Stitch-consumable tokens
-3. Read `apps/web-prototype/SOUL.md` for implementation constraints
-4. Identify what needs updating based on Gary's input:
-   - New color tokens
-   - Typography scale changes
-   - Spacing/sizing adjustments
-   - Component pattern additions
-   - Animation/motion tokens
-5. Propose changes in a diff format: what's being added, modified, or deprecated
-6. On approval, update `specs/Arx_4-2_Design_System.md`
-7. Flag downstream files that need updating (DESIGN.md, CSS variables, component styles)
-
-**Output:** Updated spec. List of downstream files to sync.
-
----
-
-## sync
-
-**Purpose:** Bidirectional sync between design system sources. Ensure consistency across all design artifacts.
-
-**Sync chain:** `specs/Arx_4-2_Design_System.md` <-> `DESIGN.md` <-> Figma <-> Stitch
-
-**Process:**
-
-1. Read all four sources (where available):
-   - `specs/Arx_4-2_Design_System.md` — canonical spec
-   - `DESIGN.md` — Stitch-consumable format
-   - Figma variables via `mcp__figma__get_variable_defs` (if Figma file connected)
-   - Stitch project tokens via `mcp__stitch__list_projects`
-2. Diff all sources against each other
-3. Report discrepancies:
+The 2026 paradigm: build in code first (fastest iteration, real interactions, Apple-level craft), then push to Figma for design handoff. This inverts the traditional design→code flow.
 
 ```
-Sync Report:
-  spec -> DESIGN.md: 3 tokens out of sync (Stone-600, spacing-xl, font-mono)
-  spec -> Figma: 2 variables missing (accent-warning, radius-card)
-  DESIGN.md -> Stitch: in sync
+Build Card → HTML Prototype (code-first) → Preview Verify → Approve → Figma Recreation
+     ↑              ↑                            ↑
+   specs/      DESIGN.md +              Claude Preview at
+               Apple Craft Ref           390×844 viewport
 ```
 
-4. Propose resolution for each discrepancy (spec is source of truth)
-5. On approval, update all downstream sources
-6. Uses design-sync skill if available
+**Tool priority (primary → fallback):**
+
+| Priority | Tool | When | Output |
+|---|---|---|---|
+| **1 (Primary)** | HTML prototype + Claude Preview | Always — fastest iteration, real interactions | `apps/web-prototype/{screen}.html` |
+| **2 (Handoff)** | Figma MCP `use_figma` | After approval — design system components | Figma file URL |
+| **3 (Explore)** | AIDesigner MCP | Creative exploration, moodboarding | HTML + PNG |
+| **4 (Alt)** | Stitch MCP | Alternative directions | HTML via stitch-design skill |
+
+**Pre-flight checks:**
+
+- [ ] Build card exists for this screen? If not → run `card` first
+- [ ] Build card has `## Feel` section? If not → add feel token reference
+- [ ] DESIGN.md is current? Check `Last generated:` date in header
+- [ ] Apple Craft Reference exists? `outputs/think/design/Apple_Design_Craft_Reference.md`
+
+### The Code-First Pipeline
+
+#### Step 1: Gather Context (parallel reads)
+
+Read in parallel:
+- Build card: `specs/Arx_4-1-1-{module}_{screen}.md`
+- Design system: `DESIGN.md` (primary, 380 lines)
+- Apple craft: `outputs/think/design/Apple_Design_Craft_Reference.md` (animation curves, glass specs, micro-interactions)
+- Fixture data: `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
+- Feel token: look up the card's `## Feel` token in DESIGN.md §6.9
+
+#### Step 2: Generate HTML Prototype
+
+Dispatch a subagent with `mode: bypassPermissions` to write a single self-contained HTML file.
+
+**Agent prompt must include:**
+- Full build card content (layout, data, states, components, acceptance)
+- ALL design tokens from DESIGN.md §1 (surfaces, colors, text, borders, semantic, regime)
+- Apple craft specs: animation curves, spring presets, glass tiers, micro-interactions
+- Typography stack: Inter + JetBrains Mono from Google Fonts CDN
+- Viewport: `<meta name="viewport" content="width=390">` + 390×844 frame
+- Fixture data: exact values from Arx_4-1-1-8 (no improvisation)
+
+**Mandatory prototype features (from Apple Craft Reference):**
+
+| Feature | Spec |
+|---|---|
+| Loading skeleton | 1.5-2s shimmer, left-to-right gradient sweep, then stagger-reveal |
+| Price tick flash | 150ms color flash + 400ms fade to neutral, every 1.5-2s |
+| List stagger-in | Items fade + slide up, 40ms stagger between rows |
+| Card tap feedback | Scale to 0.97-0.98 on press, spring back 200ms |
+| Glass cards | `backdrop-filter: blur(20px) saturate(150%)`, 3-layer shadow, stone-tinted |
+| Tab indicator slide | 250ms spring easing between tab positions |
+| Sparkline draw | SVG path draws left-to-right, 600ms ease-out-expo |
+| Swipe-to-action | Touch swipe left reveals action button, 200ms |
+| Search focus expand | Bar expands, Cancel appears, background dims, 300ms |
+| All state transitions | Every state change animated — no instant visual pops |
+
+**Mandatory CSS tokens:**
+```css
+--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+--ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+--ease-spring: cubic-bezier(0.17, 0.89, 0.32, 1.28);
+--duration-instant: 100ms;
+--duration-fast: 200ms;
+--duration-normal: 300ms;
+--duration-slow: 500ms;
+```
+
+**Output:** `apps/web-prototype/{screen-slug}.html`
+
+#### Step 3: Preview Verify
+
+1. Start preview server: `preview_start` → `arx-prototype`
+2. Navigate to the screen: `preview_eval` → `window.location.href = 'http://localhost:8080/{screen-slug}.html'`
+3. Set viewport: `preview_resize` → 390×844
+4. Wait for load + animations: 3-4 seconds
+5. Screenshot: `preview_screenshot`
+6. Check console: `preview_console_logs` → no errors
+7. Test interactions: `preview_click` on tabs, search, cards
+8. Screenshot after interaction to verify animation states
+
+**Quality checklist (from screenshot):**
+- [ ] Dark violet surfaces, no pure black/white/navy
+- [ ] Stone for actions, Water for data — never mixed
+- [ ] Glass cards have visible blur + 3-layer shadow
+- [ ] Prices in mono font with tabular-nums
+- [ ] Real minus (−) not hyphen (-)
+- [ ] Positive green, Negative red on data only
+- [ ] 44px minimum touch targets
+- [ ] Content within 390px, safe areas respected
+- [ ] Regime indicators visible and color-coded
+- [ ] Typography hierarchy clear from weight/size alone
+
+#### Step 4: Run Design Gates
+
+1. **Gate 3c: Feel Pass** — Score 1-5 on scroll rhythm, optical weight, negative space, typography hierarchy, motion narrative. Fix any ≤ 2.
+2. **5 Premium Litmus Tests** from Arx_4-3 §2.
+3. If issues found → edit HTML → re-preview → re-screenshot → re-check.
+
+#### Step 5: Present for Approval
+
+```
+VISUAL CHECKPOINT: {screen}
+[screenshot from Claude Preview]
+
+Interactions demonstrated: {list}
+Apple craft applied: {skeleton, price ticks, stagger-in, glass, springs}
+
+Key design decisions:
+- {decision 1}: {why}
+- {decision 2}: {why}
+
+Feel Pass: {scores}/5 per dimension
+Litmus: {PASS/FAIL per test}
+
+Approve this visual? Or adjust before we build.
+```
+
+Wait for approval. Do NOT proceed to `/build` or Figma until Gary says "go."
+
+#### Step 6: Figma Recreation (post-approval, optional)
+
+After approval, recreate in Figma using design system components for handoff.
+
+1. Load `figma:figma-use` + `figma:figma-generate-design` skills
+2. Use existing Figma file: `pG8iP5irNjYfGbkce31d9V`
+3. Create new page named `{Screen ID} — {Screen Name}`
+4. Build incrementally (one section per `use_figma` call):
+   - Import components from the Components page by key
+   - Bind variables (colors, spacing, radii) — never hardcode hex
+   - Use auto-layout on all containers
+   - Return all created node IDs
+5. Screenshot each section for verification
+6. Screenshot full screen, compare against HTML prototype
+
+**Figma API gotchas (from research):**
+- Set `layoutSizingHorizontal/Vertical = 'FILL'` AFTER `appendChild`
+- Colors: 0-1 range (divide hex by 255)
+- Font loading: `await figma.loadFontAsync({ family: "Inter", style: "Semi Bold" })` — note the space in "Semi Bold"
+- Fills are immutable arrays — clone, modify, reassign
+- `setBoundVariableForPaint` returns a NEW paint — capture it
+- Page context resets between calls — always `await figma.setCurrentPageAsync(page)` first
+
+**For flows:** Generate linked screens. Each screen follows the same pipeline.
+
+**Output:** HTML prototype path + (optionally) Figma file URL.
 
 ---
 
-## render <screen-ref> [--target web|mobile|both]
+## system [add|update|audit]
 
-**Purpose:** Translate a design output into platform-ready code scaffolds. Bridges the gap between "what it looks like" and "what you build it with." No more manual translation from design specs to components.
+**Purpose:** Maintain the canonical design language — tokens, components, and cross-source sync.
 
-**Input:** A screen reference — either a design output file path, a screen name from a previous `/design` session, or a spec reference (e.g., `Arx_4-1-1-3`).
+**Sub-actions:**
 
-**Default target:** `mobile` (React Native + Tailwind). Use `--target web` for HTML/CSS, `--target both` for both.
+- `system add` — Add a new token or component to Arx_4-2 → regenerate DESIGN.md
+- `system update` — Modify existing token values (propagate to all files)
+- `system audit` — Check consistency across all design sources. Report drift.
+- `system sync` — Regenerate DESIGN.md (procedure below)
 
-**Before rendering (always):**
-1. Load the `arx-ui-stack` skill for package versions, CDNs, and usage patterns
-2. Read `specs/Arx_4-2_Design_System.md` for token-to-code mappings
-3. Read the design output being rendered (from `outputs/think/design/` or Stitch screen)
+**Sync targets (when tokens change, propagate to ALL):**
 
-**Process:**
+1. `specs/Arx_4-2_Design_System.md` — canonical source of truth (human-edited)
+2. `specs/Arx_4-3_Design_Taste.md` — taste framework (human-edited)
+3. `DESIGN.md` — **AUTO-GENERATED** from 4-2 + 4-3 + build card registries. Never hand-edit.
+4. Figma variables — via `figma:figma-generate-library` or `use_figma` with `get_variable_defs`
+5. `apps/web-prototype` CSS `:root` variables
 
-### For `--target web` (HTML/CSS for `apps/web-prototype/`)
+### system sync procedure
 
-1. Extract design specs: colors, typography, spacing, layout, states
-2. Map design tokens to CSS variables:
-   ```
-   Design spec: "Stone-600 border"  → var(--color-stone-600)
-   Design spec: "8px padding"       → var(--spacing-2)
-   Design spec: "Geist Mono"        → var(--font-mono)
-   ```
-3. Generate single-file HTML with:
-   - CSS variables from design system
-   - Semantic HTML structure
-   - All states (loading, empty, error, populated, disabled)
-   - Mobile-first layout (390x844)
-   - No inline styles for state toggles (use CSS classes)
-4. Output to `apps/web-prototype/drafts/{screen-name}-v1.html`
-5. Anti-slop check before saving
+1. Read `specs/Arx_4-2_Design_System.md` §2 (colors), §3 (typography), §4 (spacing), §5 (elevation), §7 (motion), §8 (icons)
+2. Read `specs/Arx_4-3_Design_Taste.md` §1 (reference floor), §2 (litmus tests), §3 (feel targets), §6 (anti-patterns)
+3. Scan all `specs/Arx_4-1-1-*` build cards for icon and embellishment additions not yet in DESIGN.md
+4. Regenerate `DESIGN.md` with 7-section structure, updating the `Last generated:` date in the header
+5. Verify: diff the new DESIGN.md against the old — report what changed
+6. If Figma MCP available: compare Figma variables against DESIGN.md §1 tokens — report drift
 
-### For `--target mobile` (React Native for `apps/mobile/`)
+> **When to run:** After any edit to 4-2 or 4-3. After adding a new build card with new icons/embellishments. Before any `/design ui` session.
 
-1. Extract design specs: colors, typography, spacing, layout, states, interactions
-2. Map design tokens to the mobile stack:
-   ```
-   Design spec: "Stone-600 border"  → className="border-stone-600" (NativeWind/Tailwind)
-   Design spec: "8px padding"       → className="p-2"
-   Design spec: "Geist Mono"        → fontFamily: "GeistMono" (pre-loaded in app)
-   Design spec: "slide-in from right" → Framer Motion: { initial: {x: 100}, animate: {x: 0} }
-   ```
-3. Generate component scaffold:
-   ```
-   apps/mobile/src/screens/{ScreenName}.tsx     ← Screen component
-   apps/mobile/src/components/{Feature}/         ← Extracted sub-components
-   ```
-4. Include:
-   - Correct imports (React Native, NativeWind, Framer Motion, Zustand)
-   - TypeScript types for props and state
-   - All visual states as separate render branches
-   - Placeholder hooks (e.g., `useCopyTradeLeaders()`) with TODO comments
-   - Accessibility labels
-5. Do NOT include business logic — only the visual scaffold. `/build feature` fills in logic.
+**Tools:** Style Dictionary, Figma MCP (get_variable_defs, use_figma, search_design_system), shadcn MCP, design-sync skill.
 
-### For `--target both`
+**Audit checks:**
+- Token values match across all 5 targets
+- Component names match between Arx_4-2, build cards, and Figma
+- Icon registry in DESIGN.md §3 covers all card types referenced in build cards
+- No hardcoded colors in build card Layout sections (should be token names)
+- DESIGN.md is in sync with 4-2 + 4-3 sources (check generated header date)
 
-Run web and mobile in sequence. Web first (faster to verify visually), then mobile.
+---
 
-**Token mapping table (auto-applied):**
-
-| Design Token | CSS Variable | Tailwind Class | React Native |
-|-------------|-------------|----------------|-------------|
-| Stone-50 | `--color-stone-50` | `stone-50` | `colors.stone[50]` |
-| Stone-600 | `--color-stone-600` | `stone-600` | `colors.stone[600]` |
-| spacing-1 (4px) | `--spacing-1` | `p-1` / `m-1` | `4` |
-| spacing-2 (8px) | `--spacing-2` | `p-2` / `m-2` | `8` |
-| font-mono | `--font-mono` | `font-mono` | `"GeistMono"` |
-| font-sans | `--font-sans` | `font-sans` | `"GeistSans"` |
-| radius-sm | `--radius-sm` | `rounded-sm` | `borderRadius: 4` |
-| radius-md | `--radius-md` | `rounded-md` | `borderRadius: 8` |
-
-Extend this table from `specs/Arx_4-2_Design_System.md` on each render.
-
-**Output:**
-
-```
-Render: {screen-name} → mobile
-  Created: apps/mobile/src/screens/CopyTradeLeaderboard.tsx (scaffold)
-  Created: apps/mobile/src/components/CopyTrade/LeaderCard.tsx
-  Created: apps/mobile/src/components/CopyTrade/index.ts (exports)
-
-  Tokens mapped: 14 design tokens → Tailwind classes
-  States covered: loading, empty, populated, error
-  Placeholders: useCopyTradeLeaders() hook (TODO)
-
-  Next: /build feature "copy trading leaderboard" to fill in logic and tests
-```
-
-**Exit gate:** The scaffold must compile without errors (no missing imports, no type errors). It should render a static version of the design with placeholder data. If it doesn't compile, fix before outputting.
-
-**Output:** Sync report + updated files.
+## Safety (when hooks unavailable)
+Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation. Never auto-approve destructive operations.

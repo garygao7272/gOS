@@ -1,389 +1,333 @@
 #!/usr/bin/env bash
-# gOS Bootstrap — Install all dependencies for a fresh clone
-# Usage: ./install.sh          (install everything)
-#        ./install.sh --check  (health check only, no installs)
+# gOS Bootstrap & Installer
 #
-# Idempotent: safe to re-run. Skips already-installed tools.
+# Usage:
+#   ./install.sh                         Health check only (default)
+#   ./install.sh --install               Install tools (no project wiring)
+#   ./install.sh --bootstrap <dir>       Full replication into target project
+#   ./install.sh --bootstrap             Interactive (asks for project dir)
+#
+# Run from inside the gOS repo clone.
 
 set -euo pipefail
 
-# Toolkit location — shared tools live outside any single project
-TOOLKIT="$HOME/Documents/Claude Working Folder/toolkit"
+# ── Config ──────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GOS_DIR="$SCRIPT_DIR"
+WORKING_DIR="$(dirname "$GOS_DIR")"
+TOOLKIT="$WORKING_DIR/toolkit"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# ── Colors ──────────────────────────────────────────────────────
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+CYAN='\033[0;36m'; BOLD='\033[1m'; DIM='\033[2m'; NC='\033[0m'
+PASS="${GREEN}✓${NC}"; FAIL="${RED}✗${NC}"; WARN="${YELLOW}!${NC}"; INFO="${CYAN}→${NC}"
 
-PASS="${GREEN}✓${NC}"
-FAIL="${RED}✗${NC}"
-WARN="${YELLOW}!${NC}"
-INFO="${CYAN}→${NC}"
+ERRORS=0; WARNINGS=0; INSTALLED=0
 
-CHECK_ONLY=false
-ERRORS=0
-WARNINGS=0
-
-if [[ "${1:-}" == "--check" ]]; then
-    CHECK_ONLY=true
-    echo -e "${CYAN}gOS Health Check${NC}"
-    echo "================"
-else
-    echo -e "${CYAN}gOS Bootstrap${NC}"
-    echo "=============="
-fi
-
-# --- Helpers ---
-
+# ── Helpers ─────────────────────────────────────────────────────
 check_cmd() {
-    local name="$1"
-    local cmd="$2"
-    local version_flag="${3:---version}"
-
-    if "$cmd" "$version_flag" &>/dev/null; then
-        local ver
-        ver=$("$cmd" "$version_flag" 2>&1 | head -1)
-        echo -e "  ${PASS} ${name}: ${ver}"
-        return 0
+    local name="$1" cmd="$2" flag="${3:---version}"
+    if "$cmd" "$flag" &>/dev/null; then
+        local ver; ver=$("$cmd" "$flag" 2>&1 | head -1)
+        echo -e "  ${PASS} ${name}: ${ver}"; return 0
     else
-        echo -e "  ${FAIL} ${name}: not found"
-        ((ERRORS++))
-        return 1
+        echo -e "  ${FAIL} ${name}: not found"; ((ERRORS++)); return 1
     fi
 }
 
-check_path() {
-    local name="$1"
-    local path="$2"
-
-    if [[ -e "$path" ]]; then
-        echo -e "  ${PASS} ${name}: ${path}"
-        return 0
-    else
-        echo -e "  ${FAIL} ${name}: missing (${path})"
-        ((ERRORS++))
-        return 1
-    fi
+install_cmd() {
+    local name="$1" install_fn="$2"
+    echo -e "  ${INFO} Installing ${name}..."
+    eval "$install_fn"
+    ((INSTALLED++))
 }
 
-check_dir() {
-    local name="$1"
-    local path="$2"
+# ── Parse Args ──────────────────────────────────────────────────
+MODE="check"
+TARGET_DIR=""
 
-    if [[ -d "$path" ]]; then
-        local count
-        count=$(find "$path" -maxdepth 1 -type f | wc -l | tr -d ' ')
-        echo -e "  ${PASS} ${name}: ${path} (${count} files)"
-        return 0
-    else
-        echo -e "  ${FAIL} ${name}: missing (${path})"
-        ((ERRORS++))
-        return 1
-    fi
-}
+case "${1:-}" in
+    --bootstrap) MODE="bootstrap"; TARGET_DIR="${2:-}" ;;
+    --install)   MODE="install" ;;
+    --check|-c)  MODE="check" ;;
+    "")          MODE="check" ;;
+    *)           echo "Unknown: $1. Usage: ./install.sh [--check|--install|--bootstrap <dir>]"; exit 1 ;;
+esac
 
-ensure_dir() {
-    local path="$1"
-    if [[ ! -d "$path" ]]; then
-        mkdir -p "$path"
-        echo -e "  ${INFO} Created: ${path}"
-    fi
-}
+# ── Header ──────────────────────────────────────────────────────
+echo ""
+echo -e "${CYAN}${BOLD}gOS Installer${NC} — $(uname -s) $(uname -m)"
+echo -e "${DIM}Mode: ${MODE}  |  gOS: ${GOS_DIR}  |  Toolkit: ${TOOLKIT}${NC}"
+echo "────────────────────────────────────────────────"
 
-# --- Detect platform ---
+[[ "$(uname -s)" == "Darwin" ]] && export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-OS=$(uname -s)
-ARCH=$(uname -m)
-echo -e "\nPlatform: ${OS} ${ARCH}"
-
-# Ensure brew is in PATH (macOS)
-if [[ "$OS" == "Darwin" ]]; then
-    export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-fi
-
-# --- 1. Core Runtime ---
-
+# ════════════════════════════════════════════════════════════════
+# PHASE 1: Core Runtime
+# ════════════════════════════════════════════════════════════════
 echo -e "\n${CYAN}1. Core Runtime${NC}"
 
-check_cmd "Python3" "python3"
-check_cmd "Git" "git"
+check_cmd "Python3" "python3" || true
+check_cmd "Git" "git" || true
 
-# Node.js — check multiple paths
-if command -v node &>/dev/null; then
-    check_cmd "Node.js" "node"
-elif [[ -x "/usr/local/bin/node" ]]; then
-    echo -e "  ${WARN} Node.js: found at /usr/local/bin/node (not in PATH)"
-    echo -e "    Add to PATH: export PATH=\"/usr/local/bin:\$PATH\""
-    ((WARNINGS++))
-elif ! $CHECK_ONLY; then
-    echo -e "  ${INFO} Installing Node.js via brew..."
-    brew install node
-    check_cmd "Node.js" "node"
-else
-    echo -e "  ${FAIL} Node.js: not found"
-    ((ERRORS++))
-fi
+if command -v node &>/dev/null; then check_cmd "Node.js" "node" || true
+elif [[ "$MODE" != "check" ]]; then install_cmd "Node.js" "brew install node"
+else echo -e "  ${FAIL} Node.js: not found"; ((ERRORS++)); fi
 
-# npm/npx
-if command -v npx &>/dev/null; then
-    check_cmd "npx" "npx"
-elif [[ -x "/usr/local/bin/npx" ]]; then
-    echo -e "  ${WARN} npx: found at /usr/local/bin/npx (not in PATH)"
-    ((WARNINGS++))
-fi
+command -v npx &>/dev/null && check_cmd "npx" "npx" || true
+if command -v gh &>/dev/null; then check_cmd "gh CLI" "gh" || true
+elif [[ "$MODE" != "check" ]]; then install_cmd "gh CLI" "brew install gh"
+else echo -e "  ${FAIL} gh CLI: not found"; ((ERRORS++)); fi
 
-# gh CLI
-if command -v gh &>/dev/null; then
-    check_cmd "gh CLI" "gh"
-elif ! $CHECK_ONLY; then
-    echo -e "  ${INFO} Installing gh CLI via brew..."
-    brew install gh
-    check_cmd "gh CLI" "gh"
-else
-    echo -e "  ${FAIL} gh CLI: not found"
-    ((ERRORS++))
-fi
-
-# --- 2. gOS CLI Tools ---
-
+# ════════════════════════════════════════════════════════════════
+# PHASE 2: CLI Tools
+# ════════════════════════════════════════════════════════════════
 echo -e "\n${CYAN}2. CLI Tools${NC}"
 
-# OfficeCLI
+mkdir -p "$TOOLKIT" 2>/dev/null || true
+
 if [[ -x "$TOOLKIT/officecli" ]]; then
     check_cmd "OfficeCLI" "$TOOLKIT/officecli"
-elif ! $CHECK_ONLY; then
-    echo -e "  ${INFO} Installing OfficeCLI..."
-    mkdir -p "$TOOLKIT"
-    if [[ "$ARCH" == "arm64" ]]; then
-        OFFICECLI_ASSET="officecli-mac-arm64"
+elif [[ "$MODE" != "check" ]]; then
+    ARCH=$(uname -m)
+    [[ "$ARCH" == "arm64" ]] && ASSET="officecli-mac-arm64" || ASSET="officecli-mac-x64"
+    install_cmd "OfficeCLI" "curl -sL -o '$TOOLKIT/officecli' 'https://github.com/iOfficeAI/OfficeCLI/releases/latest/download/$ASSET' && chmod +x '$TOOLKIT/officecli'"
+else
+    echo -e "  ${FAIL} OfficeCLI: not found"; ((ERRORS++))
+fi
+
+if command -v soffice &>/dev/null; then check_cmd "LibreOffice" "soffice"
+elif [[ "$MODE" != "check" ]]; then install_cmd "LibreOffice" "brew install --cask libreoffice"
+else echo -e "  ${WARN} LibreOffice: not found (optional)"; ((WARNINGS++)); fi
+
+[[ -d "$WORKING_DIR/MiroFish" ]] && echo -e "  ${PASS} MiroFish" || { echo -e "  ${WARN} MiroFish: not found"; ((WARNINGS++)); }
+[[ -d "$WORKING_DIR/Dux" ]] && echo -e "  ${PASS} Dux" || { echo -e "  ${WARN} Dux: not found"; ((WARNINGS++)); }
+
+# ════════════════════════════════════════════════════════════════
+# PHASE 3: Toolkit MCP Servers
+# ════════════════════════════════════════════════════════════════
+echo -e "\n${CYAN}3. Toolkit MCP Servers${NC}"
+
+for mcp_dir in hyperliquid-mcp spec-rag-mcp sources-mcp; do
+    if [[ -d "$TOOLKIT/$mcp_dir" ]]; then
+        echo -e "  ${PASS} $mcp_dir"
+    elif [[ -d "$GOS_DIR/toolkit/$mcp_dir" && "$MODE" != "check" ]]; then
+        cp -R "$GOS_DIR/toolkit/$mcp_dir" "$TOOLKIT/"
+        echo -e "  ${INFO} Installed $mcp_dir"; ((INSTALLED++))
     else
-        OFFICECLI_ASSET="officecli-mac-x64"
-    fi
-    curl -sL -o "$TOOLKIT/officecli" \
-        "https://github.com/iOfficeAI/OfficeCLI/releases/latest/download/${OFFICECLI_ASSET}"
-    chmod +x "$TOOLKIT/officecli"
-    check_cmd "OfficeCLI" "$TOOLKIT/officecli"
-else
-    echo -e "  ${FAIL} OfficeCLI: not found at ~/bin/officecli"
-    ((ERRORS++))
-fi
-
-# MiroFish (project engine — check only, no auto-install)
-if [[ -d "$TOOLKIT/../MiroFish" ]] || python3 -c "import mirofish" &>/dev/null 2>&1; then
-    echo -e "  ${PASS} MiroFish: available"
-else
-    echo -e "  ${WARN} MiroFish: not found (needed for /simulate market)"
-    ((WARNINGS++))
-fi
-
-# Dux (separate repo — check only)
-if [[ -d "$HOME/Documents/Dux" ]] || [[ -d "../Dux" ]]; then
-    echo -e "  ${PASS} Dux: found"
-else
-    echo -e "  ${WARN} Dux: not found (needed for /simulate scenario)"
-    ((WARNINGS++))
-fi
-
-# LibreOffice
-if command -v soffice &>/dev/null; then
-    check_cmd "LibreOffice" "soffice"
-elif [[ -x "/Applications/LibreOffice.app/Contents/MacOS/soffice" ]]; then
-    echo -e "  ${WARN} LibreOffice: installed but soffice not in PATH"
-    ((WARNINGS++))
-elif ! $CHECK_ONLY; then
-    echo -e "  ${INFO} Installing LibreOffice via brew (this takes a few minutes)..."
-    brew install --cask libreoffice
-    check_cmd "LibreOffice" "soffice"
-else
-    echo -e "  ${FAIL} LibreOffice: not found"
-    ((ERRORS++))
-fi
-
-# --- 3. Directory Structure ---
-
-echo -e "\n${CYAN}3. Directory Structure${NC}"
-
-DIRS=(
-    "specs"
-    "outputs/think/research"
-    "outputs/think/discover"
-    "outputs/think/design"
-    "outputs/think/decide"
-    "outputs/briefings"
-    "outputs/gos-jobs"
-    "apps/web-prototype"
-    "apps/mobile"
-    "tools"
-    "sessions"
-    "memory"
-    "Archive"
-)
-
-for dir in "${DIRS[@]}"; do
-    if $CHECK_ONLY; then
-        check_dir "$dir" "$dir"
-    else
-        ensure_dir "$dir"
-        echo -e "  ${PASS} ${dir}"
+        echo -e "  ${FAIL} $mcp_dir: missing"; ((ERRORS++))
     fi
 done
 
-# --- 4. gOS Core Files ---
+[[ -f "$TOOLKIT/stitch-proxy.mjs" ]] && echo -e "  ${PASS} stitch-proxy" || {
+    [[ -f "$GOS_DIR/toolkit/stitch-proxy.mjs" && "$MODE" != "check" ]] && cp "$GOS_DIR/toolkit/stitch-proxy.mjs" "$TOOLKIT/" && echo -e "  ${INFO} Installed stitch-proxy" || echo -e "  ${WARN} stitch-proxy: missing"; ((WARNINGS++))
+}
 
-echo -e "\n${CYAN}4. gOS Core Files${NC}"
+[[ -d "$TOOLKIT/hyperliquid-mcp/node_modules" ]] && echo -e "  ${PASS} hyperliquid deps" || {
+    [[ -f "$TOOLKIT/hyperliquid-mcp/package.json" && "$MODE" != "check" ]] && install_cmd "hyperliquid deps" "(cd '$TOOLKIT/hyperliquid-mcp' && npm install --quiet 2>/dev/null)" || { echo -e "  ${WARN} hyperliquid deps: missing"; ((WARNINGS++)); }
+}
 
-CORE_FILES=(
-    "CLAUDE.md"
-    ".claude/commands/gos.md"
-    ".claude/commands/think.md"
-    ".claude/commands/build.md"
-    ".claude/commands/review.md"
-    ".claude/commands/design.md"
-    ".claude/commands/ship.md"
-    ".claude/commands/evolve.md"
-    ".claude/commands/simulate.md"
-    ".claude/commands/refine.md"
-    ".claude/agents/README.md"
-    ".claude/agents/team-registry.md"
-    ".claude/agents/researcher.md"
-    ".claude/agents/architect.md"
-    ".claude/agents/engineer.md"
-    ".claude/agents/reviewer.md"
-    ".claude/agents/designer.md"
-    ".claude/agents/verifier.md"
-    ".claude/skills/financial-modeling/SKILL.md"
-    ".claude/skills/design-sync/SKILL.md"
-    ".claude/skills/arx-ui-stack/SKILL.md"
-    ".claude/settings.json"
-    ".claude/launch.json"
-    ".mcp.json"
-    "tools/MANIFEST.md"
-)
+# ════════════════════════════════════════════════════════════════
+# PHASE 4: Python Environments
+# ════════════════════════════════════════════════════════════════
+echo -e "\n${CYAN}4. Python Environments${NC}"
 
-for f in "${CORE_FILES[@]}"; do
-    check_path "$(basename "$f")" "$f"
-done
-
-# --- 5. Python Virtual Environments ---
-
-echo -e "\n${CYAN}5. Python Virtual Environments${NC}"
-
-VENVS=(
-    "$TOOLKIT/spec-rag-env"
-    "$TOOLKIT/sources-env"
-    "$TOOLKIT/notte-env"
-)
-
-for venv in "${VENVS[@]}"; do
-    if [[ -d "$venv" && -x "$venv/bin/python" ]]; then
-        echo -e "  ${PASS} ${venv}"
-    elif ! $CHECK_ONLY; then
-        echo -e "  ${INFO} Creating ${venv}..."
-        python3 -m venv "$venv"
-        # Install requirements if they exist
-        req_dir="${venv%-env}-mcp"
-        if [[ -f "${req_dir}/requirements.txt" ]]; then
-            "$venv/bin/pip" install -q -r "${req_dir}/requirements.txt"
-            echo -e "  ${PASS} ${venv} (with dependencies)"
-        else
-            echo -e "  ${PASS} ${venv} (empty — install deps manually)"
-        fi
+for venv_name in spec-rag-env sources-env notte-env; do
+    mcp_name="${venv_name%-env}-mcp"
+    if [[ -d "$TOOLKIT/$venv_name" && -x "$TOOLKIT/$venv_name/bin/python" ]]; then
+        echo -e "  ${PASS} $venv_name"
+    elif [[ "$MODE" != "check" ]]; then
+        python3 -m venv "$TOOLKIT/$venv_name"
+        for req_path in "$TOOLKIT/$mcp_name/requirements.txt" "$GOS_DIR/toolkit/$mcp_name/requirements.txt"; do
+            if [[ -f "$req_path" ]]; then
+                "$TOOLKIT/$venv_name/bin/pip" install -q -r "$req_path"
+                break
+            fi
+        done
+        echo -e "  ${PASS} $venv_name (created)"; ((INSTALLED++))
     else
-        echo -e "  ${FAIL} ${venv}: missing"
-        ((ERRORS++))
+        echo -e "  ${FAIL} $venv_name: missing"; ((ERRORS++))
     fi
 done
 
-# --- 6. MCP Server Dependencies ---
+# ════════════════════════════════════════════════════════════════
+# PHASE 5: Bootstrap (--bootstrap mode only)
+# ════════════════════════════════════════════════════════════════
+if [[ "$MODE" == "bootstrap" ]]; then
+    echo -e "\n${CYAN}${BOLD}5. Bootstrap — Wire gOS into Project${NC}"
 
-echo -e "\n${CYAN}6. MCP Servers${NC}"
-
-# Hyperliquid MCP
-if [[ -f "$TOOLKIT/hyperliquid-mcp/index.js" ]]; then
-    if [[ -d "$TOOLKIT/hyperliquid-mcp/node_modules" ]]; then
-        echo -e "  ${PASS} Hyperliquid MCP (installed)"
-    elif ! $CHECK_ONLY; then
-        echo -e "  ${INFO} Installing Hyperliquid MCP deps..."
-        (cd "$TOOLKIT/hyperliquid-mcp" && npm install --quiet 2>/dev/null)
-        echo -e "  ${PASS} Hyperliquid MCP"
-    else
-        echo -e "  ${WARN} Hyperliquid MCP: found but node_modules missing"
-        ((WARNINGS++))
+    if [[ -z "$TARGET_DIR" ]]; then
+        echo -e "\n  Where is your project?"
+        echo -e "  ${DIM}Example: $WORKING_DIR/Arx${NC}"
+        echo -en "  ${BOLD}Project dir:${NC} "
+        read -r TARGET_DIR
     fi
-else
-    echo -e "  ${WARN} Hyperliquid MCP: $TOOLKIT/hyperliquid-mcp/index.js not found"
-    ((WARNINGS++))
+
+    TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
+    mkdir -p "$TARGET_DIR"
+    echo -e "  ${INFO} Target: $TARGET_DIR\n"
+
+    # Commands
+    echo -e "  ${CYAN}Commands${NC}"
+    mkdir -p "$TARGET_DIR/.claude/commands"
+    for f in "$GOS_DIR"/commands/*.md; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$TARGET_DIR/.claude/commands/"
+        echo -e "    ${PASS} $(basename "$f")"
+    done
+
+    # Agents
+    echo -e "  ${CYAN}Agents${NC}"
+    mkdir -p "$TARGET_DIR/.claude/agents"
+    for f in "$GOS_DIR"/agents/*.md; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$TARGET_DIR/.claude/agents/"
+        echo -e "    ${PASS} $(basename "$f")"
+    done
+
+    # Skills
+    echo -e "  ${CYAN}Skills${NC}"
+    for skill_dir in "$GOS_DIR"/skills/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        name=$(basename "$skill_dir")
+        mkdir -p "$TARGET_DIR/.claude/skills/$name"
+        cp "$skill_dir"* "$TARGET_DIR/.claude/skills/$name/" 2>/dev/null
+        echo -e "    ${PASS} $name"
+    done
+
+    # Core .claude files
+    echo -e "  ${CYAN}Core Files${NC}"
+    mkdir -p "$TARGET_DIR/.claude/rules" "$TARGET_DIR/.claude/middleware"
+    for f in gOS.md self-model.md launch.json; do
+        [[ -f "$GOS_DIR/.claude/$f" ]] && cp "$GOS_DIR/.claude/$f" "$TARGET_DIR/.claude/" && echo -e "    ${PASS} $f"
+    done
+    [[ -f "$GOS_DIR/settings/settings.json" ]] && cp "$GOS_DIR/settings/settings.json" "$TARGET_DIR/.claude/settings.json" && echo -e "    ${PASS} settings.json"
+    if [[ ! -f "$TARGET_DIR/.claude/settings.local.json" ]]; then
+        cp "$GOS_DIR/settings/settings.local.template.json" "$TARGET_DIR/.claude/settings.local.json"
+        echo -e "    ${PASS} settings.local.json (from template)"
+    else
+        echo -e "    ${WARN} settings.local.json exists — skipped"
+    fi
+    for f in "$GOS_DIR"/rules/arx/*.md; do
+        [[ -f "$f" ]] && cp "$f" "$TARGET_DIR/.claude/rules/" && echo -e "    ${PASS} rules/$(basename "$f")"
+    done
+
+    # .mcp.json
+    echo -e "  ${CYAN}.mcp.json${NC}"
+    if [[ -f "$GOS_DIR/toolkit/mcp-template.json" ]]; then
+        sed "s|__TOOLKIT__|$TOOLKIT|g" "$GOS_DIR/toolkit/mcp-template.json" > "$TARGET_DIR/.mcp.json"
+        echo -e "    ${PASS} .mcp.json (paths resolved to $TOOLKIT)"
+    fi
+
+    # CLAUDE.md
+    [[ -f "$GOS_DIR/CLAUDE.md" ]] && cp "$GOS_DIR/CLAUDE.md" "$TARGET_DIR/CLAUDE.md" && echo -e "    ${PASS} CLAUDE.md"
+
+    # Directories
+    echo -e "  ${CYAN}Directories${NC}"
+    for dir in specs outputs/think/research outputs/think/discover outputs/think/design outputs/think/decide outputs/briefings outputs/gos-jobs apps/web-prototype apps/mobile tools sessions memory Archive; do
+        mkdir -p "$TARGET_DIR/$dir"
+    done
+    echo -e "    ${PASS} 13 directories"
+
+    # Memory
+    echo -e "  ${CYAN}Memory${NC}"
+    for f in "$GOS_DIR"/memory/*.md; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$TARGET_DIR/memory/"
+        echo -e "    ${PASS} $(basename "$f")"
+    done
+
+    # Session state
+    [[ -f "$TARGET_DIR/sessions/scratchpad.md" ]] || echo "# Session State" > "$TARGET_DIR/sessions/scratchpad.md"
+    [[ -f "$TARGET_DIR/sessions/evolve_signals.md" ]] || echo "# Evolve Signals" > "$TARGET_DIR/sessions/evolve_signals.md"
+    echo -e "    ${PASS} session files"
+
+    # Manifest
+    [[ -f "$GOS_DIR/toolkit/MANIFEST.md" ]] && cp "$GOS_DIR/toolkit/MANIFEST.md" "$TARGET_DIR/tools/MANIFEST.md" && echo -e "    ${PASS} MANIFEST.md"
+
+    # ── Verification ────────────────────────────────────────────
+    echo -e "\n  ${CYAN}${BOLD}Verification${NC}"
+    CMD_COUNT=$(find "$TARGET_DIR/.claude/commands" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    AGENT_COUNT=$(find "$TARGET_DIR/.claude/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    SKILL_COUNT=$(find "$TARGET_DIR/.claude/skills" -maxdepth 2 -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
+    MEM_COUNT=$(find "$TARGET_DIR/memory" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+
+    for f in ".claude/commands/gos.md" ".claude/agents/README.md" ".claude/settings.json" ".mcp.json" "CLAUDE.md" "memory/MEMORY.md"; do
+        [[ -f "$TARGET_DIR/$f" ]] && echo -e "    ${PASS} $f" || { echo -e "    ${FAIL} $f"; ((ERRORS++)); }
+    done
+    echo -e "\n  ${BOLD}Installed:${NC} ${CMD_COUNT} commands, ${AGENT_COUNT} agents, ${SKILL_COUNT} skills, ${MEM_COUNT} memory files"
 fi
 
-# Playwright Chromium
-if npx playwright install --dry-run chromium &>/dev/null 2>&1; then
-    echo -e "  ${PASS} Playwright Chromium"
-else
-    if ! $CHECK_ONLY; then
-        echo -e "  ${INFO} Installing Playwright Chromium..."
-        npx playwright install chromium 2>/dev/null || true
-        echo -e "  ${PASS} Playwright Chromium"
-    else
-        echo -e "  ${WARN} Playwright Chromium: may need install"
-        ((WARNINGS++))
-    fi
-fi
+# ════════════════════════════════════════════════════════════════
+# Summary + Guided Manual Steps
+# ════════════════════════════════════════════════════════════════
+echo -e "\n${CYAN}${BOLD}═══ Summary ═══${NC}"
 
-# --- 7. Session Files ---
-
-echo -e "\n${CYAN}7. Session State${NC}"
-
-SESSION_FILES=(
-    "sessions/scratchpad.md"
-    "sessions/evolve_signals.md"
-    "memory/MEMORY.md"
-)
-
-for f in "${SESSION_FILES[@]}"; do
-    if [[ -f "$f" ]]; then
-        echo -e "  ${PASS} ${f}"
-    elif ! $CHECK_ONLY; then
-        touch "$f"
-        echo -e "  ${INFO} Created empty: ${f}"
-    else
-        echo -e "  ${WARN} ${f}: missing (will be created on first /gos)"
-        ((WARNINGS++))
-    fi
-done
-
-# --- 8. Specs ---
-
-echo -e "\n${CYAN}8. Specs${NC}"
-
-if [[ -f "specs/INDEX.md" ]]; then
-    SPEC_COUNT=$(find specs -name '*.md' -maxdepth 1 | wc -l | tr -d ' ')
-    echo -e "  ${PASS} specs/INDEX.md (${SPEC_COUNT} spec files)"
-else
-    echo -e "  ${WARN} specs/INDEX.md: missing — copy specs from source or create new"
-    ((WARNINGS++))
-fi
-
-# --- Summary ---
-
-echo -e "\n${CYAN}Summary${NC}"
-echo "======="
-
-if [[ $ERRORS -eq 0 && $WARNINGS -eq 0 ]]; then
+if [[ "$MODE" == "bootstrap" ]]; then
+    echo -e "${GREEN}${BOLD}Bootstrap complete.${NC} Project: ${TARGET_DIR}"
+    echo ""
+    echo -e "${CYAN}${BOLD}Step-by-Step: Complete Your Setup${NC}"
+    echo ""
+    echo -e "${BOLD}Step 1: Connect Claude Code Plugins${NC}"
+    echo -e "  Open Claude Code in your terminal, then run these commands:"
+    echo -e "  ${DIM}(Each will open a browser for OAuth — approve and return)${NC}"
+    echo ""
+    echo "    claude"
+    echo "    /mcp                    # Opens MCP manager"
+    echo "    # Connect each: Figma, Vercel, Linear, Shadcn UI, Gmail"
+    echo "    # For Chrome: install Claude in Chrome extension from Chrome Web Store"
+    echo ""
+    echo -e "${BOLD}Step 2: Set API Keys${NC}"
+    echo -e "  Add to your ~/.zshrc (or ~/.bashrc):"
+    echo ""
+    echo "    # Required"
+    echo "    export GITHUB_TOKEN=\"ghp_your_token_here\""
+    echo ""
+    echo "    # Optional (enable as needed)"
+    echo "    export DISCORD_TOKEN=\"your_discord_bot_token\""
+    echo "    export TELEGRAM_API_ID=\"your_telegram_id\""
+    echo "    export TELEGRAM_API_HASH=\"your_telegram_hash\""
+    echo "    export NOTTE_API_KEY=\"your_notte_key\""
+    echo "    export STITCH_API_KEY=\"your_stitch_key\""
+    echo "    export SUPADATA_API_KEY=\"your_supadata_key\""
+    echo ""
+    echo "  Then: source ~/.zshrc"
+    echo ""
+    echo -e "${BOLD}Step 3: Copy Project Content${NC}"
+    echo -e "  These are project-specific — not stored in gOS repo:"
+    echo ""
+    echo "    # Specs (96 files) — copy from backup or previous machine"
+    echo "    cp -R /path/to/backup/specs/ ${TARGET_DIR}/specs/"
+    echo ""
+    echo "    # Apps — clone your app repos"
+    echo "    git clone <prototype-repo> ${TARGET_DIR}/apps/web-prototype"
+    echo "    git clone <mobile-repo> ${TARGET_DIR}/apps/mobile"
+    echo ""
+    echo "    # Design system — regenerate"
+    echo "    cd ${TARGET_DIR} && claude"
+    echo "    /design system sync"
+    echo ""
+    echo -e "${BOLD}Step 4: Clone Sister Projects${NC} (if needed)"
+    echo ""
+    echo "    git clone <dux-repo> ${WORKING_DIR}/Dux"
+    echo "    git clone <mirofish-repo> ${WORKING_DIR}/MiroFish"
+    echo ""
+    echo -e "${BOLD}Step 5: Verify${NC}"
+    echo ""
+    echo "    cd ${TARGET_DIR}"
+    echo "    claude"
+    echo "    /gos              # Should show: 'Gary. Here's where we are...'"
+    echo "    /gos status       # Should show all green"
+    echo ""
+    echo -e "  ${DIM}If /gos reports issues, run: cd ${GOS_DIR} && ./install.sh --check${NC}"
+    echo ""
+elif [[ $ERRORS -eq 0 && $WARNINGS -eq 0 ]]; then
     echo -e "${GREEN}All checks passed. gOS is ready.${NC}"
-    echo -e "Run ${CYAN}/gos${NC} to start."
 elif [[ $ERRORS -eq 0 ]]; then
     echo -e "${YELLOW}${WARNINGS} warnings, 0 errors. gOS should work.${NC}"
-    echo -e "Run ${CYAN}/gos${NC} to start. Address warnings when convenient."
 else
     echo -e "${RED}${ERRORS} errors, ${WARNINGS} warnings.${NC}"
-    if $CHECK_ONLY; then
-        echo -e "Run ${CYAN}./install.sh${NC} (without --check) to fix."
-    else
-        echo -e "Some dependencies could not be installed automatically."
-        echo -e "Check the errors above and install manually."
-    fi
+    echo -e "Run ${CYAN}./install.sh --install${NC} to install tools, or ${CYAN}./install.sh --bootstrap <dir>${NC} for full setup."
 fi
 
 echo ""

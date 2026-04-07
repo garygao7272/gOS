@@ -1,62 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Sync live Arx project → gOS repo (one-way)
+# Run from the gOS repo directory after making changes in the live Arx project.
+# Usage: ./sync-from-live.sh [arx-path]
+
 set -euo pipefail
 
-# ============================================================
-# gOS Sync — Export live ~/.claude config to this gOS repo
-# Run on your PRIMARY machine to capture current state.
-# ============================================================
-
 GOS_DIR="$(cd "$(dirname "$0")" && pwd)"
-CLAUDE_DIR="$HOME/.claude"
+ARX_DIR="${1:-$(dirname "$GOS_DIR")/Arx}"
 
-echo "📤 Syncing live config → gOS repo"
-echo "  From: $CLAUDE_DIR"
-echo "  To:   $GOS_DIR"
-echo ""
+if [[ ! -d "$ARX_DIR/.claude" ]]; then
+    echo "Error: $ARX_DIR doesn't look like an Arx project (no .claude/)"; exit 1
+fi
 
-# Commands (resolve symlinks)
-echo "📋 Commands..."
-for cmd in gos think design simulate build review ship evolve aside checkpoint; do
-  if [ -L "$CLAUDE_DIR/commands/$cmd.md" ]; then
-    cp -L "$CLAUDE_DIR/commands/$cmd.md" "$GOS_DIR/commands/$cmd.md"
-  elif [ -f "$CLAUDE_DIR/commands/$cmd.md" ]; then
-    cp "$CLAUDE_DIR/commands/$cmd.md" "$GOS_DIR/commands/$cmd.md"
-  fi
-done
+echo "Syncing: $ARX_DIR → $GOS_DIR"
 
-# Skills
-echo "🧠 Skills..."
-for d in intake arx-ui-stack design-sync stitch-design strategic-compact verification-loop tdd-workflow coding-standards backend-patterns frontend-patterns frontend-slides python-patterns python-testing; do
-  if [ -d "$CLAUDE_DIR/skills/$d" ]; then
-    rm -rf "$GOS_DIR/skills/$d"
-    cp -r "$CLAUDE_DIR/skills/$d" "$GOS_DIR/skills/$d"
-  fi
-done
+for f in "$ARX_DIR"/.claude/commands/*.md; do [[ -f "$f" ]] && cp "$f" "$GOS_DIR/commands/"; done; echo "✓ Commands"
+for f in "$ARX_DIR"/.claude/agents/*.md; do [[ -f "$f" ]] && cp "$f" "$GOS_DIR/agents/"; done; echo "✓ Agents"
+for d in "$ARX_DIR"/.claude/skills/*/; do [[ -d "$d" ]] && { n=$(basename "$d"); mkdir -p "$GOS_DIR/skills/$n"; cp "$d"* "$GOS_DIR/skills/$n/" 2>/dev/null; }; done; echo "✓ Skills"
 
-# Agents
-echo "🤖 Agents..."
-cp "$CLAUDE_DIR/agents/"*.md "$GOS_DIR/agents/" 2>/dev/null || true
+cp "$ARX_DIR"/.claude/gOS.md "$GOS_DIR/.claude/" 2>/dev/null; cp "$ARX_DIR"/.claude/self-model.md "$GOS_DIR/.claude/" 2>/dev/null
+cp "$ARX_DIR"/.claude/launch.json "$GOS_DIR/.claude/" 2>/dev/null; cp "$ARX_DIR"/.claude/settings.json "$GOS_DIR/settings/settings.json" 2>/dev/null
+echo "✓ Core files"
 
-# Rules
-echo "📏 Rules..."
-rm -rf "$GOS_DIR/rules"
-cp -r "$CLAUDE_DIR/rules" "$GOS_DIR/rules"
+mkdir -p "$GOS_DIR/rules/arx"; cp "$ARX_DIR"/.claude/rules/*.md "$GOS_DIR/rules/arx/" 2>/dev/null; echo "✓ Rules"
+for f in "$ARX_DIR"/memory/*.md; do [[ -f "$f" ]] && cp "$f" "$GOS_DIR/memory/"; done; echo "✓ Memory"
+cp "$ARX_DIR"/CLAUDE.md "$GOS_DIR/CLAUDE.md" 2>/dev/null; echo "✓ CLAUDE.md"
 
-# Config
-echo "⚙️  Config..."
-cp "$CLAUDE_DIR/config/intake-sources.md" "$GOS_DIR/config/" 2>/dev/null || true
-
-# Settings (sanitize paths)
-echo "🔑 Settings..."
-cp "$CLAUDE_DIR/settings.json" "$GOS_DIR/settings/settings.json"
-cp "$CLAUDE_DIR/settings.local.json" "$GOS_DIR/settings/settings.local.json"
-
-# Sanitize hardcoded home paths
-WHOAMI=$(whoami)
-sed -i '' "s|/Users/$WHOAMI/claude-plugins|/Users/REPLACE_WITH_YOUR_USERNAME/claude-plugins|g" "$GOS_DIR/settings/settings.json"
-
-echo ""
-echo "✅ Sync complete. Review changes:"
-echo "   cd $GOS_DIR && git diff --stat"
-echo ""
-echo "To push: git add -A && git commit -m 'sync gOS' && git push"
+echo "Done. Review: cd $GOS_DIR && git diff --stat"

@@ -1,0 +1,29 @@
+{
+  "_comment": "Personal project settings — copy to .claude/settings.local.json and fill in your values. Git-ignored.",
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "Write(*)",
+      "NotebookEdit(*)",
+      "Bash",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "mcp__*"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -fd*)",
+      "Bash(docker *)",
+      "Bash(kubectl *)",
+      "Bash(npm publish*)",
+      "Bash(kill *)",
+      "Bash(killall *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}

@@ -3,7 +3,8 @@
   "configurations": [
     {
       "name": "arx-prototype",
-      "runtimeExecutable": "npx",
+      "env": {"PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"},
+      "runtimeExecutable": "/usr/local/bin/npx",
       "runtimeArgs": [
         "serve",
         "/Users/garyg/Documents/Claude Working Folder/Arx/apps/web-prototype",
@@ -12,6 +13,18 @@
         "--no-clipboard"
       ],
       "port": 8080
+    },
+    {
+      "name": "bakeoff",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8082",
+        "--directory",
+        "/Users/garyg/Documents/Claude Working Folder/Arx/.aidesigner"
+      ],
+      "port": 8082
     },
     {
       "name": "spec-rag",

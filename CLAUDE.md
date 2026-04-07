@@ -64,6 +64,34 @@ Arx/
 - **Design tokens**: Use CSS variables from `specs/Arx_4-2_Design_System.md`, don't hardcode colors/fonts/spacing.
 - **Features**: Trace back to a user pain in `specs/Arx_2-1`. No upstream pain = question the feature.
 - **Duplication**: Link to specs, don't copy content between files.
+- **Excel/XLSX**: NEVER use openpyxl for writing. Use OfficeCLI (`/Users/garyg/Documents/Claude Working Folder/toolkit/officecli`) for edits + LibreOffice headless (`soffice --headless`) for full recalc verification. See `.claude/skills/financial-modeling/SKILL.md`.
+
+## Build Cards — The Atomic Unit of Product Work
+
+A build card (`specs/Arx_4-1-1-X_*.md`) replaces epics, user stories, screen specs, and design handoff docs. One file per screen, containing everything needed to understand, design, build, and test it.
+
+| Section | Replaces | Purpose |
+|---------|----------|---------|
+| `## Reference Screenshots` | Mood boards, design brief | Tier 1-3 app references with adopt/surpass per screen |
+| `## Why` | Epic description | JTBD + pain trace to Arx_2-1 — no upstream pain = question the screen |
+| `## What the User Does` | User stories | Numbered steps with S7/S2 variants |
+| `## Feel` | Design brief | Feel token reference (`feel:home`) from DESIGN.md §6.9 + overrides |
+| `## Layout` | Screen spec / wireframe | ASCII wireframe with auto-layout annotations (`column`, `fill-w`, `gap=12px`) |
+| `## Data` | Data requirements | API source + computation for every visible element |
+| `## States` | QA spec | 8-state matrix: default, empty, loading, error, partial, overflow, stale, crisis |
+| `## Navigate` | Navigation spec | From/to with transition types (`push-right`, `sheet-up`, `fade`) |
+| `## Acceptance` | Acceptance criteria | EARS format (WHEN/SHALL) — testable, not vague |
+| `## Visual Spec` | Design handoff | Fixture pointer + icons/embellishments/interactions from DESIGN.md §3-5 |
+
+**Three-layer architecture:**
+
+```
+Journey Maps (Arx_3-3)           → WHY (emotional arc across screens)
+Master Architecture (Arx_4-1-1-0) → HOW screens connect (navigation graph)
+Build Cards (Arx_4-1-1-X)        → WHAT each screen is (everything else)
+```
+
+Build cards are consumed by humans (`/review`), AI design tools (`/design ui`), and code generators (`/build`). One format, three consumers.
 
 ## Audience & Personas
 
@@ -94,31 +122,31 @@ On compaction: re-read `sessions/scratchpad.md` to restore lost context.
 
 Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 
-| Command       | Question                   | Output                                                    |
-| ------------- | -------------------------- | --------------------------------------------------------- |
-| `/gos`        | Am I set up?               | Session state, safety hooks                               |
-| `/gos <goal>` | What do you need? (Jarvis) | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
-| `/think`      | What and why?              | `outputs/think/` → `specs/`                               |
-| `/design`     | What does it look like?    | `outputs/think/design/` → `specs/`                        |
-| `/simulate`   | What could happen?         | `outputs/briefings/`                                      |
-| `/build`      | How do we make it?         | `apps/`                                                   |
-| `/review`     | Is it good?                | Verdicts, fixes, reports                                  |
-| `/ship`       | Is it out?                 | Commits, PRs, deployments                                 |
-| `/evolve`     | Are we getting better?     | gOS upgrades                                              |
-| `/refine`     | Is it tight enough?        | Gap-hunt + deepen loop until convergence                  |
+| Command       | Question                      | Output                                                    |
+| ------------- | ----------------------------- | --------------------------------------------------------- |
+| `/gos`        | Am I set up?                  | Session state, safety hooks                               |
+| `/gos <goal>` | What do you need? (Jarvis)    | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
+| `/think`      | What and why?                 | `outputs/think/` → `specs/`                               |
+| `/design`     | What are we building? (card, ui, system) | Build cards → `specs/`, visuals → Figma/prototypes |
+| `/simulate`   | What could happen?            | `outputs/briefings/`                                      |
+| `/build`      | How do we code it?            | `apps/`                                                   |
+| `/review`     | Is it good?                   | Verdicts, fixes, reports                                  |
+| `/ship`       | Is it out?                    | Commits, PRs, deployments                                 |
+| `/evolve`     | Are we getting better?        | gOS upgrades                                              |
+| `/refine`     | Is it tight enough?           | Gap-hunt + deepen loop until convergence                  |
 
 Plus utility: `/aside` (side question).
 
 ### Execution Patterns
 
-- **Think mode** → Swarm (3-5 parallel agents) → `outputs/think/` (staging) → promote to `specs/`
-- **Design mode** → Phase pipeline (Stitch sketch → variants → full swarm → HTML bridge)
-- **Simulate mode** → Engine execution (MiroFish for markets, Dux for general simulation)
-- **Build mode** → Sequential (plan → code → test → verify → commit). Fresh context executors for large tasks.
-- **Review mode** → Adversarial. Swarm for council, sequential for single persona. Fix-First auto-fixes.
+- **Think mode** → Swarm (3-5 parallel agents) → `outputs/think/` (staging) → promote to `specs/`. Includes all research (market, competitor, user, UX).
+- **Design mode** → `card` (author build card spec+visual), `ui` (Figma MCP/AIDesigner/Stitch → prototype), `system` (tokens+components).
+- **Simulate mode** → `market` (MiroFish + backtest), `scenario` (what-if + Dux engine).
+- **Build mode** → Sequential (feature, fix, refactor). TDD always-on. One agent, one task, one commit.
+- **Review mode** → `code` (PR), `design` (visual audit), `gate` (pre-ship, absorbs test/e2e/coverage), `council` (multi-persona), `eval` (command quality).
 - **Refine mode** → Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
-- **Ship mode** → Pipeline (commit → PR → deploy → docs). Blocks if review dashboard not CLEARED.
-- **Evolve mode** → Signal-driven. Accumulate accept/rework/reject signals, audit weekly.
+- **Ship mode** → Pipeline (commit → PR → deploy). Blocks if review gate not PASSED.
+- **Evolve mode** → Signal-driven. `audit` (health check), `upgrade` (rewrite commands), `learn` (manual teaching).
 
 ### Spec Sync After Implementation
 
@@ -160,6 +188,14 @@ Use `${ENV_VAR}` syntax for secrets in `.mcp.json`.
 6. **One landing at a time.** Swarm for research, merge implementation sequentially.
 7. **Stay engaged.** Exit gates prevent disengagement regressions.
 8. **CLI-accessible stack.** One-line CLI pointers beat verbose docs.
+
+## Palace Protocol — Memory Verification Rules
+
+Before responding about any person, project, past event, or prior decision:
+1. **Search first, never guess.** Query `memory/` files or `spec-rag` MCP before answering from recall. If unsure, say "let me check" and look it up.
+2. **Verify before recommending.** If memory names a file path, check it exists. If it names a function or flag, grep for it. Memory says "X exists" is not the same as "X exists now."
+3. **Invalidate stale facts.** If what you find contradicts what memory says, trust what you observe now — update or remove the stale memory.
+4. **After each session.** Update memory with new decisions, corrections, and dead ends before stopping.
 
 ## Key Technical Context
 

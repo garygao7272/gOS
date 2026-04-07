@@ -1,5 +1,6 @@
 ---
-description: "Review: code, test, design, gate, prove, e2e, coverage, council, dashboard — or any persona name directly"
+effort: max
+description: "Review: code, design, gate, council, eval — or any persona name directly"
 ---
 
 # Review — Quality Assurance → specs/ + apps/
@@ -14,7 +15,11 @@ description: "Review: code, test, design, gate, prove, e2e, coverage, council, d
 - **On code/spec fixes applied:** Log files changed to `Files Actively Editing`
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, prove, e2e, coverage, council, or dashboard?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, signal-analyst, hl-protocol, mobile-perf, compliance, design-variant, second-opinion, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, design, gate, council, or eval?"
+
+> **Simplified (v2):** `test`/`prove`/`e2e`/`coverage` all folded into `gate` (pre-ship quality gate runs everything). `dashboard` folded into `/gos status`. `eval` absorbed from the former `/evaluate` command.
+
+**Output discipline (two-phase pattern):** For council synthesis and multi-pass reviews, do reasoning inside `<analysis>` tags (private — not shown to Gary). Produce the clean verdict, table, and recommendations inside `<output>` tags. Individual persona verdicts are already structured; this applies to the lead's synthesis and cross-examination resolution.
 
 ---
 
@@ -67,23 +72,28 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ## Review: {branch or commit}
 
 ### Critical Findings
-| # | Severity | File:Line | Issue | Fix |
-|---|----------|-----------|-------|-----|
-| 1 | CRITICAL | {path}:{line} | {description} | {specific fix} |
-| 2 | HIGH | {path}:{line} | {description} | {specific fix} |
+
+| #   | Severity | File:Line     | Issue         | Fix            |
+| --- | -------- | ------------- | ------------- | -------------- |
+| 1   | CRITICAL | {path}:{line} | {description} | {specific fix} |
+| 2   | HIGH     | {path}:{line} | {description} | {specific fix} |
 
 ### Auto-Fixed
+
 - {file}: removed unused import `{name}`
 - {file}: fixed formatting on line {N}
 - {file}: removed debug console.log
 
 ### Questions for Gary
+
 **I have {N} items that need your input (batched):**
+
 1. {question about logic/arch change} — my recommendation: {X}
 2. {question about dependency} — my recommendation: {Y}
 3. {question about scope} — my recommendation: {Z}
 
 ### Verdict: {APPROVE / WARNING / BLOCK}
+
 {one-line summary of why}
 ```
 
@@ -97,24 +107,26 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 1. **Detect test framework:** Look for jest.config, vitest.config, pytest.ini, or package.json test scripts
 2. **Run test suite:**
+
    ```bash
    # JavaScript/TypeScript
    npm test -- --coverage
    # or: npx vitest run --coverage
-   
+
    # Python
    pytest --cov --cov-report=term-missing
    ```
+
 3. **Check coverage:** Target 80%+. List files below threshold.
 4. **Run E2E if critical flows changed:** Detect from diff which flows are affected. Run relevant Playwright tests.
 5. **4-level verification (every changed module):**
 
-   | Level | Check | Method | Fail Example |
-   |-------|-------|--------|-------------|
-   | EXISTS | File/function present | `ls`, `grep` for exports | File created but empty |
-   | SUBSTANTIVE | Not a stub | Check for `TODO`, `throw new Error('not implemented')`, empty function bodies, `pass` | Function exists but returns hardcoded value |
-   | WIRED | Imported, routed, rendered | Trace import chain from entry point to the new code | Component exists but never imported |
-   | DATA-FLOW | Data actually flows end-to-end | Run the app, trigger the feature, verify output changes | API called but response never displayed |
+   | Level       | Check                          | Method                                                                                | Fail Example                                |
+   | ----------- | ------------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------- |
+   | EXISTS      | File/function present          | `ls`, `grep` for exports                                                              | File created but empty                      |
+   | SUBSTANTIVE | Not a stub                     | Check for `TODO`, `throw new Error('not implemented')`, empty function bodies, `pass` | Function exists but returns hardcoded value |
+   | WIRED       | Imported, routed, rendered     | Trace import chain from entry point to the new code                                   | Component exists but never imported         |
+   | DATA-FLOW   | Data actually flows end-to-end | Run the app, trigger the feature, verify output changes                               | API called but response never displayed     |
 
 6. **Report results with evidence:**
 
@@ -122,6 +134,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ## Test Results: {target}
 
 ### Test Suite
+
 - **Total:** {N} tests
 - **Passed:** {N}
 - **Failed:** {N}
@@ -129,17 +142,20 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 - **Duration:** {time}
 
 ### Coverage
-| File | Statements | Branches | Functions | Lines |
-|------|-----------|----------|-----------|-------|
-| {file} | {%} | {%} | {%} | {%} |
-| **Total** | **{%}** | **{%}** | **{%}** | **{%}** |
+
+| File      | Statements | Branches | Functions | Lines   |
+| --------- | ---------- | -------- | --------- | ------- |
+| {file}    | {%}        | {%}      | {%}       | {%}     |
+| **Total** | **{%}**    | **{%}**  | **{%}**   | **{%}** |
 
 ### 4-Level Verification
-| Module | EXISTS | SUBSTANTIVE | WIRED | DATA-FLOW |
-|--------|--------|-------------|-------|-----------|
-| {module} | PASS | PASS | PASS | PASS |
+
+| Module   | EXISTS | SUBSTANTIVE | WIRED | DATA-FLOW |
+| -------- | ------ | ----------- | ----- | --------- |
+| {module} | PASS   | PASS        | PASS  | PASS      |
 
 ### Failures (if any)
+
 {test name}: {error message}
 {stack trace excerpt}
 
@@ -157,15 +173,15 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 1. **Open the app/prototype** in Claude Preview or browser
 2. **Check all states for every changed screen:**
 
-   | State | What to Look For |
-   |-------|-----------------|
-   | Default | Layout, spacing, typography hierarchy, color |
-   | Loading | Skeleton screens or spinners, not blank |
-   | Empty | Helpful empty state message, not "No data" |
-   | Error | User-friendly error message with recovery action |
-   | Overflow | Long text, many items, large numbers |
-   | Hover/Active | Interactive feedback on all clickable elements |
-   | Selected/Unselected | Visual differentiation between states |
+   | State               | What to Look For                                 |
+   | ------------------- | ------------------------------------------------ |
+   | Default             | Layout, spacing, typography hierarchy, color     |
+   | Loading             | Skeleton screens or spinners, not blank          |
+   | Empty               | Helpful empty state message, not "No data"       |
+   | Error               | User-friendly error message with recovery action |
+   | Overflow            | Long text, many items, large numbers             |
+   | Hover/Active        | Interactive feedback on all clickable elements   |
+   | Selected/Unselected | Visual differentiation between states            |
 
 3. **Typography audit:**
    - Numeric data in monospace (Geist Mono / JetBrains Mono)
@@ -202,16 +218,19 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ## Design Review: {target}
 
 ### Visual Issues
-| # | Screen | Issue | Severity | Fix |
-|---|--------|-------|----------|-----|
-| 1 | {screen} | {description} | {H/M/L} | {specific fix} |
+
+| #   | Screen   | Issue         | Severity | Fix            |
+| --- | -------- | ------------- | -------- | -------------- |
+| 1   | {screen} | {description} | {H/M/L}  | {specific fix} |
 
 ### State Coverage
-| Screen | Default | Loading | Empty | Error | Overflow |
-|--------|---------|---------|-------|-------|----------|
-| {name} | OK | MISSING | OK | MISSING | OK |
+
+| Screen | Default | Loading | Empty | Error   | Overflow |
+| ------ | ------- | ------- | ----- | ------- | -------- |
+| {name} | OK      | MISSING | OK    | MISSING | OK       |
 
 ### Anti-Slop
+
 {PASS or list of generic elements to replace}
 
 ### Verdict: {APPROVE / REFINE / REJECT}
@@ -225,32 +244,33 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 **Checklist:**
 
-| # | Check | Command | Status |
-|---|-------|---------|--------|
-| 1 | Tests pass | `npm test` | PASS/FAIL |
-| 2 | Coverage >= 80% | `npm test -- --coverage` | PASS/FAIL ({N}%) |
-| 3 | No lint errors | `npx eslint . --ext .ts,.tsx` | PASS/FAIL ({N} errors) |
-| 4 | No type errors | `npx tsc --noEmit --pretty` | PASS/FAIL ({N} errors) |
-| 5 | No security warnings | `npm audit --production` | PASS/FAIL ({N} vulns) |
-| 6 | Docs updated | Check changed files vs docs | PASS/FAIL/N/A |
-| 7 | Review dashboard CLEARED | See `/review dashboard` | PASS/FAIL |
+| #   | Check                    | Command                       | Status                 |
+| --- | ------------------------ | ----------------------------- | ---------------------- |
+| 1   | Tests pass               | `npm test`                    | PASS/FAIL              |
+| 2   | Coverage >= 80%          | `npm test -- --coverage`      | PASS/FAIL ({N}%)       |
+| 3   | No lint errors           | `npx eslint . --ext .ts,.tsx` | PASS/FAIL ({N} errors) |
+| 4   | No type errors           | `npx tsc --noEmit --pretty`   | PASS/FAIL ({N} errors) |
+| 5   | No security warnings     | `npm audit --production`      | PASS/FAIL ({N} vulns)  |
+| 6   | Docs updated             | Check changed files vs docs   | PASS/FAIL/N/A          |
+| 7   | Review dashboard CLEARED | See `/review dashboard`       | PASS/FAIL              |
 
 **Output:**
 
 ```markdown
 ## Quality Gate: {branch}
 
-| Check | Result | Details |
-|-------|--------|---------|
-| Tests | {PASS/FAIL} | {N} passed, {N} failed |
-| Coverage | {PASS/FAIL} | {N}% (target: 80%) |
-| Lint | {PASS/FAIL} | {N} errors, {N} warnings |
-| Types | {PASS/FAIL} | {N} errors |
-| Security | {PASS/FAIL} | {N} vulnerabilities |
-| Docs | {PASS/FAIL/N/A} | {details} |
-| Reviews | {PASS/FAIL} | {details} |
+| Check    | Result          | Details                  |
+| -------- | --------------- | ------------------------ |
+| Tests    | {PASS/FAIL}     | {N} passed, {N} failed   |
+| Coverage | {PASS/FAIL}     | {N}% (target: 80%)       |
+| Lint     | {PASS/FAIL}     | {N} errors, {N} warnings |
+| Types    | {PASS/FAIL}     | {N} errors               |
+| Security | {PASS/FAIL}     | {N} vulnerabilities      |
+| Docs     | {PASS/FAIL/N/A} | {details}                |
+| Reviews  | {PASS/FAIL}     | {details}                |
 
 ## Verdict: {PASS / FAIL}
+
 {if FAIL: list what must be fixed before shipping}
 ```
 
@@ -288,6 +308,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ## Proof: {what was changed}
 
 ### Evidence
+
 1. **Tests:** {N}/{N} passed — {actual test output}
 2. **Build:** Clean — {build command output}
 3. **Visual:** {screenshot reference showing it works}
@@ -295,15 +316,18 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 5. **Edge Cases:** {what was tested and results}
 
 ### Regressions
+
 - Existing tests: {all pass / N failures}
 - Bundle size: {before} → {after} ({delta})
 
 ### 4-Level Verification
-| Module | EXISTS | SUBSTANTIVE | WIRED | DATA-FLOW | Evidence |
-|--------|--------|-------------|-------|-----------|----------|
-| {name} | PASS | PASS | PASS | PASS | {how verified} |
+
+| Module | EXISTS | SUBSTANTIVE | WIRED | DATA-FLOW | Evidence       |
+| ------ | ------ | ----------- | ----- | --------- | -------------- |
+| {name} | PASS   | PASS        | PASS  | PASS      | {how verified} |
 
 ### Verdict: {PROVEN / NOT PROVEN}
+
 {if NOT PROVEN: what's missing}
 ```
 
@@ -343,14 +367,17 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ## E2E Test Results
 
 ### Flows Tested
-| Flow | Runs | Pass | Fail | Flaky |
-|------|------|------|------|-------|
-| {flow name} | 5 | 5 | 0 | No |
+
+| Flow        | Runs | Pass | Fail | Flaky |
+| ----------- | ---- | ---- | ---- | ----- |
+| {flow name} | 5    | 5    | 0    | No    |
 
 ### Screenshots
+
 {references to captured screenshots}
 
 ### Quarantined
+
 {list of flaky tests moved to quarantine, if any}
 
 ### Verdict: {PASS / FAIL}
@@ -388,20 +415,24 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ## Coverage Analysis
 
 ### Summary
+
 - **Overall:** {N}% statements, {N}% branches, {N}% functions
 - **Target:** 80% | **Status:** {MET / NOT MET}
 
 ### Critical Gaps (must fix)
-| File | Coverage | Uncovered Lines | Suggested Test |
-|------|----------|----------------|----------------|
-| {path} | {N}% | {lines} | {test description} |
+
+| File   | Coverage | Uncovered Lines | Suggested Test     |
+| ------ | -------- | --------------- | ------------------ |
+| {path} | {N}%     | {lines}         | {test description} |
 
 ### Below Threshold
-| File | Coverage | Risk Level | Priority |
-|------|----------|-----------|----------|
-| {path} | {N}% | {H/M/L} | {fix now / next sprint / acceptable} |
+
+| File   | Coverage | Risk Level | Priority                             |
+| ------ | -------- | ---------- | ------------------------------------ |
+| {path} | {N}%     | {H/M/L}    | {fix now / next sprint / acceptable} |
 
 ### Fully Covered (>90%)
+
 {list of well-tested files — these are good}
 ```
 
@@ -409,88 +440,50 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 ## council
 
-**Purpose:** Full multi-persona review. Launch 12 parallel agents, synthesize with weighted voting.
+**Purpose:** Full multi-persona review with live adjudication via native Agent Teams.
 
-**Process:**
+**Team Mode (always):** Council uses the `review-panel` template from `.claude/agents/team-registry.md`.
 
-1. **Launch ALL personas as parallel agents.** Group into 3 waves:
+Load the template for full details: waves, agents, task flow, verdict protocol, and shutdown.
 
-   **Wave 1 — User personas (4 agents, 2x vote weight):**
-   - **s2-jake:** Strategic Learner, mid-capital ($10K-$100K), T3-T4 skill, wants signal clarity. Review lens: "Would Jake use this daily and does it save him time?"
-   - **s7-sarah:** Capital allocator, follows signals, wants simplicity and trust. Review lens: "Would Sarah set this up and feel safer?"
-   - **s1-alex:** Gambler, $800 account, C1 skill, 35% win rate. Review lens: "Does this keep Alex engaged AND prevent blow-up?"
-   - **s3-marcus:** Disciplined trader, $250K, C4 Systems Thinker, 20yr experience. Review lens: "Does this degrade execution quality or privacy?"
+**Key points (summary from registry):**
 
-   **Wave 2 — Specialist personas (8 agents):**
-   - **trader-ux:** Trading UX specialist — order entry flow, price display, position management, mobile ergonomics
-   - **crypto-sec:** Crypto security engineer — key management, transaction signing, MEV, input validation
-   - **risk-analyst:** Quantitative risk analyst — margin calculations, liquidation warnings, leverage guards
-   - **signal-analyst:** Signal quality analyst — taxonomy compliance, data pipeline integrity, false positive risk
-   - **hl-protocol:** Hyperliquid protocol specialist — builder codes, API rate limits, order types, vault integration
-   - **mobile-perf:** Mobile performance engineer — bundle size, render performance, network efficiency, load time
-   - **compliance:** Financial compliance specialist — KYC/AML, risk disclosures, fee transparency, jurisdictional restrictions
-   - **design-variant:** Design system compliance — Stone/Water color domains, information density, citadel emotional resonance
+- **Wave 1** (4 user personas, 2x vote weight): S2 Jake, S7 Sarah, S1 Alex, S3 Marcus — all spawned as `reviewer` agents with persona-specific prompts
+- **Wave 2** (4 specialists, 1x weight): crypto-sec, performance, UX (`designer` agent), data — spawned after Wave 1 completes. **Early termination:** if Wave 1 issues a BLOCK, skip Wave 2.
+- **Wave 3** (1 contrarian, 1x weight): challenge consensus, find overlooked risks
+- **Veto:** `crypto-sec` BLOCK is absolute. Any Wave 1 user BLOCK → overall BLOCK.
+- **Adjudication:** Conductor routes conflicts via `SendMessage` cross-examination between disagreeing agents.
 
-   **Wave 3 — Strategic persona (1 agent):**
-   - **contrarian:** Devil's advocate — pre-mortem, kill shot, wargame, steel man
+**Persona definitions** (spawn prompts for each reviewer agent):
 
-2. **Each persona follows this protocol:**
-   a. Load persona definition and adopt the specialist's expertise
-   b. Research phase — search for current best practices and evidence
-   c. Evaluate through persona's lens — every finding has severity, evidence, fix, location
-   d. Issue verdict: APPROVE / CONCERN / BLOCK
-   e. Include Steel Man ("strongest argument FOR") and Kill Shot ("single biggest risk")
+| Persona | Type | Review Lens |
+|---------|------|-------------|
+| s2-jake | User | "Would Jake use this daily and does it save him time?" |
+| s7-sarah | User | "Would Sarah set this up and feel safer?" |
+| s1-alex | User | "Does this keep Alex engaged AND prevent blow-up?" |
+| s3-marcus | User | "Does this degrade execution quality or privacy?" |
+| crypto-sec | Specialist | Key management, transaction signing, MEV, input validation |
+| trader-ux | Specialist | Order entry flow, price display, position management |
+| risk-analyst | Specialist | Margin calculations, liquidation warnings, leverage guards |
+| mobile-perf | Specialist | Bundle size, render performance, network efficiency |
+| contrarian | Strategic | Pre-mortem, kill shot, wargame, steel man |
 
-3. **Collect all 12 verdicts**
-
-4. **Synthesize with weighted voting:**
-   - User personas get **2x weight** (if users don't want it, nothing else matters)
-   - Any user persona BLOCK → **BLOCK** (product-market fit failure)
-   - crypto-sec BLOCK → **BLOCK** (security is non-negotiable)
-   - Any other specialist BLOCK → **CONCERN** escalated to HIGH
-   - contrarian BLOCK → **CONCERN** with mandatory Steel Man response
-   - Cross-reference: Do Jake (S2) and Sarah (S7) want DIFFERENT things? Note the tension.
-
-5. **Output council summary:**
+**Output format:**
 
 ```markdown
 ## Council Review: {target}
 
 ### Verdicts
+
 | Persona | Type | Verdict | Kill Shot | Weight |
 |---------|------|---------|-----------|--------|
-| s2-jake | User | {verdict} | {one-line} | 2x |
-| s7-sarah | User | {verdict} | {one-line} | 2x |
-| s1-alex | User | {verdict} | {one-line} | 2x |
-| s3-marcus | User | {verdict} | {one-line} | 2x |
-| trader-ux | Specialist | {verdict} | {one-line} | 1x |
-| crypto-sec | Specialist | {verdict} | {one-line} | 1x |
-| risk-analyst | Specialist | {verdict} | {one-line} | 1x |
-| signal-analyst | Specialist | {verdict} | {one-line} | 1x |
-| hl-protocol | Specialist | {verdict} | {one-line} | 1x |
-| mobile-perf | Specialist | {verdict} | {one-line} | 1x |
-| compliance | Specialist | {verdict} | {one-line} | 1x |
-| design-variant | Specialist | {verdict} | {one-line} | 1x |
-| contrarian | Strategic | {verdict} | {one-line} | 1x |
+| {name} | {type} | {APPROVE/CONCERN/BLOCK} | {one-line} | {1x/2x} |
 
 ### Weighted Synthesis
+
 **Overall: {APPROVE / CONCERN / BLOCK}**
-- User consensus: {summary}
-- Specialist consensus: {summary}
-- Strategic assessment: {summary}
 
-### Top 3 Findings (across all personas)
-1. {finding} — raised by {persona(s)} — severity: {level}
-2. {finding} — raised by {persona(s)} — severity: {level}
-3. {finding} — raised by {persona(s)} — severity: {level}
-
-### Tensions
-{where Jake and Sarah disagree, where specialists conflict}
-
-### Recommended Actions
-1. {action} — {urgency}
-2. {action} — {urgency}
-3. {action} — {urgency}
+### Top 3 Findings + Recommended Actions
 ```
 
 ---
@@ -519,19 +512,21 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 ```markdown
 ## Review Dashboard: {branch} @ {commit}
 
-| Review | Status | Last Run | At Commit | Fresh? |
-|--------|--------|----------|-----------|--------|
-| Code | {PASS/FAIL/NOT RUN} | {date} | {commit} | {FRESH/STALE/N/A} |
-| Test | {PASS/FAIL/NOT RUN} | {date} | {commit} | {FRESH/STALE/N/A} |
-| Design | {PASS/FAIL/NOT RUN} | {date} | {commit} | {FRESH/STALE/N/A} |
-| Gate | {PASS/FAIL/NOT RUN} | {date} | {commit} | {FRESH/STALE/N/A} |
-| E2E | {PASS/FAIL/NOT RUN} | {date} | {commit} | {FRESH/STALE/N/A} |
-| Security | {PASS/FAIL/NOT RUN} | {date} | {commit} | {FRESH/STALE/N/A} |
+| Review   | Status              | Last Run | At Commit | Fresh?            |
+| -------- | ------------------- | -------- | --------- | ----------------- |
+| Code     | {PASS/FAIL/NOT RUN} | {date}   | {commit}  | {FRESH/STALE/N/A} |
+| Test     | {PASS/FAIL/NOT RUN} | {date}   | {commit}  | {FRESH/STALE/N/A} |
+| Design   | {PASS/FAIL/NOT RUN} | {date}   | {commit}  | {FRESH/STALE/N/A} |
+| Gate     | {PASS/FAIL/NOT RUN} | {date}   | {commit}  | {FRESH/STALE/N/A} |
+| E2E      | {PASS/FAIL/NOT RUN} | {date}   | {commit}  | {FRESH/STALE/N/A} |
+| Security | {PASS/FAIL/NOT RUN} | {date}   | {commit}  | {FRESH/STALE/N/A} |
 
 ## Verdict: {CLEARED / NOT CLEARED}
+
 {if NOT CLEARED: list what's missing or stale}
 
 ### To Clear
+
 {ordered list of reviews to run}
 ```
 
@@ -544,30 +539,38 @@ Any persona name can be invoked directly: `/review s2-jake`, `/review trader-ux`
 **Every single-persona review follows the same 5-step protocol:**
 
 ### Step 1: Load Persona
+
 Read the persona definition from the council section above. Adopt the specialist's expertise, vocabulary, and review focus. You ARE this specialist for the duration of the review.
 
 ### Step 2: Research Phase
+
 Before forming any opinion, RESEARCH. Launch an agent to search for current best practices, known vulnerabilities, industry standards, and expert opinions relevant to this review. Use WebSearch for web research. Use specs/ for internal context. The goal: evidence-backed reviews, not LLM intuition.
 
 ### Step 3: Evaluate
+
 Review the target through the persona's lens. For each finding:
+
 - **Severity:** CRITICAL (blocks ship) / HIGH (should fix) / MEDIUM (advisory) / LOW (nitpick)
 - **Evidence:** Why this is an issue — cite research, specs, or standards
 - **Fix:** Specific, actionable recommendation
 - **Location:** Exact file:line or spec:section
 
 ### Step 4: Verdict
+
 Issue one of:
+
 - **APPROVE** — No CRITICAL or HIGH issues. Ship it.
 - **CONCERN** — HIGH issues found. Should fix before shipping, but not blocking.
 - **BLOCK** — CRITICAL issues found. Must fix. Do not ship.
 
 Always include:
+
 - **Steel Man:** "The strongest argument FOR the current approach is..."
 - **Kill Shot:** "The single biggest risk is..."
 - **Recommendation:** Specific next steps
 
 ### Step 5: Output
+
 - Code fixes → apply directly to `apps/` files (with user approval)
 - Spec corrections → update relevant `specs/` files
 - Decision records → append to `specs/Arx_9-1_Decision_Log.md`

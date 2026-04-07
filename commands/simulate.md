@@ -1,5 +1,6 @@
 ---
-description: "Simulate: market (MiroFish), scenario (what-if), backtest (historical), dux (full engine)"
+effort: max
+description: "Simulate: market (MiroFish + backtest), scenario (what-if + Dux engine), flow (JTBD user journey)"
 ---
 
 # Simulate — Forward-Looking Intelligence → outputs/
@@ -13,7 +14,9 @@ description: "Simulate: market (MiroFish), scenario (what-if), backtest (histori
 - **After output:** Log file paths and sizes to `Files Actively Editing`
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of simulation? market (MiroFish), scenario (what-if), backtest (historical), or dux (full engine)?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of simulation? market (MiroFish, includes backtest), scenario (what-if, powered by Dux), or flow (JTBD user journey)?"
+
+> **Simplified (v2):** `backtest` folded into `market` (use `market --backtest`). `dux` folded into `scenario` (Dux is the engine powering scenario analysis).
 
 **Output pipeline (shared):** MD → optionally HTML → optionally PDF (for briefings). See Output Pipeline section below.
 
@@ -24,6 +27,18 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 ## market [period]
 
 **Purpose:** MiroFish market simulation. Run market regime detection, scenario generation, and trade recommendations across asset classes.
+
+**Team Mode for scenario building:**
+```
+TeamCreate(team_name="simulate-market-{date}")
+```
+After data collection (parallel fetches — same as current), spawn 2 named teammates for scenario construction:
+- `bull-case` (sonnet) — builds the optimistic scenario with evidence
+- `bear-case` (sonnet) — builds the pessimistic scenario with evidence
+
+After both report, lead adjudicates conflicts: where do bull and bear agree (high confidence)? Where do they diverge (flag as uncertainty)? Synthesize into the final briefing.
+
+**Shutdown:** `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`.
 
 **Period parsing:**
 
@@ -127,6 +142,12 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 ## scenario <what-if>
 
 **Purpose:** Forward-looking projection for a specific scenario. "What if ETH drops 40%", "what if we launch copy trading", "what if competitor raises $50M".
+
+**Team decision:**
+- If scenario involves conflicting historical vs current evidence: Create team `simulate-scenario-{slug}` with 3 teammates for adversarial what-if analysis
+- Otherwise: Use ad-hoc subagents (current behavior)
+
+**If team mode:** Named teammates: `historical-analyst` (sonnet), `current-context` (sonnet), `second-order` (haiku). After initial analysis, lead routes cross-examination: "historical-analyst found precedent X. current-context, does Y context block it?" via `SendMessage`.
 
 **Process:**
 
@@ -369,6 +390,111 @@ cd "/Users/garyg/Documents/Claude Working Folder/Dux" && PYTHONPATH=. python -m 
 ```
 
 **Output to:** `outputs/think/research/dux-{slug}.md`
+
+---
+
+## flow <JTBD statement> [--persona <S1-S8>] [--metric <success-metric>]
+
+**Purpose:** Simulate a customer journey through the app for a given Job-to-be-Done. Measure efficiency (steps), cognitive load (decisions), friction (drop-off risk), and feel alignment at each screen. Produces an optimized flow map with specific UX recommendations.
+
+**Input:** A JTBD statement. Optionally specify persona and success metric.
+
+```
+/simulate flow "S7 Sarah wants to copy a top trader's ETH position with $500 max risk"
+/simulate flow "S2 Jake wants to identify and enter a momentum trade on BTC" --metric time-to-trade
+/simulate flow "New user wants to fund their account and make their first trade" --persona S1
+```
+
+**Process:**
+
+1. **Load context (parallel reads):**
+   - Persona definition from `specs/Arx_2-1_Problem_Space_and_Audience.md`
+   - Screen inventory from `specs/Arx_4-1-0_Experience_Design_Index.md`
+   - Journey maps from `specs/Arx_3-3_Customer_Journey_Maps.md`
+   - Navigation graph from build card `Navigate` sections
+
+2. **Identify entry point:** Where does this persona start for this JTBD?
+   - Cold start (app install → onboarding)?
+   - Home screen (existing user)?
+   - Deep link (notification, referral)?
+
+3. **Trace the optimal path:** Walk through every screen in the happy path.
+   For each screen, read its build card (`specs/Arx_4-1-1-X_*.md`) and record:
+
+   | Metric | How Measured |
+   |--------|-------------|
+   | Screen name + spec ref | From build card filename |
+   | Action required | From `## What the User Does` section |
+   | Taps | Count of distinct touch actions |
+   | Cognitive decisions | Choices where user must evaluate options |
+   | Data entry | Fields that require typing |
+   | Information presented | Key data points shown (can user parse them?) |
+   | Drop-off risk | LOW / MEDIUM / HIGH — based on cognitive load + fear factors |
+   | Feel token | From `## Feel` section — does it match the emotional need? |
+
+4. **Score the flow:**
+
+   ```
+   Total steps     = sum of all taps across screens
+   Time estimate   = 3s per scan + 5s per decision + 10s per data entry
+   Cognitive load  = total decisions (fewer = better, target <5 for S7)
+   Drop-off score  = count of HIGH-risk screens (target: 0)
+   Feel alignment  = % of screens where feel token matches JTBD emotional arc
+   ```
+
+5. **Identify friction points:** Any screen where:
+   - Cognitive load > 3 decisions
+   - Data entry required but could be pre-filled
+   - Information density exceeds persona's skill level
+   - Navigation requires back-tracking
+   - Feel token mismatches emotional need (e.g., `feel:trade` anxiety on a discovery screen)
+
+6. **Generate alternatives:** For each friction point, propose:
+   - Skip option (can we remove this screen?)
+   - Simplify option (can we pre-fill or default?)
+   - Reorder option (would a different sequence reduce cognitive load?)
+   - Shortcut option (direct path for this persona's common JTBD?)
+
+7. **Compare S2 vs S7 if both relevant:** Run the same JTBD for both personas. Note where their optimal paths diverge — this reveals where adaptive UX is needed.
+
+**Output format:**
+
+```markdown
+## Flow Simulation: {JTBD}
+
+### Persona: {name} ({segment})
+### Success Metric: {metric}
+### Entry: {entry point}
+
+### Optimal Path
+
+{Screen 1} → {Screen 2} → ... → {Success}
+**Steps:** {n} | **Time:** ~{t}s | **Decisions:** {d} | **Drop-offs:** {count}
+
+### Screen-by-Screen Analysis
+
+| # | Screen | Spec | Taps | Decisions | Drop-off | Feel |
+|---|--------|------|------|-----------|----------|------|
+| 1 | {name} | Arx_4-1-1-X | {n} | {n} | {risk} | {token} |
+
+### Friction Points
+
+1. **{screen}** — {issue}. Risk: {HIGH/MEDIUM}
+   - Fix: {recommendation}
+
+### Optimized Path (proposed)
+
+{Optimized Screen 1} → {Screen 2} → ... → {Success}
+**Steps:** {n-x} | **Time:** ~{t-y}s | **Improvement:** {%}
+
+### Recommendations (ranked by impact)
+
+1. {action} — saves {n} steps / {t}s — effort: {low/medium/high}
+2. {action} — reduces drop-off at {screen} — effort: {low/medium/high}
+3. {action} — improves feel alignment — effort: {low/medium/high}
+```
+
+**Output to:** `outputs/think/research/flow-{persona}-{jtbd-slug}.md`
 
 ---
 
