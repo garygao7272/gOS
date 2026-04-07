@@ -1,0 +1,119 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits"
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_ENABLE_SESSION_MEMORY": "1",
+    "OTEL_METRIC_EXPORT_INTERVAL": "30000",
+    "OTEL_LOGS_EXPORT_INTERVAL": "10000",
+    "OTEL_LOG_TOOL_DETAILS": "1",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta",
+    "MAX_THINKING_TOKENS": "63999"
+  },
+  "hooks": {
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Re-read sessions/scratchpad.md and sessions/active.md to restore session state after compaction.'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | { read -r c; if echo \"$c\" | grep -qE '(node_modules|dist/|/build/|\\.next|__pycache__|\\.firecrawl)'; then echo '{}'; elif echo \"$c\" | grep -iqE '(rm\\s+(-[a-zA-Z]*f|-[a-zA-Z]*r|--force|--recursive)\\b|DROP\\s+TABLE|git\\s+push\\s+(--force|-f)\\b|git\\s+reset\\s+--hard|kubectl\\s+delete|docker\\s+system\\s+prune)'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"gOS careful: destructive command detected\"}}'; else echo '{}'; fi; }",
+            "timeout": 5,
+            "statusMessage": "gOS careful check"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; if [ -f ~/.claude/freeze-scope.txt ]; then scope=$(cat ~/.claude/freeze-scope.txt); case \"$f\" in \"$scope\"*) echo '{}';; *) printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"gOS freeze: edit blocked — file outside frozen scope\"}}';; esac; else echo '{}'; fi; }",
+            "timeout": 5,
+            "statusMessage": "gOS freeze check"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "firecrawl@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "kotlin-lsp@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "linear@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "figma@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "mobile-design-engine@local-plugins": true,
+    "investment-banking@financial-services-plugins": true,
+    "financial-analysis@financial-services-plugins": true,
+    "equity-research@financial-services-plugins": true,
+    "private-equity@financial-services-plugins": true,
+    "wealth-management@financial-services-plugins": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "claude-mem@thedotmack": true,
+    "skill-creator@claude-plugins-official": true,
+    "firebase@claude-plugins-official": true,
+    "everything-claude-code@everything-claude-code": true,
+    "gos@gos-plugin": true
+  },
+  "extraKnownMarketplaces": {
+    "gos-plugin": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/garyg/Documents/Claude Working Folder/gOS/gos-plugin"
+      }
+    },
+    "local-plugins": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/garyg/claude-plugins"
+      }
+    },
+    "financial-services-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/financial-services-plugins"
+      }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+      }
+    },
+    "thedotmack": {
+      "source": {
+        "source": "github",
+        "repo": "thedotmack/claude-mem"
+      }
+    },
+    "everything-claude-code": {
+      "source": {
+        "source": "github",
+        "repo": "affaan-m/everything-claude-code"
+      }
+    }
+  }
+}

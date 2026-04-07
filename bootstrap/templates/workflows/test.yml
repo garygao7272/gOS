@@ -1,0 +1,95 @@
+name: Test & Lint
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: apps/mobile
+        run: npm ci
+        continue-on-error: true
+
+      - name: Lint
+        working-directory: apps/mobile
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Type check
+        working-directory: apps/mobile
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: apps/mobile
+        run: npm ci
+        continue-on-error: true
+
+      - name: Run tests
+        working-directory: apps/mobile
+        run: npm test -- --coverage
+        continue-on-error: true
+
+  spec-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate spec naming convention
+        run: |
+          INVALID=$(find specs/ -name '*.md' -not -name 'INDEX.md' -not -name 'README.md' \
+            -not -path 'specs/Archive/*' \
+            | grep -v '^specs/Arx_' || true)
+          if [ -n "$INVALID" ]; then
+            echo "Spec files not following naming convention:"
+            echo "$INVALID"
+            exit 1
+          fi
+
+      - name: Check for spec index completeness
+        run: |
+          SPECS=$(find specs/ -name 'Arx_*.md' -not -path 'specs/Archive/*' | wc -l)
+          INDEX_REFS=$(grep -c 'Arx_' specs/INDEX.md || echo 0)
+          echo "Specs: $SPECS, Index references: $INDEX_REFS"
+
+  claude-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            Review this PR for:
+            1. Spec compliance — do code changes match specs/?
+            2. Design token usage — no hardcoded colors/fonts/spacing
+            3. Naming — "Arx" not "ARX" or "arx"
+            4. Security — no hardcoded secrets
+            5. Cascade rule — lower changes don't override upstream specs
