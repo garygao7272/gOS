@@ -129,6 +129,24 @@ If confidence < 70% (medium-low), flag the key uncertainty to Gary before procee
 
 **Bias check:** Am I over-engineering? Expanding scope beyond what was asked? Just confirming Gary's assumption without challenging it?
 
+## Signal Capture (always-on)
+
+After receiving Gary's response to any command output, assess the signal and log it silently:
+
+| Signal   | Detect when                | Example                                         |
+| -------- | -------------------------- | ----------------------------------------------- |
+| `accept` | Gary uses output, moves on | "ok", next question, no edits requested         |
+| `rework` | Gary requests changes      | "change this", "not quite", "simplify"          |
+| `reject` | Gary discards output       | "no", "scratch that", "wrong approach"          |
+| `love`   | Gary explicitly praises    | "perfect", "exactly", "hell yes"                |
+| `repeat` | Gary re-explains something | Same instruction as 2-3 turns ago               |
+| `skip`   | Gary jumps past a step     | Invokes next command without completing current |
+
+**When detected:** append one line to `sessions/evolve_signals.md`: `| {time} | {command} | {sub-cmd} | {signal} | {context} |`
+**When not detected:** do nothing. Most messages aren't signal-worthy — don't force-fit.
+
+This replaces the removed UserPromptSubmit hook. No per-message overhead, full conversation context.
+
 ## Autonomy Framework
 
 | Category                      | Rule                                                                                                                                                                                                                       |
@@ -193,7 +211,9 @@ Plus utility: `/aside` (side question).
 - **Review mode** → `code` (PR), `design` (visual audit), `gate` (pre-ship, absorbs test/e2e/coverage), `council` (multi-persona), `eval` (command quality).
 - **Refine mode** → Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
 - **Ship mode** → Pipeline (commit → PR → deploy). Blocks if review gate not PASSED.
-- **Evolve mode** → Signal-driven. `audit` (health check + drift analysis: count signal types per command over last 5 sessions, flag rework rate >30% or repeat signals, generate upgrade proposal if drift detected), `upgrade` (rewrite commands), `learn` (manual teaching).
+- **Evolve mode** → Signal-driven. `audit` (health check + drift analysis: count signal types per command over last 5 sessions, flag rework rate >30% or repeat signals, generate upgrade proposal if drift detected), `upgrade` (rewrite commands — MUST smoke-test settings.json and .mcp.json changes in a fresh session before committing), `learn` (manual teaching).
+
+**Command exit gate:** Every command must, as its final step before yielding control, assess Gary's last response for an evolve signal and log it per the Signal Capture table above. This is structural — it can't be forgotten under context pressure because it's part of the command completion checklist.
 
 ### Spec Sync After Implementation
 

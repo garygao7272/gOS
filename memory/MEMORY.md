@@ -37,6 +37,10 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 - [feedback_financial_modeling_v2.md](feedback_financial_modeling_v2.md) — 10 rules from financial model sessions
 - [feedback_feel_as_tokens.md](feedback_feel_as_tokens.md) — Feel = shared tokens, reference by screen type
 - [feedback_design_pipeline.md](feedback_design_pipeline.md) — Code-first pipeline beats Figma-first
+- [feedback_verify_subagent_research.md](feedback_verify_subagent_research.md) — Spot-check subagent research against primary sources before presenting
+- [feedback_workflow_docs.md](feedback_workflow_docs.md) — Pipeline over process, decompose don't duplicate, templates separate, verb-centric
+- [feedback_self_inflicted_regression.md](feedback_self_inflicted_regression.md) — Smoke-test evolve changes before commit; MCP servers need disabled:true without tokens; UserPromptSubmit hooks must be lightweight
+- [feedback_orientation_after_gaps.md](feedback_orientation_after_gaps.md) — When Gary signals confusion, give ONE recommendation — not an open menu of options
 
 ### Projects
 
