@@ -9,7 +9,8 @@
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": {
         "Authorization": "Bearer ${GITHUB_TOKEN}"
-      }
+      },
+      "disabled": true
     },
     "sentry": {
       "type": "http",
@@ -40,7 +41,8 @@
       ],
       "env": {
         "DISCORD_TOKEN": "${DISCORD_TOKEN}"
-      }
+      },
+      "disabled": true
     },
     "telegram": {
       "command": "npx",
@@ -51,7 +53,8 @@
       "env": {
         "TELEGRAM_API_ID": "${TELEGRAM_API_ID}",
         "TELEGRAM_API_HASH": "${TELEGRAM_API_HASH}"
-      }
+      },
+      "disabled": true
     },
     "notte": {
       "command": "/Users/garyg/Documents/Claude Working Folder/toolkit/notte-env/bin/python",
@@ -61,7 +64,8 @@
       ],
       "env": {
         "NOTTE_API_KEY": "${NOTTE_API_KEY}"
-      }
+      },
+      "disabled": true
     },
     "spec-rag": {
       "command": "/Users/garyg/Documents/Claude Working Folder/toolkit/spec-rag-env/bin/python",
@@ -90,7 +94,8 @@
       ],
       "env": {
         "STITCH_API_KEY": "${STITCH_API_KEY}"
-      }
+      },
+      "disabled": true
     },
     "aidesigner": {
       "type": "http",
