@@ -169,6 +169,8 @@ Full task flow, handoff protocol, and shutdown in `team-registry.md § build-squ
 3. Read `apps/mobile/CLAUDE.md` if it exists
 4. Check existing components in `apps/mobile/src/components/`
 
+**Context limit guard:** Before any write >200 lines when context is above 50%, dispatch as a fresh agent with explicit file content, or save checkpoint and continue in new session. Large writes at high context fail silently — tasks get approved but never execute because the session hits context limit before Write runs. (Instinct: context-limit-awareness, confidence 0.8)
+
 **Process (strictly sequential — each step must complete before the next):**
 
 1. **Read spec/plan** if available. If the spec contains an `<!-- AGENT: -->` block, extract it and load ONLY the referenced key files, dependencies, and test paths — not the full spec tree. This is the **focused context protocol** (from GSD's `<files_to_read>`).

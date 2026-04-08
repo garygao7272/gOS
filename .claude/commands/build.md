@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Build: plan, prototype, feature, component, fix, tdd, refactor — outputs to apps/"
+description: "Build: feature, fix, refactor — outputs to apps/"
 ---
 
 # Build — Engineering → apps/
@@ -19,7 +19,9 @@ description: "Build: plan, prototype, feature, component, fix, tdd, refactor —
 - **On test failure:** Write failure details and attempted fix to `Dead Ends (don't retry)` if abandoned
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? plan, prototype, feature, component, fix, tdd, or refactor?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? feature, fix, or refactor?"
+
+> **Simplified (v2):** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature` (a component is a small feature). `tdd` → always-on within `feature`, not a separate sub-command.
 
 ---
 
@@ -151,20 +153,14 @@ If any check fails, fix before proceeding. All checks MUST pass before bumping.
 
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
-**Team decision:**
-- If feature touches 3+ systems (backend + frontend + tests): Create team `build-{feature-slug}` with named teammates
-- Otherwise: Sequential execution (current behavior — single session)
+**Team decision** (see `.claude/agents/README.md` complexity gate):
+- Score 7+ → Load `build-squad` template from `.claude/agents/team-registry.md`
+- Score 0-6 → Sequential execution (single session, current behavior)
 
-**If team mode:**
-```
-TeamCreate(team_name="build-{feature-slug}")
-```
-- `backend` (sonnet, worktree) — API, data layer, types
-- `frontend` (sonnet, worktree) — screens, components, hooks
-- `tests` (haiku) — test files only
-- TaskCreate per phase with `blockedBy` — frontend blocks on backend's API contract
-- Backend sends API contract to frontend via `SendMessage(to="frontend", message="API types ready: {types}")`
-- Shutdown all after tests pass: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+**If team mode (`build-squad`):**
+Spawns: `architect` (opus) → `engineer` x2 (sonnet, worktree) → `verifier` (haiku).
+Architect produces API contract first, then backend + frontend work in parallel.
+Full task flow, handoff protocol, and shutdown in `team-registry.md § build-squad`.
 
 **Before building:**
 
@@ -172,6 +168,8 @@ TeamCreate(team_name="build-{feature-slug}")
 2. If a prototype exists, read `apps/web-prototype/index.html` for visual guidance
 3. Read `apps/mobile/CLAUDE.md` if it exists
 4. Check existing components in `apps/mobile/src/components/`
+
+**Context limit guard:** Before any write >200 lines when context is above 50%, dispatch as a fresh agent with explicit file content, or save checkpoint and continue in new session. Large writes at high context fail silently — tasks get approved but never execute because the session hits context limit before Write runs. (Instinct: context-limit-awareness, confidence 0.8)
 
 **Process (strictly sequential — each step must complete before the next):**
 

@@ -28,7 +28,7 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 **Plan mode by default.** Think mode always presents a plan for approval before executing. The whole point of Think is to align on _what_ before _how_. Use `EnterPlanMode` at the start of every Think sub-command, present the approach, and wait for approval before launching agents.
 
-**Swarm execution by default.** Once the plan is approved, Think mode uses parallel agents (3-5) on every sub-command. This works because Think outputs are specs and documents — each agent produces an independent artifact with zero file conflicts. The synthesis step is where the human value lives: comparing perspectives, resolving contradictions, picking the bolder choice.
+**Swarm execution by default.** Once the plan is approved, Think mode loads the `think-swarm` template from `.claude/agents/team-registry.md`. This spawns 3-5 `researcher` agents from the roster (`.claude/agents/researcher.md`) with sub-command-specific roles. Each agent produces an independent artifact with zero file conflicts. The lead runs cross-examination via `SendMessage`. Coordination protocol in `.claude/agents/README.md`.
 
 **Scratchpad checkpoints.** Update `sessions/scratchpad.md` at these moments:
 
@@ -90,9 +90,13 @@ Launch 3 named teammates:
 
 ## research <question>
 
-**Purpose:** Deep market, competitor, or user research grounded in evidence.
+> **Includes UX research** (absorbed from the former `/design research`). All research — market, competitor, user, AND UX — lives here under `/think research`.
+
+**Purpose:** Deep market, competitor, user, or UX research grounded in evidence.
 
 **Input:** Research question (e.g., "what do retail crypto traders actually want from copy trading?")
+
+**Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers, and existing infrastructure. Frame recommendations as "build on top of X" not "replace with Y" — unless replacement is clearly justified. (Instinct: audit-existing-tools, confidence 0.7)
 
 **Team decision:**
 
@@ -158,9 +162,11 @@ Launch 6 named teammates (all on `sonnet` except blue-hat on `opus`):
 
 ## spec <topic>
 
-**Purpose:** Write or update a spec file based on upstream thinking (discover, research, decide outputs).
+> **Strategy specs only.** Build cards are authored via `/design card`, not `/think spec`. Use this for strategy-layer specs: Arx_2-1 (personas), Arx_3-2 (PRD), Arx_3-3 (journeys), Arx_3-4 (epic map), Arx_4-2 (design system).
 
-**Input:** Topic or spec file to update (e.g., "write the copy trading spec" or "update specs/Arx_4-1-1-6")
+**Purpose:** Write or update a strategy spec file based on upstream thinking (discover, research, decide outputs).
+
+**Input:** Topic or spec file to update (e.g., "update personas in Arx_2-1" or "write the PRD section on revenue model")
 
 **Process:**
 

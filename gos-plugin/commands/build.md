@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Build: plan, prototype, feature, component, fix, tdd, refactor — outputs to apps/"
+description: "Build: feature, fix, refactor — outputs to apps/"
 ---
 
 # Build — Engineering → apps/
@@ -19,7 +19,9 @@ description: "Build: plan, prototype, feature, component, fix, tdd, refactor —
 - **On test failure:** Write failure details and attempted fix to `Dead Ends (don't retry)` if abandoned
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? plan, prototype, feature, component, fix, tdd, or refactor?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? feature, fix, or refactor?"
+
+> **Simplified (v2):** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature` (a component is a small feature). `tdd` → always-on within `feature`, not a separate sub-command.
 
 ---
 
@@ -108,14 +110,17 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Build process:**
 
-1. Make changes to `index.html` (or `drafts/{name}-v1.html` for new prototypes)
-2. Test in 390x844 viewport
-3. Run `./bump.sh patch` (or minor/major) after changes
+1. **Check for Visual Checkpoints** — read scratchpad `## Visual Checkpoints`. If approved sketches exist, these are your visual targets. Your implementation MUST match them.
+2. Make changes to `index.html` (or `drafts/{name}-v1.html` for new prototypes)
+3. Test in 390x844 viewport
+4. **Compare against approved sketch** — if a Visual Checkpoint was approved for this section, screenshot your build and compare. If they don't match, fix before proceeding.
+5. Run `./bump.sh patch` (or minor/major) after changes
 
 **Post-Build QA Gate (mandatory before bump/deploy):**
 
 | Check | Method | Pass Criteria |
 |-------|--------|---------------|
+| **Visual match** | Compare screenshot to approved sketch (if exists) | Built version matches approved visual checkpoint |
 | Plan alignment | Re-read plan/instruction | Every requirement has corresponding code change |
 | Visual consistency | Screenshot all changed screens | Selected != unselected states; no clipped text; no overlap |
 | Dark + light mode | Toggle theme, screenshot both | Both themes render without broken colors |
@@ -148,26 +153,14 @@ If any check fails, fix before proceeding. All checks MUST pass before bumping.
 
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
-**Team decision:**
-- If feature touches 3+ systems (backend + frontend + tests): Create team `build-{feature-slug}` with named teammates
-- Otherwise: Sequential execution (current behavior — single session)
+**Team decision** (see `.claude/agents/README.md` complexity gate):
+- Score 7+ → Load `build-squad` template from `.claude/agents/team-registry.md`
+- Score 0-6 → Sequential execution (single session, current behavior)
 
-**If team mode:**
-```
-TeamCreate(team_name="build-{feature-slug}")
-```
-- `backend` (sonnet, worktree) — API, data layer, types
-- `frontend` (sonnet, worktree) — screens, components, hooks
-- `tests` (haiku) — test files only
-- TaskCreate per phase with `blockedBy` — frontend blocks on backend's API contract
-- Backend sends API contract to frontend via `SendMessage(to="frontend", message="API types ready: {types}")`
-- Shutdown all after tests pass: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
-
-**Subagent configuration (CC forked agent pattern):**
-- **Tool allowlist:** Read, Edit, Write, Bash, Grep, Glob (no WebSearch, no MCP unless needed)
-- **Turn budget:** 25 turns max per phase agent — prevents runaway loops
-- **Model:** sonnet for implementation, haiku for test scaffolding
-- **Cache-friendly prompt:** Use identical system prefix across phase agents (project context, CLAUDE.md) — vary only the phase-specific task suffix
+**If team mode (`build-squad`):**
+Spawns: `architect` (opus) → `engineer` x2 (sonnet, worktree) → `verifier` (haiku).
+Architect produces API contract first, then backend + frontend work in parallel.
+Full task flow, handoff protocol, and shutdown in `team-registry.md § build-squad`.
 
 **Before building:**
 
@@ -175,6 +168,8 @@ TeamCreate(team_name="build-{feature-slug}")
 2. If a prototype exists, read `apps/web-prototype/index.html` for visual guidance
 3. Read `apps/mobile/CLAUDE.md` if it exists
 4. Check existing components in `apps/mobile/src/components/`
+
+**Context limit guard:** Before any write >200 lines when context is above 50%, dispatch as a fresh agent with explicit file content, or save checkpoint and continue in new session. Large writes at high context fail silently — tasks get approved but never execute because the session hits context limit before Write runs. (Instinct: context-limit-awareness, confidence 0.8)
 
 **Process (strictly sequential — each step must complete before the next):**
 
@@ -198,6 +193,10 @@ TeamCreate(team_name="build-{feature-slug}")
 - The plan for that phase only
 - Relevant source files (not the whole codebase)
 - Clear entry/exit criteria
+- **Model:** `sonnet` for implementation, `haiku` for test scaffolding
+- **Tool allowlist:** Read, Edit, Write, Bash, Grep, Glob (no WebSearch, no MCP unless needed)
+- **Turn budget:** 25 turns max per phase agent — prevents runaway loops
+- **Cache-friendly prompt:** Use identical system prefix across phase agents (project context, CLAUDE.md) — vary only the phase-specific task suffix
 
 **Deviation rules:**
 
@@ -387,6 +386,3 @@ This gate exists because AI generates code at 140-200 lines/min but humans compr
 | Mobile fit | Verify at 390x844 viewport | No horizontal scroll |
 
 If any check fails, fix before commit. Never ship with known visual or interaction bugs.
-
-## Safety (when hooks unavailable)
-Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation. Never auto-approve destructive operations.

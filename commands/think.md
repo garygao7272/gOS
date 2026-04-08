@@ -96,6 +96,8 @@ Launch 3 named teammates:
 
 **Input:** Research question (e.g., "what do retail crypto traders actually want from copy trading?")
 
+**Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers, and existing infrastructure. Frame recommendations as "build on top of X" not "replace with Y" — unless replacement is clearly justified. (Instinct: audit-existing-tools, confidence 0.7)
+
 **Team decision:**
 
 - If question involves disputed claims or multi-source validation: Create team `think-research-{slug}` with 3 teammates

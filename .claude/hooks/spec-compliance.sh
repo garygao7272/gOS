@@ -52,6 +52,6 @@ if [ -f "$ACCUMULATE_LOG" ] && grep -q "$SPEC_BASE" "$ACCUMULATE_LOG" 2>/dev/nul
   exit 0
 fi
 
-# Spec not read — warn but don't block (advisory for now)
-echo "ADVISORY: $FILE_PATH is governed by $SPEC. Consider reading it first for spec compliance. (This is advisory — edit will proceed.)"
-exit 0
+# Spec not read — BLOCK the edit until spec is read
+echo "BLOCKED: $FILE_PATH is governed by $SPEC. Read the spec first, then retry the edit."
+exit 2

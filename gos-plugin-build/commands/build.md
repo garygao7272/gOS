@@ -1,5 +1,6 @@
 ---
-description: "Build: plan, prototype, feature, component, fix, tdd, refactor, model, deck, content, playbook, proposal — outputs to apps/ and outputs/"
+effort: high
+description: "Build: feature, fix, refactor — outputs to apps/"
 ---
 
 # Build — Engineering → apps/
@@ -18,146 +19,9 @@ description: "Build: plan, prototype, feature, component, fix, tdd, refactor, mo
 - **On test failure:** Write failure details and attempted fix to `Dead Ends (don't retry)` if abandoned
 - **After compaction:** Re-read `sessions/scratchpad.md` to restore state
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? plan, prototype, feature, component, fix, tdd, refactor, model, deck, content, playbook, or proposal?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What are we building? feature, fix, or refactor?"
 
----
-
-## Intent Gate (mandatory — runs before any sub-command)
-
-**First-Principles Decomposition.** Every request is broken into 6 MECE dimensions before execution.
-
-### Step 1: DECOMPOSE
-
-Parse Gary's request. Fill every dimension and classify:
-
-| Dim | Question | ✅ Stated | 🔮 Inferred | ❌ Unknown |
-|-----|----------|-----------|-------------|-----------|
-| **WHAT** | What are we building? (feature, component, fix, model, deck) | Gary named it | Derivable from context | Must ask |
-| **WHY** | What outcome? (new capability, fix bug, refactor, deliver artifact) | Gary stated purpose | Implied by sub-command | Must ask |
-| **WHO** | Who is this for? (S7 users, S2 traders, investors, internal) | Gary specified | Obvious from feature | Must ask |
-| **HOW** | What method? (plan-first, TDD, prototype, refactor) | Gary chose sub-command | Matches complexity | Must ask |
-| **SCOPE** | Which parts? (single file, module, full feature, cross-cutting) | Gary bounded it | Inferrable from context | Must ask |
-| **BAR** | What standard? (prototype, production, ship-ready) | Gary set the bar | Implied by stage | Must ask |
-
-### Step 2: PRESENT & CLARIFY
-
-Show the decomposition:
-
-> | Dim | Value | Status |
-> |-----|-------|--------|
-> | WHAT | {target} | ✅/🔮/❌ |
-> | WHY | {purpose} | ✅/🔮/❌ |
-> | WHO | {audience} | ✅/🔮/❌ |
-> | HOW | {approach} | ✅/🔮/❌ |
-> | SCOPE | {boundary} | ✅/🔮/❌ |
-> | BAR | {standard} | ✅/🔮/❌ |
-
-- **❌ Unknown** → ask ONE batched question covering all unknowns
-- **🔮 Inferred** → state for confirmation
-- **All ✅/🔮** → skip to Step 3
-
-### Step 3: PLAN
-
-> **Plan: Build > {sub-command}**
-> - **Scope:** {WHAT + SCOPE resolved}
-> - **Reads:** {files/data to consume}
-> - **Writes:** {files/output to create}
-> - **Agents:** {N-agent team / single agent / inline}
-> - **Output:** {format → destination path}
-
-**Before presenting "Go?":** Write to `sessions/scratchpad.md`:
-- Update `## Current Task` with the resolved WHAT
-- Update `## Mode & Sub-command` with the command > sub-command
-- Update Pipeline State: `- [x] Intent Gate: WHAT={what} | WHY={why} | WHO={who} | HOW={how} | SCOPE={scope} | BAR={bar}`
-
-### Step 4: CONFIRM
-> **Go?**
-
-**HARD STOP.** End your message here. Do NOT:
-- Add a "preview" or "meanwhile" or "while you decide"
-- Start producing output in the same message
-- Say "Go?" and then keep writing
-
-The message containing "Go?" must contain NOTHING after it. Wait for Gary's next message before doing any work.
-
-### Step 5: PLAN MODE (mandatory after Gary confirms)
-
-When Gary confirms ("go", "yes", "do it"), you MUST call `EnterPlanMode` before doing ANY work. This is not optional. This is deterministic:
-
-```
-Gary says "go" → call EnterPlanMode() → write plan to plan file → call ExitPlanMode() → Gary approves → THEN execute
-```
-
-**Exceptions (skip plan mode):**
-- `--auto` flag (mobile dispatch)
-- Trust level T2+ for this domain
-- Sub-commands marked `[skip-gate]`
-
-**[skip-gate] sub-commands** (immediate or interactive — no side-effect planning needed):
-- `fix` — immediate diagnostic loop, proceeds directly
-- `tdd` — interactive RED-GREEN cycle, proceeds directly
-- Any sub-command with `--auto` flag (mobile dispatch — skip gate, use safe defaults)
-
----
-
-## Context Protocol (runs after Intent Gate, before execution)
-
-After the Intent Gate resolves all 6 dimensions, auto-load relevant context. See `gOS/.claude/context-map.md` for the full keyword → source mapping.
-
-1. Parse resolved WHAT and SCOPE for keywords
-2. Match against context map → candidate sources
-3. Check file existence (skip missing silently)
-4. Estimate token cost (lines / 4)
-5. If total < 30% of remaining context → load silently
-6. If total > 30% → present list and ask Gary to trim
-7. Log loaded context to `sessions/scratchpad.md` under `Working State`
-8. **Write scratchpad marker:** Update `sessions/scratchpad.md` Pipeline State: `- [x] Context Loaded: {list of files loaded or "none needed"}`
-
----
-
-## Memory Recall (runs after Context Protocol, before Trust Check)
-
-Query persistent memory for relevant past experience before executing. This is how gOS learns across sessions.
-
-1. **Search claude-mem** for the current command + domain:
-   - `mcp__plugin_claude-mem_mcp-search__search({ query: "{WHAT} {sub-command}", type: "observation", limit: 5 })`
-   - Also search: `mcp__plugin_claude-mem_mcp-search__search({ query: "{domain} {sub-command} signal", limit: 3 })`
-2. **Check self-model** for domain competence:
-   - Read the row for `{domain}` in `.claude/self-model.md`
-   - If accept rate < 70% or weaknesses listed → flag: "Note: my `{domain}` has {weakness}. Adjusting approach."
-3. **Surface relevant findings:**
-   - If past sessions had reworks/rejects in this domain → mention what went wrong and how you'll avoid it
-   - If past sessions had accepts/loves → mention what worked and reuse the approach
-   - If no relevant history → say "No prior experience in this domain — running full pipeline."
-4. **Write scratchpad marker:** Update Pipeline State: `- [x] Memory Recalled: {N} observations, self-model: {domain} T{N} {accept_rate}`
-
-**Keep it brief.** One line of insight, not a paragraph. The goal is to inform execution, not to recite history.
-
----
-
-## Trust Check (runs after Context Protocol, before Pipe Resolution)
-
-Check trust level for the current domain. See `gOS/.claude/trust-ladder.md` for rules.
-
-1. Infer domain from resolved WHAT (e.g., "build copy trading feature" → `architecture`)
-2. Read `sessions/trust.json` → get trust level for this domain
-3. Adjust gate depth accordingly (T0=full, T1=lighter confirm, T2=execute-first, T3=silent)
-4. Show trust context: "Trust: `{domain}` at T{N} ({history summary})"
-5. **Write scratchpad marker:** Update Pipeline State: `- [x] Trust Level: T{N} for {domain}`
-
----
-
-## Pipe Resolution (runs after Context Protocol, before execution)
-
-Check for upstream artifacts that match the current task. See `gOS/.claude/artifact-schema.md` for the full schema and algorithm.
-
-1. Parse WHAT from resolved intent
-2. Search `outputs/` for files with matching topic in YAML frontmatter
-3. Filter by types relevant to `/build`: research-brief, design-spec, decision, build-plan
-4. If found: present list and auto-load as context ("📎 Upstream artifacts found...")
-5. If not found: proceed without — build can work from specs alone
-6. Update `outputs/ARTIFACT_INDEX.md` after writing output
-7. **Write scratchpad marker:** Update Pipeline State: `- [x] Pipe Resolved: {N} upstream artifacts loaded` or `- [x] Pipe Resolved: none found`
+> **Simplified (v2):** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature` (a component is a small feature). `tdd` → always-on within `feature`, not a separate sub-command.
 
 ---
 
@@ -239,21 +103,24 @@ Check for upstream artifacts that match the current task. See `gOS/.claude/artif
 
 **Anti-Pattern Rules (prevent bugs at write time):**
 
-1. **No inline styles for toggle states.** Visual states MUST be driven by CSS classes (`.selected`, `.active`), NEVER by inline `style=""` attributes. Use `style.removeProperty()` to clear inherited inline styles before relying on class-based styling.
+1. **CSS classes for toggle states.** Visual states MUST be driven by CSS classes (`.selected`, `.active`). Use `style.removeProperty()` to clear inherited inline styles before relying on class-based styling.
 2. **No template literals in static HTML.** `${expression}` only works inside JS template strings. Use placeholders populated via JS `textContent` at render time.
 3. **CSS-first, JS-second.** CSS handles how things look. JS handles what class to add. JS should never set `el.style.borderColor` for states that have CSS rules. Exception: computed values like scroll-based positioning.
 4. **Every option set needs "Other/All".** If presenting 3-5 choices, ALWAYS include an escape hatch.
 
 **Build process:**
 
-1. Make changes to `index.html` (or `drafts/{name}-v1.html` for new prototypes)
-2. Test in 390x844 viewport
-3. Run `./bump.sh patch` (or minor/major) after changes
+1. **Check for Visual Checkpoints** — read scratchpad `## Visual Checkpoints`. If approved sketches exist, these are your visual targets. Your implementation MUST match them.
+2. Make changes to `index.html` (or `drafts/{name}-v1.html` for new prototypes)
+3. Test in 390x844 viewport
+4. **Compare against approved sketch** — if a Visual Checkpoint was approved for this section, screenshot your build and compare. If they don't match, fix before proceeding.
+5. Run `./bump.sh patch` (or minor/major) after changes
 
 **Post-Build QA Gate (mandatory before bump/deploy):**
 
 | Check | Method | Pass Criteria |
 |-------|--------|---------------|
+| **Visual match** | Compare screenshot to approved sketch (if exists) | Built version matches approved visual checkpoint |
 | Plan alignment | Re-read plan/instruction | Every requirement has corresponding code change |
 | Visual consistency | Screenshot all changed screens | Selected != unselected states; no clipped text; no overlap |
 | Dark + light mode | Toggle theme, screenshot both | Both themes render without broken colors |
@@ -262,7 +129,7 @@ Check for upstream artifacts that match the current task. See `gOS/.claude/artif
 | Console clean | `preview_console_logs(level='error')` | Zero JS errors |
 | Mobile fit | Verify at 390x844 viewport | No horizontal scroll; all content within viewport |
 
-If any check fails, fix before proceeding. Do NOT bump with known issues.
+If any check fails, fix before proceeding. All checks MUST pass before bumping.
 
 **Blast-Radius Rule (fix all instances, not just the one reported):**
 
@@ -286,20 +153,14 @@ If any check fails, fix before proceeding. Do NOT bump with known issues.
 
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
-**Team decision:**
-- If feature touches 3+ systems (backend + frontend + tests): Create team `build-{feature-slug}` with named teammates
-- Otherwise: Sequential execution (current behavior — single session)
+**Team decision** (see `.claude/agents/README.md` complexity gate):
+- Score 7+ → Load `build-squad` template from `.claude/agents/team-registry.md`
+- Score 0-6 → Sequential execution (single session, current behavior)
 
-**If team mode:**
-```
-TeamCreate(team_name="build-{feature-slug}")
-```
-- `backend` (sonnet, worktree) — API, data layer, types
-- `frontend` (sonnet, worktree) — screens, components, hooks
-- `tests` (haiku) — test files only
-- TaskCreate per phase with `blockedBy` — frontend blocks on backend's API contract
-- Backend sends API contract to frontend via `SendMessage(to="frontend", message="API types ready: {types}")`
-- Shutdown all after tests pass: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+**If team mode (`build-squad`):**
+Spawns: `architect` (opus) → `engineer` x2 (sonnet, worktree) → `verifier` (haiku).
+Architect produces API contract first, then backend + frontend work in parallel.
+Full task flow, handoff protocol, and shutdown in `team-registry.md § build-squad`.
 
 **Before building:**
 
@@ -307,6 +168,8 @@ TeamCreate(team_name="build-{feature-slug}")
 2. If a prototype exists, read `apps/web-prototype/index.html` for visual guidance
 3. Read `apps/mobile/CLAUDE.md` if it exists
 4. Check existing components in `apps/mobile/src/components/`
+
+**Context limit guard:** Before any write >200 lines when context is above 50%, dispatch as a fresh agent with explicit file content, or save checkpoint and continue in new session. Large writes at high context fail silently — tasks get approved but never execute because the session hits context limit before Write runs. (Instinct: context-limit-awareness, confidence 0.8)
 
 **Process (strictly sequential — each step must complete before the next):**
 
@@ -330,6 +193,10 @@ TeamCreate(team_name="build-{feature-slug}")
 - The plan for that phase only
 - Relevant source files (not the whole codebase)
 - Clear entry/exit criteria
+- **Model:** `sonnet` for implementation, `haiku` for test scaffolding
+- **Tool allowlist:** Read, Edit, Write, Bash, Grep, Glob (no WebSearch, no MCP unless needed)
+- **Turn budget:** 25 turns max per phase agent — prevents runaway loops
+- **Cache-friendly prompt:** Use identical system prefix across phase agents (project context, CLAUDE.md) — vary only the phase-specific task suffix
 
 **Deviation rules:**
 
@@ -352,6 +219,8 @@ TeamCreate(team_name="build-{feature-slug}")
 **Write tests in the same context window as implementation** — tests with full context catch more issues than tests written in isolation.
 
 **Exit Gate:** Tests pass AND visual verification via screenshot/snapshot.
+
+**Verification step (mandatory):** After implementation, include a one-liner the user can run to verify the change works. Examples: `npm test -- --grep auth`, `curl localhost:3000/api/health`, `open index.html`. If no automated verification exists, describe the exact manual check. This is the single highest-leverage quality improvement — it 2-3x the quality of the final result.
 
 **Spec Sync:** After building, check if implementation diverges from spec. Update spec with `<!-- Synced from apps/mobile vX.X.X -->` and note deviations with rationale.
 
@@ -473,7 +342,7 @@ TeamCreate(team_name="build-{feature-slug}")
 3. **Categorize findings by risk:**
    - **SAFE:** Unused imports, dead utility functions, commented-out code, unused CSS → remove immediately
    - **CAREFUL:** Unused exports that might be used dynamically, functions only called in tests → verify before removing
-   - **RISKY:** Functions used via string references, dynamic imports, reflection → do NOT remove without deep analysis
+   - **RISKY:** Functions used via string references, dynamic imports, reflection → require deep analysis before removal
 4. **Remove SAFE items first** — commit after each batch
 5. **Run full test suite after each batch** — any failure means revert the batch and investigate
 6. **Consolidate duplicates:**
@@ -502,259 +371,6 @@ This gate exists because AI generates code at 140-200 lines/min but humans compr
 
 ---
 
----
-
-## model <type>
-
-**Purpose:** Build financial models — spreadsheets, projections, and quantitative analyses. Uses financial-analysis skills.
-
-**Input:** Model type (e.g., "3-statement", "dcf", "lbo", "unit-economics", "revenue-forecast", "budget", "cap-table")
-
-**Routing table:**
-
-| Model Type | Skill to Invoke | Output Format |
-|-----------|----------------|---------------|
-| `3-statement` | `financial-analysis:3-statement-model` | Excel (.xlsx) |
-| `dcf` | `financial-analysis:dcf` or `financial-analysis:dcf-model` | Excel (.xlsx) |
-| `lbo` | `financial-analysis:lbo` or `financial-analysis:lbo-model` | Excel (.xlsx) |
-| `comps` | `financial-analysis:comps` or `financial-analysis:comps-analysis` | Excel (.xlsx) |
-| `unit-economics` | `private-equity:unit-economics` | Markdown + spreadsheet |
-| `revenue-forecast` | Build from scratch with assumptions | Excel (.xlsx) |
-| `budget` | Build from scratch with line items | Excel (.xlsx) |
-| `cap-table` | Build from scratch with rounds | Excel (.xlsx) |
-| `merger` | `investment-banking:merger-model` | Excel (.xlsx) |
-
-**Process:**
-
-1. Parse model type from remaining `$ARGUMENTS`
-2. Update scratchpad: `Build > model`, type
-3. **Gather inputs:**
-   - Ask for or search for: revenue figures, growth rates, margins, headcount, funding history
-   - Check `outputs/think/finance/` for prior analysis
-   - Check existing financial models in the project
-4. **Invoke the matched skill** with gathered inputs
-5. **Validate the model:**
-   - Balance sheet balances (A = L + E)
-   - Cash flow reconciles
-   - Growth rates are consistent across statements
-   - No circular references
-   - Sensitivity tables work
-6. **Audit with `/review financial`** after building
-
-**Output:** Financial model file + summary markdown. Suggest: "Run scenarios with `/simulate revenue`?" or "Audit with `/review financial`?"
-
----
-
-## deck <type>
-
-**Purpose:** Build presentation decks — pitch decks, sales decks, board decks, one-pagers, internal presentations.
-
-**Input:** Deck type (e.g., "pitch", "sales", "board-update", "investor-update", "one-pager", "internal", "competitive")
-
-**Routing table:**
-
-| Deck Type | Skill to Invoke | Slides |
-|----------|----------------|--------|
-| `pitch` | `investment-banking:pitch-deck` + `anthropic-skills:pptx` | 10-15 |
-| `sales` | `anthropic-skills:pptx` + `anthropic-skills:communication-narrative` | 8-12 |
-| `board-update` | `anthropic-skills:pptx` | 6-10 |
-| `investor-update` | `everything-claude-code:investor-materials` | 5-8 |
-| `one-pager` | `investment-banking:one-pager` or `investment-banking:strip-profile` | 1-2 |
-| `teaser` | `investment-banking:teaser` | 1 |
-| `internal` | `anthropic-skills:pptx` + `anthropic-skills:internal-comms` | Varies |
-| `competitive` | `financial-analysis:competitive-analysis` | 8-12 |
-
-**Process:**
-
-1. Parse deck type from remaining `$ARGUMENTS`
-2. Update scratchpad: `Build > deck`, type
-3. **Gather content:**
-   - Read existing specs for company narrative, product details, metrics
-   - Read `outputs/think/finance/` for financial data
-   - Read `outputs/think/fundraise/` for fundraising strategy
-   - Ask Gary for any specific data points, metrics, or narrative angles
-4. **Build the deck using the matched skill**
-5. **Apply design quality:**
-   - Consistent visual language
-   - Data visualization over bullet points
-   - One key message per slide
-   - No wall-of-text slides
-6. **QA check:**
-   - Numbers consistent across all slides
-   - No placeholder text remaining
-   - Company name and branding correct
-   - All charts have labels and sources
-
-**Output:** PowerPoint file (.pptx) or HTML presentation. Suggest: "Review with `/review content`?" or "Send to investors with `/ship pitch`?"
-
----
-
-## content <type>
-
-**Purpose:** Create written content — blog posts, articles, newsletters, social media posts, documentation, job descriptions, legal documents.
-
-**Input:** Content type + topic (e.g., "blog post about copy trading", "newsletter Q1 update", "jd senior engineer", "terms-of-service", "case-study")
-
-**Routing table:**
-
-| Content Type | Skill to Invoke | Output |
-|-------------|----------------|--------|
-| `blog` / `article` | `everything-claude-code:article-writing` | Markdown |
-| `newsletter` | `everything-claude-code:article-writing` | HTML email |
-| `social` / `post` / `thread` | `everything-claude-code:content-engine` | Platform-native posts |
-| `jd` / `job-description` | Build from `/think hire` output | Markdown |
-| `terms` / `tos` / `privacy` | Build from `/think legal` output | Markdown / HTML |
-| `case-study` | `anthropic-skills:communication-narrative` | Markdown |
-| `memo` / `brief` | `anthropic-skills:internal-comms` | Markdown |
-| `docs` / `guide` | `anthropic-skills:doc-coauthoring` | Markdown |
-| `email` | `anthropic-skills:communication-narrative` | Text |
-
-**Process:**
-
-1. Parse content type and topic from remaining `$ARGUMENTS`
-2. Update scratchpad: `Build > content`, type + topic
-3. **Research phase:**
-   - Read relevant specs, prior content, brand guidelines
-   - If topic-specific: search for current data, trends, examples
-   - If Gary has provided brand voice guidelines, load them
-4. **Draft the content** using the matched skill
-5. **Quality check:**
-   - Tone matches brand voice
-   - No placeholder text
-   - All claims are sourced or supportable
-   - CTA is clear (if applicable)
-   - Length is appropriate for format
-
-**Output:** Content file in appropriate format. Suggest: "Review with `/review content`?" or "Publish with `/ship publish`?"
-
----
-
-## playbook <type>
-
-**Purpose:** Build operational playbooks — structured processes with steps, decision trees, templates, and checklists.
-
-**Input:** Playbook type (e.g., "hiring", "sales", "onboarding", "incident-response", "customer-support", "launch")
-
-**Process:**
-
-1. Parse playbook type from remaining `$ARGUMENTS`
-2. Update scratchpad: `Build > playbook`, type
-3. **Research phase:**
-   - Search for industry best practices for this playbook type
-   - Check existing specs and processes
-   - Review any prior `/think` outputs related to this domain
-4. **Build the playbook:**
-
-```markdown
-# {Type} Playbook
-
-## Purpose
-{Why this playbook exists — what problem it solves}
-
-## Scope
-{What this playbook covers and what it doesn't}
-
-## Process Overview
-{Flowchart or numbered steps — high level}
-
-## Detailed Steps
-
-### Step 1: {Name}
-- **Owner:** {role}
-- **Input:** {what's needed to start}
-- **Actions:**
-  1. {action}
-  2. {action}
-- **Output:** {what's produced}
-- **Decision point:** {if X → go to step Y, if Z → go to step W}
-
-### Step 2: {Name}
-...
-
-## Templates
-{Reusable templates for common tasks within this playbook}
-
-## Metrics & KPIs
-| Metric | Target | Measurement Method |
-|--------|--------|-------------------|
-
-## Common Pitfalls
-- {pitfall 1 — how to avoid}
-- {pitfall 2 — how to avoid}
-
-## Escalation Path
-{When and how to escalate issues}
-```
-
-**Output:** Playbook document. Suggest: "Review with `/review compliance`?" or "Ship with `/ship docs`?"
-
----
-
-## proposal <client or project>
-
-**Purpose:** Build client-facing proposals, SOWs, project scopes, and engagement letters.
-
-**Input:** Client or project description (e.g., "consulting proposal for Acme Corp", "SOW for mobile app redesign", "partnership proposal for exchange integration")
-
-**Process:**
-
-1. Parse the proposal context from remaining `$ARGUMENTS`
-2. Update scratchpad: `Build > proposal`, context
-3. **Gather requirements:**
-   - Ask for or infer: client name, project scope, timeline, budget range, deliverables
-   - Check existing specs for relevant product/service details
-   - Search for proposal templates and best practices
-4. **Build the proposal:**
-
-```markdown
-# Proposal: {Project Name}
-
-## Executive Summary
-{2-3 sentences — what, why, and expected outcome}
-
-## Problem Statement
-{What the client needs solved}
-
-## Proposed Solution
-{How we solve it — approach, methodology, technology}
-
-## Scope of Work
-### Phase 1: {Name} — {Timeline}
-- Deliverable 1: {description}
-- Deliverable 2: {description}
-
-### Phase 2: {Name} — {Timeline}
-...
-
-### Out of Scope
-- {explicitly excluded items}
-
-## Timeline
-| Phase | Start | End | Milestones |
-|-------|-------|-----|-----------|
-
-## Investment
-| Item | Cost | Notes |
-|------|------|-------|
-| {line item} | {$} | {details} |
-| **Total** | **{$}** | |
-
-## Terms & Conditions
-{Payment schedule, IP ownership, confidentiality, termination}
-
-## Team
-| Role | Person | Responsibilities |
-|------|--------|-----------------|
-
-## Next Steps
-1. {action — who, when}
-2. {action — who, when}
-```
-
-**Output:** Proposal document (Markdown + optionally PPTX via `anthropic-skills:pptx`). Suggest: "Review with `/review content`?" or "Send with `/ship pitch`?"
-
----
-
 ## Universal Post-Build QA Checklist
 
 **Applies to ALL sub-commands (prototype, feature, component).** Run after every change, before commit:
@@ -770,115 +386,3 @@ This gate exists because AI generates code at 140-200 lines/min but humans compr
 | Mobile fit | Verify at 390x844 viewport | No horizontal scroll |
 
 If any check fails, fix before commit. Never ship with known visual or interaction bugs.
-
----
-
-## Team Mode for Business Sub-commands
-
-The following business sub-commands use Agent Teams for parallel work:
-
-### model — Team `build-model-{type}`
-- **`data-gatherer` (sonnet):** Collect financial data, benchmarks, assumptions from specs and research
-- **`model-builder` (sonnet):** Build the actual model (formulas, projections, scenarios)
-- **`auditor` (haiku):** Validate formulas, check for errors, cross-reference consistency
-
-### deck — Team `build-deck-{type}`
-- **`content-writer` (sonnet):** Draft slide content, narrative flow, key messages
-- **`designer` (sonnet):** Visual layout, data visualizations, slide design
-- **`data-checker` (haiku):** Verify all numbers, dates, names are correct and consistent
-
-### content — Team `build-content-{type}` (for long-form only; short-form is single agent)
-- **`writer` (sonnet):** Draft the content
-- **`editor` (haiku):** Review tone, grammar, brand voice
-- **`fact-checker` (haiku):** Verify claims, links, data points
-
-### playbook — Team `build-playbook-{type}`
-- **`researcher` (sonnet):** Industry best practices, frameworks, templates
-- **`writer` (sonnet):** Draft the playbook structure and content
-
-### proposal — Team `build-proposal-{slug}`
-- **`researcher` (sonnet):** Client/project research, competitive landscape
-- **`writer` (sonnet):** Draft the proposal narrative and structure
-- **`reviewer` (haiku):** Check for consistency, completeness, professionalism
-
-All teams follow the standard pattern: `TeamCreate` → spawn named teammates → `SendMessage` for cross-examination → synthesis → `SendMessage(to="*", message={type: "shutdown_request"})` → `TeamDelete`.
-
----
-
-## Creative Friction Check (runs after execution, before Output Contract)
-
-See `gOS/.claude/creative-friction.md`. Build friction fires rarely — only on architecture, never on code style.
-
-Before presenting, check: (1) Is the architecture creating technical debt that a simpler approach would avoid? → suggest the simpler path. (2) Is the framework choice mismatched to the team's reality? → flag it. **Never friction on implementation details.** That's what linters and code review are for.
-
-Max ONE friction per task. Suppress if this is a `fix` or `tdd` sub-command (execution-focused, not architecture).
-
----
-
-## Output Contract (MANDATORY — runs after execution, before presenting)
-
-**You MUST complete all steps before showing output to Gary.** See `gOS/.claude/output-contract.md` for the full rubric.
-
-1. Score on 5 universal dimensions (1-5): Completeness, Evidence, Actionability, Accuracy, Clarity
-2. Score on Build extension: **Correctness** (1-5) — does it compile, pass tests, handle edge cases?
-3. Identify weakest dimension
-4. If any dimension ≤ 2 → flag and offer to improve before Gary reads
-5. Skip Confidence Calibration for build (code is binary — compiles or doesn't)
-6. Present scorecard at top of output
-7. **Write YAML frontmatter** to the output file (per `gOS/.claude/artifact-schema.md`):
-   ```yaml
-   ---
-   artifact_type: build-plan | code-scaffold | content-draft
-   created_by: /build {sub-command}
-   created_at: {ISO timestamp}
-   topic: {WHAT from intent}
-   related_specs: [{matched specs}]
-   quality_score: {scores from step 1-2}
-   status: draft
-   ---
-   ```
-8. **Update `outputs/ARTIFACT_INDEX.md`** — add or update entry for this artifact
-9. **Write scratchpad markers:** Update Pipeline State:
-   - `- [x] Output Scored: {avg}/5 (weakest: {dimension})`
-   - `- [x] Frontmatter Written: {path}`
-   - `- [x] Index Updated: {topic} added to ARTIFACT_INDEX`
-
----
-
-## Red Team Check (runs after Output Contract, before presenting)
-
-**Build red team question:** "What's the most likely way this code breaks in production?"
-
-1. Run the red team question against the draft output
-2. If a genuine issue is found (would change Gary's decision):
-   a. Fix it if possible (harden the code)
-   b. If not fixable: flag in output header with ⚔️ marker
-3. If finding is LOW confidence or wouldn't change any decision → suppress (no noise)
-4. **Write scratchpad marker:** Update Pipeline State: `- [x] Red Team Passed: {question asked} → {finding or "clean"}`
-
----
-
-## Signal Capture (MANDATORY — after every execution)
-
-**After presenting output, observe Gary's NEXT response and classify the signal.**
-
-1. Classify Gary's response as one of:
-   - `accept` — used output without changes, moved on
-   - `rework` — "change this", "not quite", "try again"
-   - `reject` — "no", "scratch that", "wrong approach"
-   - `love` — "perfect", "great", "exactly", "hell yes"
-   - `repeat` — same instruction given twice (gOS didn't learn)
-   - `skip` — Gary jumped past a prescribed step
-
-2. **Log to `sessions/evolve_signals.md`:**
-   | Time | Command | Sub-cmd | Signal | Context |
-   |------|---------|---------|--------|---------|
-
-3. **Update `sessions/trust.json`** — adjust trust level for the current domain per `gOS/.claude/trust-ladder.md`:
-   - `accept`/`love` → increment consecutive accept count
-   - `rework`/`reject` → reset count, demote if threshold hit
-   - Check progression rules (T0→T1 needs 3+ consecutive accepts)
-
-4. If `repeat` detected → immediately update relevant command file or memory
-5. If `love` detected → save the approach to feedback memory for reuse
-6. **Write scratchpad marker:** Update Pipeline State: `- [x] Signal Captured: {signal type} for {domain}`
