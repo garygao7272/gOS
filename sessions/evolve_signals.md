@@ -481,3 +481,6 @@
 | 2026-04-09 | 00:40 | /gos | accept | P1-P5 execution — all 5 priorities built, Gary accepted approach |
 | 2026-04-09 | 00:50 | /gos | accept | Bonus: fixed 10 broken symlinks + gos-plugin path — Gary didn't object |
 | 2026-04-09 | 00:55 | /gos | repeat | Stop hook tasks skipped — gOS ended session without running mandatory signal scan + memory update |
+| 2026-04-09 | 01:00 | /ship | accept | "yes commit to git repo" — Gary approved commit, clean execution |
+| 2026-04-09 | 01:05 | /aside | accept | Untracked files assessment — Gary asked, gOS gave clear keep/remove recommendation |
+| 2026-04-09 | 01:05 | /gos | repeat | Stop hook caught gOS AGAIN skipping mandatory signal+memory tasks on second response ending |
