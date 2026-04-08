@@ -32,11 +32,17 @@ Parse the first word of `$ARGUMENTS` to route:
 
 ---
 
-## Step 0: Initialize Scratchpad (always runs first)
+## Step 0: Initialize Session (always runs first)
 
-Read `sessions/scratchpad.md`. If stale, empty, or from a previous session, initialize:
+**Memory search (mandatory):**
+1. Read `memory/L1_essential.md` — active state, feedback rules, known gaps
+2. Read `sessions/state.json` — check for incomplete work from last session
+3. If claude-mem is available, search for context relevant to the current task: `mcp__plugin_claude-mem_mcp-search__search` with a query derived from the task or "last session decisions"
+4. Read `sessions/scratchpad.md` — runtime flags and agent state
 
-> **Note:** CC's native SessionMemory (template at `~/.claude/session-memory/config/template.md`) now tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
+If scratchpad is stale, empty, or from a previous session, initialize:
+
+> **Note:** CC's native SessionMemory tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
 
 ```markdown
 # Session State
@@ -227,9 +233,11 @@ If any `repeat` signals detected: immediately update the relevant command file o
 - Update `user_*.md` if you learned something about Gary's preferences
 - Update `project_*.md` if project state changed materially
 
-**Part D — Save to claude-mem:**
+**Part D — Save to persistent memory:**
 
-- Create an observation capturing the session summary, decisions, and learnings
+- Update `memory/L1_essential.md` with new current focus, any new feedback rules, recent decisions
+- If claude-mem is available (`mcp__plugin_claude-mem_mcp-search__search`), create an observation capturing the session summary, decisions, and learnings
+- Update `sessions/state.json` — set phase to "completed", clear files_modified, update recovery_instructions to "Last session: {summary}"
 
 **Report:**
 
@@ -243,16 +251,20 @@ Restore the most recent saved session.
 
 **Process:**
 
-1. List files in `~/.claude/sessions/` sorted by date descending
-2. Read the most recent session file
-3. Load its contents into `sessions/scratchpad.md`:
+1. Read `sessions/state.json` — check if there's incomplete work (phase != "idle" and phase != "completed")
+2. Read `memory/L1_essential.md` — get current project state
+3. List files in `~/.claude/sessions/` sorted by date descending
+4. Read the most recent session file
+5. Load its contents into `sessions/scratchpad.md`:
    - Restore Current Task, Mode, Working State, Key Decisions, Dead Ends
-4. Show what was in progress:
+6. If state.json shows incomplete work: offer to resume from that checkpoint
+7. Show what was in progress:
 
 > **Resuming session from {date}.**
 > **Task:** [task description]
 > **Mode:** [mode]
 > **Branch:** [branch]
+> **Checkpoint:** [state.json phase/step if incomplete, or "clean"]
 > **Last decisions:** [key decisions summary]
 > **Pending:** [next steps]
 >
@@ -888,6 +900,23 @@ When all tasks complete:
 > Full report: `outputs/gos-jobs/arx-audit-001/report.md`
 
 3. Capture `/evolve` signals: which verbs performed well, which struggled, what Gary accepted/reworked.
+4. **Confidence score** on every output: `CONFIDENCE: high/medium/low — reason`. If any task scored below 70% confidence, flag it explicitly: "Low confidence on T3 — recommend manual verification."
+5. Update `sessions/state.json`: set phase to "completed", record final step count.
+
+---
+
+## Confidence Surfacing (always-on, P5)
+
+On EVERY output (not just reporting), include a confidence assessment:
+- **High (>80%):** Proceed without flagging.
+- **Medium (60-80%):** State: "CONFIDENCE: medium — {reason}." Continue but note the uncertainty.
+- **Low (<60%):** STOP. Say: "I don't have enough confidence here. {what I'm unsure about}. Want me to research this, or should you verify?"
+
+Triggers for proactive "I don't know":
+- Answering from memory without verification
+- Making assumptions about APIs, configurations, or external state
+- Extrapolating from limited data
+- Working at the edge of context window (>70% per context-monitor)
 
 ---
 

@@ -1,9 +1,6 @@
 {
   "respectGitignore": true,
   "enableAllProjectMcpServers": true,
-  "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
-  },
   "permissions": {
     "allow": [
       "Edit(*)",
@@ -32,12 +29,93 @@
     "pr": ""
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/delete-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Safety check"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/git-safety.sh",
+            "timeout": 5,
+            "statusMessage": "Git safety"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/secret-scan.sh",
+            "timeout": 10,
+            "statusMessage": "Secret scan"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/scope-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Scope guard"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/loop-detect.sh",
+            "timeout": 3,
+            "statusMessage": "Loop check"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/accumulate.sh",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/context-monitor.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/error-tracker.sh",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Before stopping: Check if TodoWrite has incomplete tasks. If yes, say 'You have incomplete tasks — continue?' If sessions/evolve_signals.md exists and this was a gOS session, scan the last few exchanges and append any unlogged signals (accept/rework/reject/love/skip/repeat) with today's date. Keep it to one line per signal."
+            "prompt": "Session ending. Do these 3 things:\n1. Check TodoWrite for incomplete tasks — if any, say 'You have incomplete tasks — continue?'\n2. Scan the last ~10 exchanges for evolve signals (accept/rework/reject/love/skip/repeat). Append unlogged ones to sessions/evolve_signals.md with today's date and the command name. Format: YYYY-MM-DD | /command | signal | one-line context\n3. If Gary corrected your approach or confirmed a non-obvious approach, update the relevant memory/feedback_*.md file."
           }
         ]
       }
@@ -47,8 +125,19 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Before compaction: Scan recent conversation for evolve signals (accept/rework/reject/love/skip/repeat from gOS commands) and append any unlogged ones to sessions/evolve_signals.md. Also update sessions/scratchpad.md with current task state so it survives compaction.",
+            "prompt": "Before compaction: 1) Update sessions/scratchpad.md with current task, mode, working state, key decisions, dead ends, and files being edited so context survives. 2) Scan recent exchanges for unlogged evolve signals and append to sessions/evolve_signals.md.",
             "once": true
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Context compacted. Re-read sessions/scratchpad.md and sessions/state.json to restore working state.'",
+            "timeout": 3
           }
         ]
       }

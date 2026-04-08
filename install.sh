@@ -252,15 +252,36 @@ if [[ "$MODE" == "global" ]]; then
         echo -e "    ${PASS} $(basename "$f")"
     done
 
-    # Settings
+    # Settings — MERGE hooks into existing settings.json (don't overwrite plugins/env)
     echo -e "  ${CYAN}Settings${NC}"
     if [[ -f "$GOS_DIR/settings/settings.json" ]]; then
         if [[ -f "$CLAUDE_HOME/settings.json" ]]; then
-            echo -e "    ${WARN} settings.json exists — backup + overwrite"
             cp "$CLAUDE_HOME/settings.json" "$CLAUDE_HOME/settings.json.bak"
+            # Merge: take hooks from gOS template, keep everything else from existing
+            python3 -c "
+import json, sys
+with open('$CLAUDE_HOME/settings.json') as f:
+    live = json.load(f)
+with open('$GOS_DIR/settings/settings.json') as f:
+    template = json.load(f)
+# Merge hooks from template into live
+live['hooks'] = template.get('hooks', {})
+# Ensure PATH includes ~/.local/bin for uvx
+env = live.setdefault('env', {})
+if 'PATH' not in env or '.local/bin' not in env.get('PATH', ''):
+    import os
+    env['PATH'] = os.path.expanduser('~/.local/bin') + ':/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+with open('$CLAUDE_HOME/settings.json', 'w') as f:
+    json.dump(live, f, indent=4)
+" 2>/dev/null && echo -e "    ${PASS} settings.json (hooks merged)" || {
+                echo -e "    ${WARN} Python merge failed — falling back to overwrite"
+                cp "$GOS_DIR/settings/settings.json" "$CLAUDE_HOME/settings.json"
+                echo -e "    ${PASS} settings.json (overwritten)"
+            }
+        else
+            cp "$GOS_DIR/settings/settings.json" "$CLAUDE_HOME/settings.json"
+            echo -e "    ${PASS} settings.json (new install)"
         fi
-        cp "$GOS_DIR/settings/settings.json" "$CLAUDE_HOME/settings.json"
-        echo -e "    ${PASS} settings.json"
     fi
 
     # Workspace CLAUDE.md (if workspace dir exists and no CLAUDE.md there)
