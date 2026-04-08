@@ -1,3 +1,8 @@
+---
+effort: low
+description: "Checkpoint — create or verify a workflow checkpoint (git stash or commit)"
+---
+
 # Checkpoint Command
 
 Create or verify a checkpoint in your workflow.

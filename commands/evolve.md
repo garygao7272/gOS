@@ -1,5 +1,6 @@
 ---
-description: "Evolve — self-improve: audit health, upgrade commands, learn lessons, reflect on principles"
+effort: high
+description: "Evolve — self-improve: audit health, upgrade commands, learn lessons"
 ---
 
 # Evolve — Self-Improvement Engine
@@ -7,6 +8,8 @@ description: "Evolve — self-improve: audit health, upgrade commands, learn les
 **Purpose:** gOS reviews its own performance and upgrades itself. This is the reinforcement loop — not just logging what happened, but actively improving commands, prompts, and patterns based on evidence.
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, run `audit`.
+
+**Output discipline (two-phase pattern):** For audit, upgrade, and reflect sub-commands, use the analysis/output separation pattern. Do your reasoning and evidence gathering inside `<analysis>` tags (private working space — not shown to Gary). Then produce the concise, actionable result inside `<output>` tags. This keeps Gary's view clean while preserving thorough analysis.
 
 ---
 

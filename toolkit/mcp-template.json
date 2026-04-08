@@ -1,0 +1,91 @@
+{
+  "mcpServers": {
+    "slack": {
+      "type": "http",
+      "url": "https://slack.mcp.anthropic.com/mcp"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
+    },
+    "hyperliquid": {
+      "command": "node",
+      "args": [
+        "__TOOLKIT__/hyperliquid-mcp/index.js"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--browser",
+        "chrome",
+        "--device",
+        "iPhone 14 Pro",
+        "--headless"
+      ]
+    },
+    "discord": {
+      "command": "npx",
+      "args": ["-y", "mcp-discord"],
+      "env": {
+        "DISCORD_TOKEN": "${DISCORD_TOKEN}"
+      }
+    },
+    "telegram": {
+      "command": "npx",
+      "args": ["-y", "@overpod/mcp-telegram"],
+      "env": {
+        "TELEGRAM_API_ID": "${TELEGRAM_API_ID}",
+        "TELEGRAM_API_HASH": "${TELEGRAM_API_HASH}"
+      }
+    },
+    "notte": {
+      "command": "__TOOLKIT__/notte-env/bin/python",
+      "args": ["-m", "notte_mcp.server"],
+      "env": {
+        "NOTTE_API_KEY": "${NOTTE_API_KEY}"
+      }
+    },
+    "spec-rag": {
+      "command": "__TOOLKIT__/spec-rag-env/bin/python",
+      "args": [
+        "__TOOLKIT__/spec-rag-mcp/server.py"
+      ],
+      "env": {
+        "SPECS_DIR": "specs",
+        "LANCEDB_DIR": ".lancedb"
+      }
+    },
+    "sources": {
+      "command": "__TOOLKIT__/sources-env/bin/python",
+      "args": [
+        "__TOOLKIT__/sources-mcp/server.py"
+      ],
+      "env": {
+        "SOURCES_CONFIG": "__TOOLKIT__/sources-mcp/sources.json",
+        "SUPADATA_API_KEY": "${SUPADATA_API_KEY}"
+      }
+    },
+    "stitch": {
+      "command": "node",
+      "args": [
+        "__TOOLKIT__/stitch-proxy.mjs"
+      ],
+      "env": {
+        "STITCH_API_KEY": "${STITCH_API_KEY}"
+      }
+    },
+    "aidesigner": {
+      "type": "http",
+      "url": "https://api.aidesigner.ai/api/v1/mcp"
+    }
+  }
+}

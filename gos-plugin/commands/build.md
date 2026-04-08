@@ -1,4 +1,5 @@
 ---
+effort: high
 description: "Build: plan, prototype, feature, component, fix, tdd, refactor — outputs to apps/"
 ---
 
@@ -100,7 +101,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Anti-Pattern Rules (prevent bugs at write time):**
 
-1. **No inline styles for toggle states.** Visual states MUST be driven by CSS classes (`.selected`, `.active`), NEVER by inline `style=""` attributes. Use `style.removeProperty()` to clear inherited inline styles before relying on class-based styling.
+1. **CSS classes for toggle states.** Visual states MUST be driven by CSS classes (`.selected`, `.active`). Use `style.removeProperty()` to clear inherited inline styles before relying on class-based styling.
 2. **No template literals in static HTML.** `${expression}` only works inside JS template strings. Use placeholders populated via JS `textContent` at render time.
 3. **CSS-first, JS-second.** CSS handles how things look. JS handles what class to add. JS should never set `el.style.borderColor` for states that have CSS rules. Exception: computed values like scroll-based positioning.
 4. **Every option set needs "Other/All".** If presenting 3-5 choices, ALWAYS include an escape hatch.
@@ -123,7 +124,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 | Console clean | `preview_console_logs(level='error')` | Zero JS errors |
 | Mobile fit | Verify at 390x844 viewport | No horizontal scroll; all content within viewport |
 
-If any check fails, fix before proceeding. Do NOT bump with known issues.
+If any check fails, fix before proceeding. All checks MUST pass before bumping.
 
 **Blast-Radius Rule (fix all instances, not just the one reported):**
 
@@ -219,6 +220,8 @@ TeamCreate(team_name="build-{feature-slug}")
 **Write tests in the same context window as implementation** — tests with full context catch more issues than tests written in isolation.
 
 **Exit Gate:** Tests pass AND visual verification via screenshot/snapshot.
+
+**Verification step (mandatory):** After implementation, include a one-liner the user can run to verify the change works. Examples: `npm test -- --grep auth`, `curl localhost:3000/api/health`, `open index.html`. If no automated verification exists, describe the exact manual check. This is the single highest-leverage quality improvement — it 2-3x the quality of the final result.
 
 **Spec Sync:** After building, check if implementation diverges from spec. Update spec with `<!-- Synced from apps/mobile vX.X.X -->` and note deviations with rationale.
 
@@ -340,7 +343,7 @@ TeamCreate(team_name="build-{feature-slug}")
 3. **Categorize findings by risk:**
    - **SAFE:** Unused imports, dead utility functions, commented-out code, unused CSS → remove immediately
    - **CAREFUL:** Unused exports that might be used dynamically, functions only called in tests → verify before removing
-   - **RISKY:** Functions used via string references, dynamic imports, reflection → do NOT remove without deep analysis
+   - **RISKY:** Functions used via string references, dynamic imports, reflection → require deep analysis before removal
 4. **Remove SAFE items first** — commit after each batch
 5. **Run full test suite after each batch** — any failure means revert the batch and investigate
 6. **Consolidate duplicates:**

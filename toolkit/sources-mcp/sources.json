@@ -1,0 +1,294 @@
+{
+  "twitter": {
+    "ai": {
+      "description": "AI/ML researchers, builders, and thought leaders",
+      "handles": [
+        "karpathy",
+        "swyx",
+        "simonw",
+        "alexalbert__",
+        "dsp_",
+        "lilianweng",
+        "yampeleg",
+        "bentossell",
+        "rowancheung",
+        "AlphaSignalAI",
+        "thorsten_ball",
+        "borischerny"
+      ]
+    },
+    "crypto": {
+      "description": "Crypto traders, DeFi builders, on-chain analysts",
+      "handles": [
+        "HsakaTrades",
+        "HyperliquidX",
+        "chameleon_jeff",
+        "ThinkingUSD",
+        "iliensinc",
+        "keaborez",
+        "hyperfnd",
+        "0xKatoshi",
+        "StaniKulechov",
+        "PaulFrambot",
+        "samkazemian"
+      ]
+    },
+    "macro": {
+      "description": "Macro economists, rates strategists, cross-asset",
+      "handles": [
+        "MacroAlf",
+        "DiMartinoBooth",
+        "biancoresearch",
+        "RaoulGMI",
+        "NorthmanTrader",
+        "LizAnnSonders",
+        "gave_adventures",
+        "CrossBorderCap"
+      ]
+    },
+    "hk_china": {
+      "description": "Hong Kong, China, and Asia-Pacific markets",
+      "handles": ["michaelxpettis", "ChinaBeigeBook", "Brad_Setser"]
+    },
+    "fintech": {
+      "description": "FinTech founders, neobank builders, payments",
+      "handles": [
+        "vladtenev",
+        "nstoronsky",
+        "jackmallers",
+        "christianhecker",
+        "Nithin0dha",
+        "kunalb11"
+      ]
+    },
+    "commodities": {
+      "description": "Oil, gold, energy, agriculture",
+      "handles": ["JavierBlas", "LukeGromen", "JanGold_"]
+    },
+    "prediction": {
+      "description": "Prediction markets and probabilistic thinking",
+      "handles": ["Polymarket", "NateSilver538", "shaaborez"]
+    },
+    "startup": {
+      "description": "Startup founders, VCs, builders",
+      "handles": ["paulg", "naval", "chaaborez", "garrytan", "sama"]
+    }
+  },
+  "youtube": {
+    "min_duration_minutes": 20,
+    "channels": [
+      {
+        "name": "20VC (Harry Stebbings)",
+        "channel_id": "UCf0PBRjhf0rF8fWBIxTuoWA",
+        "category": "startup",
+        "description": "VC interviews, startup scaling"
+      },
+      {
+        "name": "Lex Fridman",
+        "channel_id": "UCSHZKyawb77ixDdsGog4iWA",
+        "category": "ai",
+        "description": "Deep AI/tech/science conversations"
+      },
+      {
+        "name": "When Shift Happens",
+        "channel_id": "UCKc3w9FKFGdBR9PIkfngzPg",
+        "category": "crypto",
+        "description": "Crypto, web3, and paradigm shifts"
+      },
+      {
+        "name": "Bankless",
+        "channel_id": "UCAl9Ld79qaZxp9JzEOwd3aA",
+        "category": "crypto",
+        "description": "DeFi, Ethereum, crypto economics"
+      },
+      {
+        "name": "All-In Podcast",
+        "channel_id": "UCESLZhusAkFfsNsApnjF_Cg",
+        "category": "startup",
+        "description": "Tech, politics, economics with Chamath/Sacks/Friedberg/Calacanis"
+      },
+      {
+        "name": "Real Vision Presents",
+        "channel_id": "UCBH5VZE_Y4F3CMcPIzPEB5A",
+        "category": "macro",
+        "description": "Raoul Pal — macro, crypto, finance"
+      },
+      {
+        "name": "Raoul Pal The Journey Man",
+        "channel_id": "UCVFSzL3VuZKP3cN9IXdLOtw",
+        "category": "macro",
+        "description": "Raoul Pal's personal channel — macro, crypto, Exponential Age"
+      },
+      {
+        "name": "The Defiant",
+        "channel_id": "UCL0J4MLEdLP0-UyLu0hCktg",
+        "category": "crypto",
+        "description": "DeFi news and interviews"
+      },
+      {
+        "name": "a16z",
+        "channel_id": "UC9cn0TuPq4dnbTY-CBsm8XA",
+        "category": "startup",
+        "description": "Andreessen Horowitz — tech, crypto, bio"
+      },
+      {
+        "name": "a16z crypto",
+        "channel_id": "UCTHq3W46BiAYjKUYZq2qm-Q",
+        "category": "crypto",
+        "description": "a16z crypto arm — Web3, blockchain research, developer demos"
+      },
+      {
+        "name": "Uncommon Core",
+        "channel_id": "UC89nA9flQdXLzQSL49lPGNw",
+        "category": "crypto",
+        "description": "Hasu + Jon Charbonneau — MEV, blockchain security, rollups"
+      }
+    ]
+  },
+  "blogs": {
+    "ai": [
+      {
+        "name": "LangChain Blog",
+        "feed_url": "https://blog.langchain.com/rss",
+        "priority": 1
+      },
+      {
+        "name": "Simon Willison",
+        "feed_url": "https://simonwillison.net/atom/everything/",
+        "priority": 1
+      },
+      {
+        "name": "Boris Cherny",
+        "feed_url": "https://borischerny.com/feed.xml",
+        "priority": 1
+      },
+      {
+        "name": "OpenAI Blog",
+        "feed_url": "https://openai.com/blog/rss.xml",
+        "priority": 1
+      },
+      {
+        "name": "Google DeepMind",
+        "feed_url": "https://deepmind.google/blog/rss.xml",
+        "priority": 2
+      },
+      {
+        "name": "Lil'Log (Lilian Weng)",
+        "feed_url": "https://lilianweng.github.io/index.xml",
+        "priority": 2
+      },
+      {
+        "name": "Chip Huyen",
+        "feed_url": "https://huyenchip.com/feed.xml",
+        "priority": 2
+      }
+    ],
+    "tech": [
+      {
+        "name": "TechCrunch",
+        "feed_url": "https://techcrunch.com/feed/",
+        "priority": 1
+      },
+      {
+        "name": "Stratechery (Ben Thompson)",
+        "feed_url": "https://stratechery.com/feed/",
+        "priority": 1
+      }
+    ],
+    "crypto": [
+      {
+        "name": "The Defiant",
+        "feed_url": "https://thedefiant.io/feed",
+        "priority": 1
+      },
+      {
+        "name": "The Block",
+        "feed_url": "https://www.theblock.co/rss.xml",
+        "priority": 1
+      },
+      {
+        "name": "Vitalik Buterin",
+        "feed_url": "https://vitalik.eth.limo/feed.xml",
+        "priority": 1
+      },
+      {
+        "name": "Deribit Insights",
+        "feed_url": "https://insights.deribit.com/feed/",
+        "priority": 1
+      },
+      {
+        "name": "Bankless",
+        "feed_url": "https://www.bankless.com/rss",
+        "priority": 2
+      },
+      {
+        "name": "Messari",
+        "feed_url": "https://messari.io/rss",
+        "priority": 2
+      },
+      {
+        "name": "Electric Capital",
+        "feed_url": "https://electriccapital.substack.com/feed",
+        "priority": 2
+      }
+    ],
+    "macro": [
+      {
+        "name": "Bloomberg Markets",
+        "feed_url": "https://feeds.bloomberg.com/markets/news.rss",
+        "priority": 1
+      },
+      {
+        "name": "Lyn Alden",
+        "feed_url": "https://www.lynalden.com/feed/",
+        "priority": 1
+      }
+    ],
+    "startup": [
+      {
+        "name": "Lenny's Newsletter",
+        "feed_url": "https://www.lennysnewsletter.com/feed",
+        "priority": 1
+      },
+      {
+        "name": "Not Boring (Packy McCormick)",
+        "feed_url": "https://www.notboring.co/feed",
+        "priority": 1
+      },
+      {
+        "name": "AVC (Fred Wilson)",
+        "feed_url": "https://avc.com/feed/",
+        "priority": 2
+      },
+      {
+        "name": "a16z Blog",
+        "feed_url": "https://www.a16z.news/feed",
+        "priority": 2
+      }
+    ]
+  },
+  "community": {
+    "reddit_subreddits": [
+      "cryptocurrency",
+      "defi",
+      "hyperliquid",
+      "wallstreetbets",
+      "CryptoMarkets",
+      "algotrading",
+      "ethfinance"
+    ],
+    "hackernews": {
+      "default_tags": "story",
+      "min_points": 5
+    },
+    "polymarket": {
+      "focus_categories": ["crypto", "finance", "politics", "tech"],
+      "min_volume_usd": 10000
+    }
+  },
+  "_meta": {
+    "version": 2,
+    "last_updated": "2026-03-28",
+    "notes": "Edit this file to add/remove sources. The sources-mcp server reads it at each tool call. No restart needed. v2: Added community sources (Reddit, HN, Polymarket)."
+  }
+}

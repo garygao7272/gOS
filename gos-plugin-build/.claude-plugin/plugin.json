@@ -1,0 +1,28 @@
+{
+  "name": "gos",
+  "version": "4.3.0",
+  "description": "gOS — AI operating system for builders. 7 verbs (think, design, simulate, build, review, ship, evolve) + conductor orchestration + 12 agents + 14 skills + trust system + signal-driven learning loop. Turns one person into a company.",
+  "author": {
+    "name": "Gary Gao",
+    "url": "https://github.com/garygao7272"
+  },
+  "homepage": "https://github.com/garygao7272/gOS",
+  "repository": "https://github.com/garygao7272/gOS",
+  "license": "MIT",
+  "keywords": [
+    "gos",
+    "ai-os",
+    "agents",
+    "orchestration",
+    "tdd",
+    "code-review",
+    "simulation",
+    "product-strategy",
+    "workflow",
+    "safety-hooks",
+    "trust-system",
+    "learning-loop",
+    "multi-agent",
+    "conductor"
+  ]
+}

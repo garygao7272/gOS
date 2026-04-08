@@ -1,6 +1,7 @@
 ---
 name: design-sync
 description: Bidirectional sync between specs/Arx_4-2_Design_System.md, DESIGN.md, Figma tokens, and Stitch projects
+paths: "specs/Arx_4-2*,specs/Arx_4-3*,DESIGN.md"
 ---
 
 # Design Sync Skill — Keep Design Systems in Harmony
