@@ -1,6 +1,8 @@
-# gOS 10-Dimension Scoring Criteria
+# gOS 12-Dimension Scoring Criteria
 
-These 10 dimensions measure gOS's capability as an AI builder companion. Each dimension is scored 1-10 with specific evidence thresholds. Used by `/evolve audit` and `/refine` for self-evaluation.
+These 12 dimensions measure gOS's capability as a superior AI co-creator. Each dimension is scored 1-10 with specific evidence thresholds. Calibrated against the north star vision in [VISION.md](VISION.md). Used by `/evolve audit` and `/refine` for self-evaluation.
+
+Dimensions 4 (Memory), 5 (Learning), 11 (Craft), and 12 (Testing) are weighted 1.5x because they are force multipliers — poor scores cascade into poor everything.
 
 ## Scoring Guide
 
@@ -8,7 +10,7 @@ These 10 dimensions measure gOS's capability as an AI builder companion. Each di
 - **4-5:** Exists but manual/unreliable — requires human intervention to work
 - **6-7:** Functional but incomplete — works most of the time, known gaps
 - **8-9:** Strong and automated — works reliably with minimal intervention
-- **10:** Best-in-class — exceeds expectations, innovates beyond requirements
+- **10:** Co-creator level — matches the [VISION.md](VISION.md) north star for this dimension
 
 ## Usage
 
@@ -31,3 +33,5 @@ These 10 dimensions measure gOS's capability as an AI builder companion. Each di
 | 8 | Autonomy | `08-autonomy.md` | PROCEED/ASK/JUDGMENT/STUCK framework adherence |
 | 9 | Reliability | `09-reliability.md` | Hooks, safety nets, reproducibility, rollback |
 | 10 | Metacognition | `10-metacognition.md` | Self-monitoring, drift detection, honesty about uncertainty |
+| 11 | **Craft** | `11-craft.md` | Spec compliance, build quality, spec↔code sync (1.5x weight) |
+| 12 | **Testing** | `12-testing.md` | TDD compliance, coverage, quality gates, verification (1.5x weight) |
