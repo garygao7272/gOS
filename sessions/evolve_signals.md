@@ -17,6 +17,13 @@
 ## Log
 
 | Date | Time | Command | Signal | Context |
+| 2026-04-09 | 00:45 | /gos resume | rework | Resume briefing format "very confusing" — too much info, no hierarchy, unclear next action |
+| 2026-04-09 | 01:00 | /gos resume | rework | Stop hook output also confusing — "TodoWrite, signals, feedback memory" meaningless to user |
+| 2026-04-09 | 01:05 | /gos | accept | Redesigned resume + briefing + stop hook to Story+Table+Next Move format, synced 4 locations |
+| 2026-04-09 | 01:20 | /think research | accept | Research on BATS, Promptfoo, ECC instincts, ROEGATE, agentmemory — accepted without changes |
+| 2026-04-09 | 01:25 | /think research | rework | Gary asked about MemPalace vs agentmemory distinction + Karpathy knowledge systems — research missed context of existing tools |
+| 2026-04-09 | 01:30 | /think research | accept | Karpathy LLM Wiki comparison + compilation layer recommendation — Gary engaged, asked to update plan |
+| 2026-04-09 | 01:45 | /think research | accept | Full 6-phase plan with Karpathy wiki integration presented — Gary read through, asked to save and start |
 | 2026-03-29 | 18:45 | /evolve | accept | Self-evaluation: 4 design weaknesses identified and agreed |
 | 2026-03-29 | 18:45 | /evolve | accept | Taste as separate Arx_4-3 spec artifact (not .claude/) |
 | 2026-03-29 | 18:45 | /evolve | rework | Gary corrected: apps are FLOOR not ceiling; taste in specs/ not .claude/ |
@@ -489,3 +496,4 @@
 | 2026-04-09 | 01:45 | /review | accept | Honest 12-dim review: 8.0→6.6 after adding craft+testing. Gary's intuition validated — learning/specs/tests are the real gaps |
 | 2026-04-09 | 02:00 | /aside | accept | First-principles dimension validation + /aside command routing — Gary asked, answered cleanly |
 | 2026-04-09 | 02:00 | /gos | repeat | Stop hook skipped THIRD time — after /aside response, didn't run mandatory 3 tasks. Pattern: any "natural ending" triggers skip |
+| 2026-04-09 | 02:10 | /build | accept | Fixed /aside autocomplete — found 4-location command drift, synced all 14 commands across repo/plugin/project/global |

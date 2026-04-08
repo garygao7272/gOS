@@ -1,0 +1,18 @@
+name: context-limit-awareness
+confidence: 0.8
+extracted_from: 1 repeat signal (2026-03-29)
+pattern: |
+  Large writes at high context usage fail silently. Tasks get approved but never
+  executed because the session hits context limit before the Write tool runs.
+  This has happened multiple times.
+evidence:
+  - "2026-03-29 /refine repeat: reorg task approved but never executed — 2 sessions hit context limit before Write"
+  - "2026-04-09 scorecard: known gap — large writes (>500 lines) at >50% context should dispatch as fresh agent"
+action: |
+  Before any write >200 lines at >50% context: dispatch as a fresh agent with
+  explicit file content, or save checkpoint and tell Gary to continue in new session.
+  Never attempt large writes inline when context is constrained.
+applied_to:
+  - commands/build.md
+  - commands/gos.md (context monitoring)
+status: documented

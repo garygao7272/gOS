@@ -39,6 +39,16 @@ Parse the first word of `$ARGUMENTS` to route:
 2. Read `sessions/state.json` — check for incomplete work from last session
 3. If claude-mem is available, search for context relevant to the current task: `mcp__plugin_claude-mem_mcp-search__search` with a query derived from the task or "last session decisions"
 4. Read `sessions/scratchpad.md` — runtime flags and agent state
+5. Read `memory/wiki/INDEX.md` — compiled knowledge index (Karpathy query operation)
+
+**Staleness check (on every memory load):**
+Before using any memory file, check its `valid_until` date. If expired, prefix with "From memory (may be stale — last valid {date}):" instead of loading silently. Run `memory/wiki/lint.sh` if >7 days since last lint.
+
+**Proactive uncertainty (always-on):**
+If answering from memory without verification, prefix with "From memory (unverified):". This makes uncertainty visible without stopping flow. If confidence <60% on any claim, say so — don't proceed as if certain.
+
+**Resume→project match (metacognition guard):**
+When loading a session file for `/gos resume`, verify that the session's working directory matches the current working directory. If mismatch, warn: "This session was from {project}, but you're in {current}. Load anyway?" Do NOT silently present cross-project context.
 
 If scratchpad is stale, empty, or from a previous session, initialize:
 
@@ -87,23 +97,27 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 7. Check active conductor jobs via `outputs/gos-jobs/*/status.md`
 8. **Evolve consolidation check:** Read `sessions/evolve_signals.md`. Count signals since last `--- AUDITED ---` separator. Check date of last audit. If >20 signals OR >7 days since last audit, flag for nudge.
 
-**Deliver the briefing:**
+**Deliver the briefing — Story + Table + Next Move:**
 
-> **Gary.** Here's where we are.
->
-> **Last session:** [what was done, from memory]
-> **In progress:** [uncommitted changes or paused sessions, if any]
-> **Specs:** [total count, any recently modified]
-> **Prototype:** [current version from apps/web-prototype/version.json if exists]
-> **Scheduled:** [any task results since last session, or "all clean"]
-> **Jobs:** [active conductor jobs, if any — show job-id, goal, progress]
-> **Evolve:** [check ~/.claude/evolve/proposals/ — if any pending, show count]
-> **Evolve nudge:** [if >20 signals or >7 days: "{N} signals, {D} days since last audit. Run `/evolve audit`?"]
-> **Open items:** [unresolved review concerns, dead ends from scratchpad, pending decisions]
->
-> **What do you need?**
+Use the same 3-part format as `/gos resume`. No jargon. Write for a busy CEO.
 
-If nothing notable (fresh start, no history), keep it short:
+**Part 1 — Story (2 sentences max):**
+What happened last time and what's the current situation.
+
+**Part 2 — State table (max 6 rows):**
+Only actionable items. Include uncommitted work, pending reviews, scheduled task results, evolve nudges, active jobs — but only if they exist and matter.
+
+| What | State | Priority |
+|------|-------|----------|
+
+**Part 3 — Anticipated next move + "What do you need?":**
+Recommend the highest-leverage action based on the state table. Then ask.
+
+> **Suggested:** [recommendation with 1-line reasoning]
+>
+> What do you need?
+
+**If nothing notable** (fresh start, no history), keep it short:
 
 > **Gary.** Clean slate. What do you need?
 
@@ -247,7 +261,7 @@ If any `repeat` signals detected: immediately update the relevant command file o
 
 ## resume
 
-Restore the most recent saved session.
+Restore the most recent saved session and present it clearly.
 
 **Process:**
 
@@ -255,20 +269,53 @@ Restore the most recent saved session.
 2. Read `memory/L1_essential.md` — get current project state
 3. List files in `~/.claude/sessions/` sorted by date descending
 4. Read the most recent session file
-5. Load its contents into `sessions/scratchpad.md`:
-   - Restore Current Task, Mode, Working State, Key Decisions, Dead Ends
-6. If state.json shows incomplete work: offer to resume from that checkpoint
-7. Show what was in progress:
+5. Load its contents into `sessions/scratchpad.md`
 
-> **Resuming session from {date}.**
-> **Task:** [task description]
-> **Mode:** [mode]
-> **Branch:** [branch]
-> **Checkpoint:** [state.json phase/step if incomplete, or "clean"]
-> **Last decisions:** [key decisions summary]
-> **Pending:** [next steps]
+**Output format — Story + Table + Next Move:**
+
+The resume output has 3 parts. No jargon (no "phase", "checkpoint", "mode"). Write for a busy CEO.
+
+**Part 1 — Story (2 sentences max):**
+What happened last time and what's the current situation. Lead with the outcome, not the process.
+
+> **Gary.** Last session (Apr 9) you built a 12-dimension scoring framework and scored gOS at 6.6/10 — honest, not inflated. Three weak spots remain.
+
+**Part 2 — State table:**
+Scannable rows. Only include rows that have actionable state — skip anything that's "done" with no follow-up. Priority column drives action.
+
+| What | State | Priority |
+|------|-------|----------|
+| Testing | 3/10 — zero test files exist | **Do first** |
+| Craft | 4/10 — prescribed but not enforced | High |
+| Learning | 5/10 — hooks installed, zero proof cycles | Medium |
+| Uncommitted | 3 files on main | Low |
+
+Rules for the table:
+- Max 6 rows. If more items, group or drop low-priority.
+- "Priority" uses plain language: **Do first**, High, Medium, Low — not numbers.
+- If state.json shows incomplete work mid-step, add a row: `Interrupted work | {what} at step {N}/{total} | **Resume or discard**`
+
+**Part 3 — Anticipated next move:**
+Based on the state table, suggest the highest-priority action. Don't just list options — make a recommendation with reasoning.
+
+> **Suggested next move:** Add test infrastructure — it's the weakest dimension (3/10) and blocks proving learning and craft work. Start with hook smoke tests.
 >
-> Pick up where we left off?
+> Continue there, or something else?
+
+**Full example:**
+
+> **Gary.** Last session you built the scoring framework — 12 dimensions, honest 6.6. Three gaps surfaced.
+>
+> | What | State | Priority |
+> |------|-------|----------|
+> | Testing | 3/10 — zero test files | **Do first** |
+> | Craft | 4/10 — no verification enforcement | High |
+> | Learning | 5/10 — hooks exist, unproven | Medium |
+> | Uncommitted | 3 files on main | Low |
+>
+> **Suggested:** Add test infrastructure — weakest dimension, blocks the others. Hook smoke tests would prove 3 things at once (testing, craft, learning).
+>
+> Continue there, or something else?
 
 ---
 

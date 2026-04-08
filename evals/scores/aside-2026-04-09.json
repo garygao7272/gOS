@@ -1,0 +1,20 @@
+{
+  "command": "/aside",
+  "rubric": "/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS/evals/rubrics/aside.md",
+  "date": "2026-04-09",
+  "scores": [
+    {
+      "input_id": "mempalace-vs-agentmemory",
+      "timestamp": "2026-04-08T17:14:19Z",
+      "dimensions": {
+        "speed": 2,
+        "accuracy": 3,
+        "context_preservation": 2,
+        "brevity": 1
+      },
+      "total": 8,
+      "max": 10
+    }
+  ],
+  "average": 8
+}

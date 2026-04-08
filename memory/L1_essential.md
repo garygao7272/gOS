@@ -11,33 +11,27 @@ valid_to: open
 
 ## Current Focus
 
-P1-P5 upgrade COMPLETE (2026-04-09): Memory auto-search wired into gOS Step 0 (L1 + state.json + claude-mem). 9 hook scripts installed globally (~/.claude/hooks/). 6 hook events configured in settings.json (PreToolUse, PostToolUse, PostToolUseFailure, Stop, PreCompact, PostCompact). 6 new eval rubrics (gos-conductor, simulate, ship, evolve, refine, aside — total 11). state.json checkpoint system live. Context-monitor hook active. Confidence surfacing added to conductor reporting. PATH fix for uvx (claude-mem enabler). install.sh now MERGES hooks instead of overwriting settings.json.
+P1-P5 + criteria session COMPLETE (2026-04-09): 12-dimension scoring framework built (evals/criteria/ — 12 dimension files + VISION.md + 2 scorecards). Honest self-score: 6.6/10 weighted. Weakest: Testing 3/10, Craft 4/10, Learning 5/10. 14 commands synced across 4 locations. 9 hook scripts installed globally. 11 eval rubrics. install.sh merges hooks.
 
-## Active Feedback Rules (obey these)
+## Active Feedback Rules
 
-- **Code-first pipeline** beats Figma-first — HTML prototype → Preview verify → Figma
-- **Feel = shared tokens** — reference `feel:home`, never redefine per-card
-- **Large writes (>500 lines at >50% context)** — dispatch as fresh agent, never inline
-- **OfficeCLI for Excel** — never use openpyxl for writing
-- **Financial models** — growth rates drive MAU, use observed ARPU, show drivers before building
-- **Specs organize by user journeys** — self-contained cards, not technical architecture with cross-refs
-- **Conservative hook rollout** — per self-inflicted regression lesson, wire 8-10 hooks max, test before adding more
-- **Reference apps are FLOOR** — beat Robinhood/eToro/Bitget, don't match them
+- **Stop hook compliance** — EVERY response needs signal scan + memory check, not just "final" responses. Got caught 3x in one session.
+- **Resume context accuracy** — Match session to current project, don't load cross-project sessions.
+- **Code-first pipeline** beats Figma-first.
+- **Large writes (>500 lines at >50% context)** — dispatch as fresh agent.
+- **Conservative hook rollout** — per self-inflicted regression lesson.
+- **Reference apps are FLOOR** — beat them, don't match them.
 
 ## Recent Decisions
 
-- gOS simplified: 38 commands → 8 verbs + conductor (2026-03-21)
-- 4-layer CLAUDE.md hierarchy: global → workspace → project → gOS dev (2026-04-08)
-- install.sh two-phase: --global + --bootstrap (2026-04-08)
-- gOS scored 6.4 → 7.3 after restructure (2026-04-08)
-- P1-P5 upgrade targeting 8.5+ (2026-04-09)
+- 12-dimension scoring (was 10) — added Craft + Testing at 1.5x weight (2026-04-09)
+- VISION.md: north star = "superior alien AI co-creator" with 5 properties (2026-04-09)
+- Honest score 6.6 (was inflated 8.0 without craft/testing) (2026-04-09)
 
-## Known Gaps (don't repeat these mistakes)
+## Known Gaps (next session priorities)
 
-- claude-mem (349MB) now has PATH fix but needs testing — verify uvx works in next session
-- /simulate still has ZERO signal data — needs real usage
-- state-tracker.sh (auto-checkpoint via PostToolUse) not yet wired — manual checkpoint via gOS.md instructions for now
-
-## Specs
-
-60+ artifacts in specs/. Start with specs/INDEX.md for lookup.
+1. **Testing 3/10** — zero test files, zero TDD evidence. Add test infrastructure.
+2. **Craft 4/10** — spec compliance prescribed but not enforced. Add verification.
+3. **Learning 5/10** — hooks added but zero proof cycles run. Execute one eval end-to-end.
+4. claude-mem PATH fixed but untested — verify uvx works.
+5. state-tracker.sh not yet wired as PostToolUse hook.

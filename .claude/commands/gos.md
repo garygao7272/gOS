@@ -19,33 +19,40 @@ Parse the first word of `$ARGUMENTS` to route:
 
 ## Routing Table
 
-| Argument                    | Action                                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------------ |
-| _(empty)_                   | Briefing → "What do you need?" → conductor handles the response                                  |
-| `status`                    | Dashboard: active sessions, branch, review state, scheduled tasks, recent evolve signals         |
-| `careful`                   | Toggle PreToolUse destructive-command warning                                                    |
-| `freeze <dir>`              | Scope-lock edits to a directory                                                                  |
-| `save`                      | Save session state to file                                                                       |
-| `resume`                    | Restore most recent saved session                                                                |
-| `schedule`                  | Sub-commands: list, add, pause, resume, remove                                                   |
-| `loop <interval> <command>` | Start recurring command execution                                                                |
-| `session`                   | Sub-commands: list, claim, handoff, close                                                        |
-| `claw`                      | Sub-commands: list, start, stop, log, resolve                                                    |
-| `jobs`                      | List active/completed conductor jobs                                                             |
-| `finance`                   | Financial services: model, deck, audit, comps, dcf, earnings, deal, portfolio                    |
-| `last`                      | Show last session's key decisions                                                                |
-| `diff`                      | Show uncommitted changes                                                                         |
-| `pulse`                     | One-line status: branch, uncommitted count, last commit                                          |
-| `refine <topic> [N]`        | Invoke `/refine` skill with remaining args. Prebuild convergence: think→design→simulate→review×N |
-| _anything else_             | **Conductor Mode** — treat as a seed goal, enter the 5-phase orchestration flow                  |
+| Argument       | Action                                                                          |
+| -------------- | ------------------------------------------------------------------------------- |
+| _(empty)_      | Briefing → "What do you need?" → conductor handles the response                 |
+| `status`       | Dashboard: sessions, branch, review state, scheduled tasks, evolve signals      |
+| `careful`      | Toggle PreToolUse destructive-command warning                                   |
+| `freeze <dir>` | Scope-lock edits to a directory                                                 |
+| `save`         | Save session state to file                                                      |
+| `resume`       | Restore most recent saved session                                               |
+| `schedule`     | Sub-commands: list, add, pause, resume, remove                                  |
+| _anything else_ | **Conductor Mode** — treat as a seed goal, enter the 5-phase orchestration flow |
 
 ---
 
-## Step 0: Initialize Scratchpad (always runs first)
+## Step 0: Initialize Session (always runs first)
 
-Read `sessions/scratchpad.md`. If stale, empty, or from a previous session, initialize:
+**Memory search (mandatory):**
+1. Read `memory/L1_essential.md` — active state, feedback rules, known gaps
+2. Read `sessions/state.json` — check for incomplete work from last session
+3. If claude-mem is available, search for context relevant to the current task: `mcp__plugin_claude-mem_mcp-search__search` with a query derived from the task or "last session decisions"
+4. Read `sessions/scratchpad.md` — runtime flags and agent state
+5. Read `memory/wiki/INDEX.md` — compiled knowledge index (Karpathy query operation)
 
-> **Note:** CC's native SessionMemory (template at `~/.claude/session-memory/config/template.md`) now tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
+**Staleness check (on every memory load):**
+Before using any memory file, check its `valid_until` date. If expired, prefix with "From memory (may be stale — last valid {date}):" instead of loading silently. Run `memory/wiki/lint.sh` if >7 days since last lint.
+
+**Proactive uncertainty (always-on):**
+If answering from memory without verification, prefix with "From memory (unverified):". This makes uncertainty visible without stopping flow. If confidence <60% on any claim, say so — don't proceed as if certain.
+
+**Resume→project match (metacognition guard):**
+When loading a session file for `/gos resume`, verify that the session's working directory matches the current working directory. If mismatch, warn: "This session was from {project}, but you're in {current}. Load anyway?" Do NOT silently present cross-project context.
+
+If scratchpad is stale, empty, or from a previous session, initialize:
+
+> **Note:** CC's native SessionMemory tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
 
 ```markdown
 # Session State
@@ -90,23 +97,27 @@ If the previous scratchpad contained valuable cross-session context (dead ends, 
 7. Check active conductor jobs via `outputs/gos-jobs/*/status.md`
 8. **Evolve consolidation check:** Read `sessions/evolve_signals.md`. Count signals since last `--- AUDITED ---` separator. Check date of last audit. If >20 signals OR >7 days since last audit, flag for nudge.
 
-**Deliver the briefing:**
+**Deliver the briefing — Story + Table + Next Move:**
 
-> **Gary.** Here's where we are.
->
-> **Last session:** [what was done, from memory]
-> **In progress:** [uncommitted changes or paused sessions, if any]
-> **Specs:** [total count, any recently modified]
-> **Prototype:** [current version from apps/web-prototype/version.json if exists]
-> **Scheduled:** [any task results since last session, or "all clean"]
-> **Jobs:** [active conductor jobs, if any — show job-id, goal, progress]
-> **Evolve:** [check ~/.claude/evolve/proposals/ — if any pending, show count]
-> **Evolve nudge:** [if >20 signals or >7 days: "{N} signals, {D} days since last audit. Run `/evolve audit`?"]
-> **Open items:** [unresolved review concerns, dead ends from scratchpad, pending decisions]
->
-> **What do you need?**
+Use the same 3-part format as `/gos resume`. No jargon. Write for a busy CEO.
 
-If nothing notable (fresh start, no history), keep it short:
+**Part 1 — Story (2 sentences max):**
+What happened last time and what's the current situation.
+
+**Part 2 — State table (max 6 rows):**
+Only actionable items. Include uncommitted work, pending reviews, scheduled task results, evolve nudges, active jobs — but only if they exist and matter.
+
+| What | State | Priority |
+|------|-------|----------|
+
+**Part 3 — Anticipated next move + "What do you need?":**
+Recommend the highest-leverage action based on the state table. Then ask.
+
+> **Suggested:** [recommendation with 1-line reasoning]
+>
+> What do you need?
+
+**If nothing notable** (fresh start, no history), keep it short:
 
 > **Gary.** Clean slate. What do you need?
 
@@ -212,8 +223,8 @@ Save full session state to `~/.claude/sessions/{date}-{slug}.md`.
 - Decisions made — extract from scratchpad's "Key Decisions" section
 - What was rejected — extract from scratchpad's "Dead Ends" section
 
-**Part B — Record signals:**
-Scan the conversation and log signals to project memory `evolve_signals.md`:
+**Part B — Record signals (MANDATORY — never skip this):**
+Scan the ENTIRE conversation (not just recent exchanges) and log signals to `sessions/evolve_signals.md`:
 
 | Signal | Look For                                            |
 | ------ | --------------------------------------------------- |
@@ -224,7 +235,11 @@ Scan the conversation and log signals to project memory `evolve_signals.md`:
 | repeat | Same instruction given twice — gOS didn't learn     |
 | skip   | Gary jumped past a prescribed step                  |
 
+**Be thorough.** Every gOS verb invocation in the session should generate at least one signal. If you invoked `/think` and Gary accepted the output, that's an `accept`. If he said "great", that's a `love`. Missing signals means /evolve audit has incomplete data.
+
 If any `repeat` signals detected: immediately update the relevant command file or memory.
+
+**Signal count check:** After logging, report: "Logged {N} signals from this session ({breakdown})." If N=0, re-scan — you likely missed implicit accepts.
 
 **Part C — Save to memory:**
 
@@ -232,9 +247,11 @@ If any `repeat` signals detected: immediately update the relevant command file o
 - Update `user_*.md` if you learned something about Gary's preferences
 - Update `project_*.md` if project state changed materially
 
-**Part D — Save to claude-mem:**
+**Part D — Save to persistent memory:**
 
-- Create an observation capturing the session summary, decisions, and learnings
+- Update `memory/L1_essential.md` with new current focus, any new feedback rules, recent decisions
+- If claude-mem is available (`mcp__plugin_claude-mem_mcp-search__search`), create an observation capturing the session summary, decisions, and learnings
+- Update `sessions/state.json` — set phase to "completed", clear files_modified, update recovery_instructions to "Last session: {summary}"
 
 **Report:**
 
@@ -244,24 +261,61 @@ If any `repeat` signals detected: immediately update the relevant command file o
 
 ## resume
 
-Restore the most recent saved session.
+Restore the most recent saved session and present it clearly.
 
 **Process:**
 
-1. List files in `~/.claude/sessions/` sorted by date descending
-2. Read the most recent session file
-3. Load its contents into `sessions/scratchpad.md`:
-   - Restore Current Task, Mode, Working State, Key Decisions, Dead Ends
-4. Show what was in progress:
+1. Read `sessions/state.json` — check if there's incomplete work (phase != "idle" and phase != "completed")
+2. Read `memory/L1_essential.md` — get current project state
+3. List files in `~/.claude/sessions/` sorted by date descending
+4. Read the most recent session file
+5. Load its contents into `sessions/scratchpad.md`
 
-> **Resuming session from {date}.**
-> **Task:** [task description]
-> **Mode:** [mode]
-> **Branch:** [branch]
-> **Last decisions:** [key decisions summary]
-> **Pending:** [next steps]
+**Output format — Story + Table + Next Move:**
+
+The resume output has 3 parts. No jargon (no "phase", "checkpoint", "mode"). Write for a busy CEO.
+
+**Part 1 — Story (2 sentences max):**
+What happened last time and what's the current situation. Lead with the outcome, not the process.
+
+> **Gary.** Last session (Apr 9) you built a 12-dimension scoring framework and scored gOS at 6.6/10 — honest, not inflated. Three weak spots remain.
+
+**Part 2 — State table:**
+Scannable rows. Only include rows that have actionable state — skip anything that's "done" with no follow-up. Priority column drives action.
+
+| What | State | Priority |
+|------|-------|----------|
+| Testing | 3/10 — zero test files exist | **Do first** |
+| Craft | 4/10 — prescribed but not enforced | High |
+| Learning | 5/10 — hooks installed, zero proof cycles | Medium |
+| Uncommitted | 3 files on main | Low |
+
+Rules for the table:
+- Max 6 rows. If more items, group or drop low-priority.
+- "Priority" uses plain language: **Do first**, High, Medium, Low — not numbers.
+- If state.json shows incomplete work mid-step, add a row: `Interrupted work | {what} at step {N}/{total} | **Resume or discard**`
+
+**Part 3 — Anticipated next move:**
+Based on the state table, suggest the highest-priority action. Don't just list options — make a recommendation with reasoning.
+
+> **Suggested next move:** Add test infrastructure — it's the weakest dimension (3/10) and blocks proving learning and craft work. Start with hook smoke tests.
 >
-> Pick up where we left off?
+> Continue there, or something else?
+
+**Full example:**
+
+> **Gary.** Last session you built the scoring framework — 12 dimensions, honest 6.6. Three gaps surfaced.
+>
+> | What | State | Priority |
+> |------|-------|----------|
+> | Testing | 3/10 — zero test files | **Do first** |
+> | Craft | 4/10 — no verification enforcement | High |
+> | Learning | 5/10 — hooks exist, unproven | Medium |
+> | Uncommitted | 3 files on main | Low |
+>
+> **Suggested:** Add test infrastructure — weakest dimension, blocks the others. Hook smoke tests would prove 3 things at once (testing, craft, learning).
+>
+> Continue there, or something else?
 
 ---
 
@@ -822,33 +876,42 @@ For each major visual change in the approved plan:
 
 ### Phase 4 — Execution
 
-**Team decision (see gOS.md > Agent Teams Protocol):**
+**Use the Multi-Agent Framework** (`.claude/agents/README.md`) to choose execution method.
 
-- If decomposition produces 3+ tasks: Create team `gos-job-{job-id}` with named teammates
-- If 1-2 tasks: Use ad-hoc subagents (cheaper)
+**Complexity gate** — score the task (see framework README §1):
 
-**If team mode:**
+| Score | Method | Example |
+|-------|--------|---------|
+| **0-3** | **Solo** (inline) | Fix typo, update one spec, quick lookup |
+| **4-6** | **Ad-hoc agents** (fire-and-forget) | Research 3 topics, review 2 files, parallel reads |
+| **7-10** | **Team** (from registry) | Build feature across systems, full pipeline, council |
 
-```
-TeamCreate(team_name="gos-job-{job-id}")
-```
+**If solo (0-3):** Execute inline. No agents needed.
 
-- Create TaskCreate per task from the graph, with `blockedBy` for dependencies
-- Spawn named teammates per task, model-routed (opus for review/synthesis, sonnet for implementation, haiku for formatting/docs)
-- Parallel tasks run as concurrent teammates claiming from the task board
-- Sequential tasks auto-unblock when upstream completes
-- If a teammate reports a blocker via `SendMessage`, route to the appropriate peer or resolve directly
-- Shutdown all teammates after last task completes: `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
+**If ad-hoc (4-6):** `Agent(prompt, run_in_background: true)` for independent tasks, `Agent(prompt, isolation: "worktree")` for overlapping file writes. No coordination needed.
 
-**If subagent mode (1-2 tasks):**
+**If team (7-10):** Load template from `.claude/agents/team-registry.md`:
+1. `TeamCreate(team_name="gos-{verb}-{slug}")`
+2. Spawn roster agents per template (`.claude/agents/{role}.md`)
+3. `TaskCreate()` per work item with `blockedBy` dependencies
+4. Agents coordinate via `SendMessage` (see framework README §3)
+5. Conflict resolution per framework README §4
+6. Shutdown per framework README §5
 
-1. **Parallel tasks** → Launch via Agent tool (parallel subagents), each embedding the relevant `/review` or `/build` command prompt
-2. **Sequential tasks** → Execute inline after dependencies complete
+**Team templates available:**
 
-**For both modes:**
+| Template | Agents | When |
+|----------|--------|------|
+| `think-swarm` | 3-5 researchers + cross-exam lead | Research with adversarial validation |
+| `build-squad` | architect + engineers + verifier | Multi-system feature build |
+| `review-panel` | batched waves with veto protocol | Council review, gate checks |
+| `full-pipeline` | researcher → architect → engineer → reviewer → verifier | Complex goals, `/refine` |
 
-- **Conditional tasks** → Evaluate the condition from previous task output, skip or execute accordingly
-- **Long-running jobs** → If the task graph will outlast a single session, use `mcp__scheduled-tasks` to persist execution across sessions
+**For all methods:**
+
+- **Conditional tasks** → Evaluate condition from previous task output, skip or execute
+- **Long-running jobs** → Use `mcp__scheduled-tasks` to persist across sessions
+- **Model routing** → opus for architect/review, sonnet for implementation/research, haiku for verification/formatting
 
 **Progress tracking** in `outputs/gos-jobs/{job-id}/status.md`:
 
@@ -884,6 +947,23 @@ When all tasks complete:
 > Full report: `outputs/gos-jobs/arx-audit-001/report.md`
 
 3. Capture `/evolve` signals: which verbs performed well, which struggled, what Gary accepted/reworked.
+4. **Confidence score** on every output: `CONFIDENCE: high/medium/low — reason`. If any task scored below 70% confidence, flag it explicitly: "Low confidence on T3 — recommend manual verification."
+5. Update `sessions/state.json`: set phase to "completed", record final step count.
+
+---
+
+## Confidence Surfacing (always-on, P5)
+
+On EVERY output (not just reporting), include a confidence assessment:
+- **High (>80%):** Proceed without flagging.
+- **Medium (60-80%):** State: "CONFIDENCE: medium — {reason}." Continue but note the uncertainty.
+- **Low (<60%):** STOP. Say: "I don't have enough confidence here. {what I'm unsure about}. Want me to research this, or should you verify?"
+
+Triggers for proactive "I don't know":
+- Answering from memory without verification
+- Making assumptions about APIs, configurations, or external state
+- Extrapolating from limited data
+- Working at the edge of context window (>70% per context-monitor)
 
 ---
 
