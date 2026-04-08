@@ -26,9 +26,11 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 ## L2 — On-Demand
 
 ### User Profile
+
 - [user_gary_soul.md](user_gary_soul.md) — Full profile: identity, objectives, skills, traits, strengths, weaknesses, working preferences
 
 ### Feedback (obey these when relevant)
+
 - [feedback_design_taste.md](feedback_design_taste.md) — Reference apps are FLOOR; taste in specs/; 3 mandatory design gates
 - [feedback_stitch_mcp.md](feedback_stitch_mcp.md) — Custom proxy fixes for stitch-mcp
 - [feedback_large_structural_writes.md](feedback_large_structural_writes.md) — >500 lines: dispatch as fresh agent
@@ -37,14 +39,51 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 - [feedback_design_pipeline.md](feedback_design_pipeline.md) — Code-first pipeline beats Figma-first
 
 ### Projects
+
 - [project_dux.md](project_dux.md) — Dux simulation engine: architecture, status, tech stack
 - [project_gos_rename.md](project_gos_rename.md) — gOS rename: 38 → 8 verbs (2026-03-21)
 
 ### Evolve
-- [evolve_audit_2026-04-07.md](evolve_audit_2026-04-07.md) — Latest audit: all commands ≥80%, but /design has zero coverage
+
+- [evolve_audit_2026-04-08.md](evolve_audit_2026-04-08.md) — Latest audit: 0 new signals, all commands ≥80%, Phase 1 auto-signal hooks landed — watch next run
+- [evolve_audit_2026-04-07.md](evolve_audit_2026-04-07.md) — Prior audit: 12 signals from 2026-04-06, /design still zero coverage
 
 ### References
+
 - [~/.claude/config/intake-sources.md] — Global gOS watchlist: YouTube, X, blogs, podcasts
+
+## Episodic Memory (M3)
+
+- [episodes.md](episodes.md) — Episode index linking related sessions (gos-agent-audit, financial-modeling, web-prototype, design-system, signal-transformation)
+
+When starting a task, search memory for the episode to load prior decisions and dead ends.
+
+## Procedural Memory (M4)
+
+Procedures capture HOW to do things (not just WHAT was decided). Created by the Stop hook when a workflow is validated.
+
+Format: `procedure_{task-type}.md` with `type: procedure` in frontmatter.
+
+### Known Procedures
+
+- [procedure_financial_modeling.md](procedure_financial_modeling.md) — OfficeCLI + LibreOffice workflow for .xlsx edits
+- [procedure_spec_editing.md](procedure_spec_editing.md) — Cascade rules, archive-first, journey structure for specs/
+
+## Garbage Collection (M8)
+
+Weekly: scan memory/ for stale, duplicate, or contradicted entries.
+
+- Files with `valid_to` date in the past → flag for review
+- Files contradicting current codebase → update or remove
+- Duplicate content across files → merge
+
+Run via `/evolve audit` or scheduled task.
+
+## Cross-Session Scope (L6)
+
+**Cross-session scope:** When the Stop hook creates a memory, tag it as `scope: arx` (project-specific) or `scope: global` (applies to all Gary's projects). Global learnings go to user or feedback memories.
+
+---
 
 ## L3 — Deep Search
 

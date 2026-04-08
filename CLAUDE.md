@@ -10,7 +10,8 @@ All product knowledge lives in `specs/`. Read the relevant spec before making pr
 
 ```
 Start here:  specs/INDEX.md                              ← Quick lookup
-Full system: specs/Arx_0-0_Artifact_Architecture.md      ← Master blueprint
+Registry:    specs/Arx_0-0_Artifact_Registry.md           ← What exists, naming, cascade
+Workflow:    specs/Arx_0-1_Workflow_Playbook.md            ← Pipeline, ownership, templates
 Screens:     specs/Arx_4-1-0_Experience_Design_Index.md   ← Screen inventory
 ```
 
@@ -70,18 +71,18 @@ Arx/
 
 A build card (`specs/Arx_4-1-1-X_*.md`) replaces epics, user stories, screen specs, and design handoff docs. One file per screen, containing everything needed to understand, design, build, and test it.
 
-| Section | Replaces | Purpose |
-|---------|----------|---------|
-| `## Reference Screenshots` | Mood boards, design brief | Tier 1-3 app references with adopt/surpass per screen |
-| `## Why` | Epic description | JTBD + pain trace to Arx_2-1 — no upstream pain = question the screen |
-| `## What the User Does` | User stories | Numbered steps with S7/S2 variants |
-| `## Feel` | Design brief | Feel token reference (`feel:home`) from DESIGN.md §6.9 + overrides |
-| `## Layout` | Screen spec / wireframe | ASCII wireframe with auto-layout annotations (`column`, `fill-w`, `gap=12px`) |
-| `## Data` | Data requirements | API source + computation for every visible element |
-| `## States` | QA spec | 8-state matrix: default, empty, loading, error, partial, overflow, stale, crisis |
-| `## Navigate` | Navigation spec | From/to with transition types (`push-right`, `sheet-up`, `fade`) |
-| `## Acceptance` | Acceptance criteria | EARS format (WHEN/SHALL) — testable, not vague |
-| `## Visual Spec` | Design handoff | Fixture pointer + icons/embellishments/interactions from DESIGN.md §3-5 |
+| Section                    | Replaces                  | Purpose                                                                          |
+| -------------------------- | ------------------------- | -------------------------------------------------------------------------------- |
+| `## Reference Screenshots` | Mood boards, design brief | Tier 1-3 app references with adopt/surpass per screen                            |
+| `## Why`                   | Epic description          | JTBD + pain trace to Arx_2-1 — no upstream pain = question the screen            |
+| `## What the User Does`    | User stories              | Numbered steps with S7/S2 variants                                               |
+| `## Feel`                  | Design brief              | Feel token reference (`feel:home`) from DESIGN.md §6.9 + overrides               |
+| `## Layout`                | Screen spec / wireframe   | ASCII wireframe with auto-layout annotations (`column`, `fill-w`, `gap=12px`)    |
+| `## Data`                  | Data requirements         | API source + computation for every visible element                               |
+| `## States`                | QA spec                   | 8-state matrix: default, empty, loading, error, partial, overflow, stale, crisis |
+| `## Navigate`              | Navigation spec           | From/to with transition types (`push-right`, `sheet-up`, `fade`)                 |
+| `## Acceptance`            | Acceptance criteria       | EARS format (WHEN/SHALL) — testable, not vague                                   |
+| `## Visual Spec`           | Design handoff            | Fixture pointer + icons/embellishments/interactions from DESIGN.md §3-5          |
 
 **Three-layer architecture:**
 
@@ -110,8 +111,32 @@ Don't use `git reset --hard` or `git push --force` without explicit approval.
 
 Every gOS command presents a lightweight plan before executing. No exceptions.
 Format: PLAN (1-line restatement) → STEPS (numbered) → MEMORY (relevant L1/L2) → RISK → CONFIDENCE → Confirm?
+The MEMORY field MUST include: dead ends from prior sessions, known failures from feedback memories, and risks from evolve signals. Search `memory/` before populating — don't rely on recall.
+Before editing specs or code, check what depends on it. For specs: check downstream per cascade rules. For code: check imports and tests. Surface affected files before starting.
 After confirmation: write plan to scratchpad, create TodoWrite items, execute step by step.
 Skip only if Gary says "just do it" or the task is trivially atomic.
+
+**Confidence scoring** — every plan and output includes:
+`CONFIDENCE: high/medium/low — [one-line reason]`
+If confidence < 70% (medium-low), flag the key uncertainty to Gary before proceeding. Example: `CONFIDENCE: medium — unsure whether Hyperliquid API returns funding as annualized or per-interval`.
+
+**Prerequisites by command:**
+
+- `/build`: Read the spec? Read existing code? Run tests baseline?
+- `/design card`: Read DESIGN.md? Read journey map? Check reference apps?
+- `/review`: Read full diff? Load the spec it implements?
+- `/ship`: Review gate PASSED? Tests green? Spec sync done?
+
+**Bias check:** Am I over-engineering? Expanding scope beyond what was asked? Just confirming Gary's assumption without challenging it?
+
+## Autonomy Framework
+
+| Category                      | Rule                                                                                                                                                                                                                       |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PROCEED** (no ask)          | Reading files, searching, gathering context. Auto-fixing formatting/imports/typos. Running tests. Updating scratchpad/signals.                                                                                             |
+| **ASK** (always)              | Architectural decisions. Deleting or moving files. Changing specs. Deploying. Sending messages (email, Slack, PR). Spending money (API calls with cost). Any irreversible action. Adding a dependency (Gary has opinions). |
+| **JUDGMENT** (use confidence) | Fixing a bug — ask if <80% confident in root cause. Refactoring — ask if it changes public API.                                                                                                                            |
+| **STUCK** (3 failures)        | Stop, summarize what was tried, ask Gary for direction. Don't silently try a 4th approach.                                                                                                                                 |
 
 ## Memory Architecture (4 layers)
 
@@ -123,6 +148,8 @@ L3: Deep Search           — claude-mem + spec-rag. Semantic query.
 ```
 
 Loading order: L0 → L1 → task-relevant L2 → L3 only if L2 insufficient.
+
+**Memory hygiene (weekly):** Scan `memory/` for: files with expired `valid_to`, facts that contradict current codebase state, duplicate content across files. Propose deletions/updates — don't auto-delete. Run during `/evolve audit` or when memory file count exceeds 25.
 
 ## Session Scratchpad
 
@@ -136,22 +163,24 @@ The scratchpad (`sessions/scratchpad.md`) bridges context compaction. Three memo
 
 On compaction: re-read `sessions/scratchpad.md` to restore lost context.
 
+**Mini-checkpoint (every ~15 interactions):** After roughly 15 human messages, do a lightweight save — update scratchpad context estimate, write any unlogged evolve signals, and refresh L1 current focus. This prevents long sessions from losing context if compaction or exit happens unexpectedly.
+
 ## gOS — 8 Verbs + 1 Utility
 
 Soul file: `.claude/gOS.md`. Sessions optionally start with `/gos`.
 
-| Command       | Question                      | Output                                                    |
-| ------------- | ----------------------------- | --------------------------------------------------------- |
-| `/gos`        | Am I set up?                  | Session state, safety hooks                               |
-| `/gos <goal>` | What do you need? (Jarvis)    | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
-| `/think`      | What and why?                 | `outputs/think/` → `specs/`                               |
-| `/design`     | What are we building? (card, ui, system) | Build cards → `specs/`, visuals → Figma/prototypes |
-| `/simulate`   | What could happen?            | `outputs/briefings/`                                      |
-| `/build`      | How do we code it?            | `apps/`                                                   |
-| `/review`     | Is it good?                   | Verdicts, fixes, reports                                  |
-| `/ship`       | Is it out?                    | Commits, PRs, deployments                                 |
-| `/evolve`     | Are we getting better?        | gOS upgrades                                              |
-| `/refine`     | Is it tight enough?           | Gap-hunt + deepen loop until convergence                  |
+| Command       | Question                                 | Output                                                    |
+| ------------- | ---------------------------------------- | --------------------------------------------------------- |
+| `/gos`        | Am I set up?                             | Session state, safety hooks                               |
+| `/gos <goal>` | What do you need? (Jarvis)               | Orchestrates all verbs autonomously → `outputs/gos-jobs/` |
+| `/think`      | What and why?                            | `outputs/think/` → `specs/`                               |
+| `/design`     | What are we building? (card, ui, system) | Build cards → `specs/`, visuals → Figma/prototypes        |
+| `/simulate`   | What could happen?                       | `outputs/briefings/`                                      |
+| `/build`      | How do we code it?                       | `apps/`                                                   |
+| `/review`     | Is it good?                              | Verdicts, fixes, reports                                  |
+| `/ship`       | Is it out?                               | Commits, PRs, deployments                                 |
+| `/evolve`     | Are we getting better?                   | gOS upgrades                                              |
+| `/refine`     | Is it tight enough?                      | Gap-hunt + deepen loop until convergence                  |
 
 Plus utility: `/aside` (side question).
 
@@ -164,7 +193,7 @@ Plus utility: `/aside` (side question).
 - **Review mode** → `code` (PR), `design` (visual audit), `gate` (pre-ship, absorbs test/e2e/coverage), `council` (multi-persona), `eval` (command quality).
 - **Refine mode** → Convergence loop (think → design → simulate → review × N). Gap-hunt + depth ladder. Exits on convergence or max iterations.
 - **Ship mode** → Pipeline (commit → PR → deploy). Blocks if review gate not PASSED.
-- **Evolve mode** → Signal-driven. `audit` (health check), `upgrade` (rewrite commands), `learn` (manual teaching).
+- **Evolve mode** → Signal-driven. `audit` (health check + drift analysis: count signal types per command over last 5 sessions, flag rework rate >30% or repeat signals, generate upgrade proposal if drift detected), `upgrade` (rewrite commands), `learn` (manual teaching).
 
 ### Spec Sync After Implementation
 
@@ -206,14 +235,17 @@ Use `${ENV_VAR}` syntax for secrets in `.mcp.json`.
 6. **One landing at a time.** Swarm for research, merge implementation sequentially.
 7. **Stay engaged.** Exit gates prevent disengagement regressions.
 8. **CLI-accessible stack.** One-line CLI pointers beat verbose docs.
+9. **Check blast radius.** Before editing specs, trace downstream per cascade. Before editing code, check imports and tests. Surface affected files in the plan.
 
 ## Palace Protocol — Memory Verification Rules
 
 Before responding about any person, project, past event, or prior decision:
+
 1. **Search first, never guess.** Query `memory/` files or `spec-rag` MCP before answering from recall. If unsure, say "let me check" and look it up.
 2. **Verify before recommending.** If memory names a file path, check it exists. If it names a function or flag, grep for it. Memory says "X exists" is not the same as "X exists now."
 3. **Invalidate stale facts.** If what you find contradicts what memory says, trust what you observe now — update or remove the stale memory.
 4. **After each session.** Update memory with new decisions, corrections, and dead ends before stopping.
+5. **Say "I don't know" when you don't.** If memory search returns nothing AND you can't verify from code/specs, you MUST say: "I don't have this in my records. Want me to research it?" Never fabricate facts about: Gary's preferences, past decisions, project state, market data, or competitor specifics. This applies to all outputs — plans, analyses, recommendations. Confidence < 70% on a factual claim = flag it explicitly rather than stating it as fact.
 
 ## Key Technical Context
 
