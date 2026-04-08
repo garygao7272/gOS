@@ -1,0 +1,15 @@
+# Instinct Template — do not modify, copy for new instincts
+id: inst-000
+type: pattern  # pattern | preference | antipattern | hotspot
+confidence: 0.3  # 0.3 (new) to 0.9 (validated)
+source: observations.jsonl analysis
+created: 2026-04-09
+last_seen: 2026-04-09
+occurrences: 1
+description: "Short description of the observed pattern"
+evidence:
+  - session: session-id
+    timestamp: "2026-04-09T00:00:00Z"
+    context: "What happened that triggered this instinct"
+promotes_to: null  # skill | memory | hook — filled when promoted
+promoted_at: null

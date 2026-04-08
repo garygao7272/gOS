@@ -4,8 +4,14 @@
 # Usage:
 #   ./install.sh                         Health check only (default)
 #   ./install.sh --install               Install tools (no project wiring)
-#   ./install.sh --bootstrap <dir>       Full replication into target project
+#   ./install.sh --global                Install gOS globally to ~/.claude/
+#   ./install.sh --bootstrap <dir>       Wire gOS into a project (lean — project-specific only)
 #   ./install.sh --bootstrap             Interactive (asks for project dir)
+#
+# Architecture:
+#   --global   → shared files to ~/.claude/ (CLAUDE.md, commands, agents, skills, rules, hooks, settings)
+#   --bootstrap → project-specific files only (CLAUDE.md template, .mcp.json, directory structure)
+#   Global install is a prerequisite for bootstrap. Run --global once per machine.
 #
 # Run from inside the gOS repo clone.
 
@@ -16,6 +22,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 GOS_DIR="$SCRIPT_DIR"
 WORKING_DIR="$(dirname "$GOS_DIR")"
 TOOLKIT="$WORKING_DIR/toolkit"
+CLAUDE_HOME="${HOME}/.claude"
 
 # ── Colors ──────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
@@ -42,16 +49,26 @@ install_cmd() {
     ((INSTALLED++))
 }
 
+copy_if_newer() {
+    local src="$1" dst="$2"
+    if [[ ! -f "$dst" ]] || [[ "$src" -nt "$dst" ]]; then
+        cp "$src" "$dst"
+        return 0
+    fi
+    return 1
+}
+
 # ── Parse Args ──────────────────────────────────────────────────
 MODE="check"
 TARGET_DIR=""
 
 case "${1:-}" in
+    --global)    MODE="global" ;;
     --bootstrap) MODE="bootstrap"; TARGET_DIR="${2:-}" ;;
     --install)   MODE="install" ;;
     --check|-c)  MODE="check" ;;
     "")          MODE="check" ;;
-    *)           echo "Unknown: $1. Usage: ./install.sh [--check|--install|--bootstrap <dir>]"; exit 1 ;;
+    *)           echo "Unknown: $1. Usage: ./install.sh [--check|--install|--global|--bootstrap <dir>]"; exit 1 ;;
 esac
 
 # ── Header ──────────────────────────────────────────────────────
@@ -168,10 +185,118 @@ for venv_name in spec-rag-env sources-env notte-env; do
 done
 
 # ════════════════════════════════════════════════════════════════
-# PHASE 5: Bootstrap (--bootstrap mode only)
+# PHASE 5: Global Install (--global mode)
+# ════════════════════════════════════════════════════════════════
+if [[ "$MODE" == "global" ]]; then
+    echo -e "\n${CYAN}${BOLD}5. Global Install → ~/.claude/${NC}"
+
+    mkdir -p "$CLAUDE_HOME/commands" "$CLAUDE_HOME/agents" "$CLAUDE_HOME/rules" "$CLAUDE_HOME/hooks"
+
+    # CLAUDE.md — the co-creation pact
+    echo -e "  ${CYAN}CLAUDE.md${NC}"
+    if [[ -f "$GOS_DIR/templates/global-CLAUDE.md" ]]; then
+        cp "$GOS_DIR/templates/global-CLAUDE.md" "$CLAUDE_HOME/CLAUDE.md"
+        echo -e "    ${PASS} CLAUDE.md (co-creation pact)"
+    else
+        echo -e "    ${FAIL} templates/global-CLAUDE.md not found"; ((ERRORS++))
+    fi
+
+    # Commands
+    echo -e "  ${CYAN}Commands${NC}"
+    for f in "$GOS_DIR"/commands/*.md; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$CLAUDE_HOME/commands/"
+        echo -e "    ${PASS} $(basename "$f")"
+    done
+
+    # Agents
+    echo -e "  ${CYAN}Agents${NC}"
+    for f in "$GOS_DIR"/agents/*.md; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$CLAUDE_HOME/agents/"
+        echo -e "    ${PASS} $(basename "$f")"
+    done
+
+    # Skills
+    echo -e "  ${CYAN}Skills${NC}"
+    for skill_dir in "$GOS_DIR"/skills/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        name=$(basename "$skill_dir")
+        mkdir -p "$CLAUDE_HOME/skills/$name"
+        cp "$skill_dir"* "$CLAUDE_HOME/skills/$name/" 2>/dev/null
+        echo -e "    ${PASS} $name"
+    done
+
+    # Rules
+    echo -e "  ${CYAN}Rules${NC}"
+    for rule_dir in "$GOS_DIR"/rules/*/; do
+        [[ -d "$rule_dir" ]] || continue
+        name=$(basename "$rule_dir")
+        mkdir -p "$CLAUDE_HOME/rules/$name"
+        cp -R "$rule_dir"* "$CLAUDE_HOME/rules/$name/" 2>/dev/null
+        echo -e "    ${PASS} rules/$name/"
+    done
+    for f in "$GOS_DIR"/rules/*.md; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$CLAUDE_HOME/rules/"
+        echo -e "    ${PASS} rules/$(basename "$f")"
+    done
+
+    # Hooks
+    echo -e "  ${CYAN}Hooks${NC}"
+    mkdir -p "$CLAUDE_HOME/hooks"
+    for f in "$GOS_DIR"/.claude/hooks/*; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "$CLAUDE_HOME/hooks/"
+        chmod +x "$CLAUDE_HOME/hooks/$(basename "$f")" 2>/dev/null
+        echo -e "    ${PASS} $(basename "$f")"
+    done
+
+    # Settings
+    echo -e "  ${CYAN}Settings${NC}"
+    if [[ -f "$GOS_DIR/settings/settings.json" ]]; then
+        if [[ -f "$CLAUDE_HOME/settings.json" ]]; then
+            echo -e "    ${WARN} settings.json exists — backup + overwrite"
+            cp "$CLAUDE_HOME/settings.json" "$CLAUDE_HOME/settings.json.bak"
+        fi
+        cp "$GOS_DIR/settings/settings.json" "$CLAUDE_HOME/settings.json"
+        echo -e "    ${PASS} settings.json"
+    fi
+
+    # Workspace CLAUDE.md (if workspace dir exists and no CLAUDE.md there)
+    if [[ -d "$WORKING_DIR" && ! -f "$WORKING_DIR/CLAUDE.md" ]]; then
+        if [[ -f "$GOS_DIR/templates/workspace-CLAUDE.md" ]]; then
+            cp "$GOS_DIR/templates/workspace-CLAUDE.md" "$WORKING_DIR/CLAUDE.md"
+            echo -e "    ${PASS} Workspace CLAUDE.md → $(basename "$WORKING_DIR")/"
+        fi
+    elif [[ -f "$WORKING_DIR/CLAUDE.md" ]]; then
+        echo -e "    ${WARN} Workspace CLAUDE.md exists — skipped"
+    fi
+
+    # Verification
+    echo -e "\n  ${CYAN}${BOLD}Verification${NC}"
+    G_CMD=$(find "$CLAUDE_HOME/commands" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    G_AGT=$(find "$CLAUDE_HOME/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    G_SKL=$(find "$CLAUDE_HOME/skills" -maxdepth 2 -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
+
+    for f in "CLAUDE.md" "settings.json" "commands/gos.md" "agents/README.md"; do
+        [[ -f "$CLAUDE_HOME/$f" ]] && echo -e "    ${PASS} $f" || { echo -e "    ${FAIL} $f"; ((ERRORS++)); }
+    done
+    echo -e "\n  ${BOLD}Global:${NC} ${G_CMD} commands, ${G_AGT} agents, ${G_SKL} skills"
+fi
+
+# ════════════════════════════════════════════════════════════════
+# PHASE 6: Bootstrap Project (--bootstrap mode — lean)
 # ════════════════════════════════════════════════════════════════
 if [[ "$MODE" == "bootstrap" ]]; then
-    echo -e "\n${CYAN}${BOLD}5. Bootstrap — Wire gOS into Project${NC}"
+    echo -e "\n${CYAN}${BOLD}5. Bootstrap — Wire gOS into Project (lean)${NC}"
+
+    # Check global install exists
+    if [[ ! -f "$CLAUDE_HOME/CLAUDE.md" ]]; then
+        echo -e "  ${WARN} Global gOS not installed. Running --global first..."
+        "$0" --global
+        echo -e "\n${CYAN}${BOLD}Continuing bootstrap...${NC}"
+    fi
 
     if [[ -z "$TARGET_DIR" ]]; then
         echo -e "\n  Where is your project?"
@@ -184,50 +309,42 @@ if [[ "$MODE" == "bootstrap" ]]; then
     mkdir -p "$TARGET_DIR"
     echo -e "  ${INFO} Target: $TARGET_DIR\n"
 
-    # Commands
-    echo -e "  ${CYAN}Commands${NC}"
-    mkdir -p "$TARGET_DIR/.claude/commands"
-    for f in "$GOS_DIR"/commands/*.md; do
-        [[ -f "$f" ]] || continue
-        cp "$f" "$TARGET_DIR/.claude/commands/"
-        echo -e "    ${PASS} $(basename "$f")"
-    done
-
-    # Agents
-    echo -e "  ${CYAN}Agents${NC}"
-    mkdir -p "$TARGET_DIR/.claude/agents"
-    for f in "$GOS_DIR"/agents/*.md; do
-        [[ -f "$f" ]] || continue
-        cp "$f" "$TARGET_DIR/.claude/agents/"
-        echo -e "    ${PASS} $(basename "$f")"
-    done
-
-    # Skills
-    echo -e "  ${CYAN}Skills${NC}"
-    for skill_dir in "$GOS_DIR"/skills/*/; do
-        [[ -d "$skill_dir" ]] || continue
-        name=$(basename "$skill_dir")
-        mkdir -p "$TARGET_DIR/.claude/skills/$name"
-        cp "$skill_dir"* "$TARGET_DIR/.claude/skills/$name/" 2>/dev/null
-        echo -e "    ${PASS} $name"
-    done
-
-    # Core .claude files
-    echo -e "  ${CYAN}Core Files${NC}"
-    mkdir -p "$TARGET_DIR/.claude/rules" "$TARGET_DIR/.claude/middleware"
-    for f in gOS.md self-model.md launch.json; do
-        [[ -f "$GOS_DIR/.claude/$f" ]] && cp "$GOS_DIR/.claude/$f" "$TARGET_DIR/.claude/" && echo -e "    ${PASS} $f"
-    done
-    [[ -f "$GOS_DIR/settings/settings.json" ]] && cp "$GOS_DIR/settings/settings.json" "$TARGET_DIR/.claude/settings.json" && echo -e "    ${PASS} settings.json"
-    if [[ ! -f "$TARGET_DIR/.claude/settings.local.json" ]]; then
-        cp "$GOS_DIR/settings/settings.local.template.json" "$TARGET_DIR/.claude/settings.local.json"
-        echo -e "    ${PASS} settings.local.json (from template)"
+    # Project CLAUDE.md (template — user customizes)
+    echo -e "  ${CYAN}Project Files${NC}"
+    if [[ ! -f "$TARGET_DIR/CLAUDE.md" ]]; then
+        cp "$GOS_DIR/project-template/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+        echo -e "    ${PASS} CLAUDE.md (template — customize this)"
     else
-        echo -e "    ${WARN} settings.local.json exists — skipped"
+        echo -e "    ${WARN} CLAUDE.md exists — skipped"
     fi
-    for f in "$GOS_DIR"/rules/arx/*.md; do
-        [[ -f "$f" ]] && cp "$f" "$TARGET_DIR/.claude/rules/" && echo -e "    ${PASS} rules/$(basename "$f")"
-    done
+
+    # Project .claude/ — settings override only (no commands/agents/skills — those are global)
+    mkdir -p "$TARGET_DIR/.claude/rules"
+    if [[ ! -f "$TARGET_DIR/.claude/settings.json" ]]; then
+        cat > "$TARGET_DIR/.claude/settings.json" << 'SETTINGS'
+{
+  "respectGitignore": true,
+  "enableAllProjectMcpServers": true,
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
+  },
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "Write(*)",
+      "Bash",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "mcp__*"
+    ],
+    "deny": []
+  }
+}
+SETTINGS
+        echo -e "    ${PASS} .claude/settings.json (project overrides)"
+    else
+        echo -e "    ${WARN} .claude/settings.json exists — skipped"
+    fi
 
     # .mcp.json
     echo -e "  ${CYAN}.mcp.json${NC}"
@@ -236,43 +353,30 @@ if [[ "$MODE" == "bootstrap" ]]; then
         echo -e "    ${PASS} .mcp.json (paths resolved to $TOOLKIT)"
     fi
 
-    # CLAUDE.md
-    [[ -f "$GOS_DIR/CLAUDE.md" ]] && cp "$GOS_DIR/CLAUDE.md" "$TARGET_DIR/CLAUDE.md" && echo -e "    ${PASS} CLAUDE.md"
-
-    # Directories
+    # Directory structure
     echo -e "  ${CYAN}Directories${NC}"
-    for dir in specs outputs/think/research outputs/think/discover outputs/think/design outputs/think/decide outputs/briefings outputs/gos-jobs apps/web-prototype apps/mobile tools sessions memory Archive; do
+    for dir in specs outputs/think/research outputs/think/discover outputs/think/design outputs/think/decide outputs/briefings outputs/gos-jobs apps sessions Archive; do
         mkdir -p "$TARGET_DIR/$dir"
     done
-    echo -e "    ${PASS} 13 directories"
+    echo -e "    ${PASS} project directories created"
 
-    # Memory
-    echo -e "  ${CYAN}Memory${NC}"
-    for f in "$GOS_DIR"/memory/*.md; do
-        [[ -f "$f" ]] || continue
-        cp "$f" "$TARGET_DIR/memory/"
-        echo -e "    ${PASS} $(basename "$f")"
-    done
-
-    # Session state
+    # Session state files
     [[ -f "$TARGET_DIR/sessions/scratchpad.md" ]] || echo "# Session State" > "$TARGET_DIR/sessions/scratchpad.md"
     [[ -f "$TARGET_DIR/sessions/evolve_signals.md" ]] || echo "# Evolve Signals" > "$TARGET_DIR/sessions/evolve_signals.md"
     echo -e "    ${PASS} session files"
 
-    # Manifest
-    [[ -f "$GOS_DIR/toolkit/MANIFEST.md" ]] && cp "$GOS_DIR/toolkit/MANIFEST.md" "$TARGET_DIR/tools/MANIFEST.md" && echo -e "    ${PASS} MANIFEST.md"
-
-    # ── Verification ────────────────────────────────────────────
+    # Verification
     echo -e "\n  ${CYAN}${BOLD}Verification${NC}"
-    CMD_COUNT=$(find "$TARGET_DIR/.claude/commands" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-    AGENT_COUNT=$(find "$TARGET_DIR/.claude/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-    SKILL_COUNT=$(find "$TARGET_DIR/.claude/skills" -maxdepth 2 -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
-    MEM_COUNT=$(find "$TARGET_DIR/memory" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-
-    for f in ".claude/commands/gos.md" ".claude/agents/README.md" ".claude/settings.json" ".mcp.json" "CLAUDE.md" "memory/MEMORY.md"; do
+    for f in "CLAUDE.md" ".claude/settings.json" ".mcp.json"; do
         [[ -f "$TARGET_DIR/$f" ]] && echo -e "    ${PASS} $f" || { echo -e "    ${FAIL} $f"; ((ERRORS++)); }
     done
-    echo -e "\n  ${BOLD}Installed:${NC} ${CMD_COUNT} commands, ${AGENT_COUNT} agents, ${SKILL_COUNT} skills, ${MEM_COUNT} memory files"
+
+    # Check global is in place
+    echo -e "\n  ${CYAN}Global (shared via ~/.claude/)${NC}"
+    G_CMD=$(find "$CLAUDE_HOME/commands" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    G_AGT=$(find "$CLAUDE_HOME/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    G_SKL=$(find "$CLAUDE_HOME/skills" -maxdepth 2 -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
+    echo -e "    ${PASS} ${G_CMD} commands, ${G_AGT} agents, ${G_SKL} skills (global)"
 fi
 
 # ════════════════════════════════════════════════════════════════
@@ -280,65 +384,33 @@ fi
 # ════════════════════════════════════════════════════════════════
 echo -e "\n${CYAN}${BOLD}═══ Summary ═══${NC}"
 
-if [[ "$MODE" == "bootstrap" ]]; then
+if [[ "$MODE" == "global" ]]; then
+    echo -e "${GREEN}${BOLD}Global install complete.${NC} gOS is in ~/.claude/"
+    echo ""
+    echo -e "  Next: ${CYAN}./install.sh --bootstrap <project-dir>${NC} to wire up a project."
+    echo -e "  Or:   ${CYAN}cd <project-dir> && claude${NC} — gOS is already available globally."
+    echo ""
+elif [[ "$MODE" == "bootstrap" ]]; then
     echo -e "${GREEN}${BOLD}Bootstrap complete.${NC} Project: ${TARGET_DIR}"
     echo ""
-    echo -e "${CYAN}${BOLD}Step-by-Step: Complete Your Setup${NC}"
+    echo -e "${CYAN}${BOLD}Next Steps${NC}"
     echo ""
-    echo -e "${BOLD}Step 1: Connect Claude Code Plugins${NC}"
-    echo -e "  Open Claude Code in your terminal, then run these commands:"
-    echo -e "  ${DIM}(Each will open a browser for OAuth — approve and return)${NC}"
-    echo ""
+    echo -e "${BOLD}1. Connect Claude Code Plugins${NC}"
     echo "    claude"
-    echo "    /mcp                    # Opens MCP manager"
-    echo "    # Connect each: Figma, Vercel, Linear, Shadcn UI, Gmail"
-    echo "    # For Chrome: install Claude in Chrome extension from Chrome Web Store"
+    echo "    /mcp                    # Connect: Figma, Vercel, Linear, etc."
     echo ""
-    echo -e "${BOLD}Step 2: Set API Keys${NC}"
-    echo -e "  Add to your ~/.zshrc (or ~/.bashrc):"
-    echo ""
-    echo "    # Required"
+    echo -e "${BOLD}2. Set API Keys${NC} (add to ~/.zshrc)"
     echo "    export GITHUB_TOKEN=\"ghp_your_token_here\""
+    echo "    # Optional: DISCORD_TOKEN, TELEGRAM_API_ID, NOTTE_API_KEY, etc."
     echo ""
-    echo "    # Optional (enable as needed)"
-    echo "    export DISCORD_TOKEN=\"your_discord_bot_token\""
-    echo "    export TELEGRAM_API_ID=\"your_telegram_id\""
-    echo "    export TELEGRAM_API_HASH=\"your_telegram_hash\""
-    echo "    export NOTTE_API_KEY=\"your_notte_key\""
-    echo "    export STITCH_API_KEY=\"your_stitch_key\""
-    echo "    export SUPADATA_API_KEY=\"your_supadata_key\""
+    echo -e "${BOLD}3. Customize Project CLAUDE.md${NC}"
+    echo "    Edit ${TARGET_DIR}/CLAUDE.md with project-specific content."
+    echo "    Add project-specific .claude/rules/ files as needed."
     echo ""
-    echo "  Then: source ~/.zshrc"
-    echo ""
-    echo -e "${BOLD}Step 3: Copy Project Content${NC}"
-    echo -e "  These are project-specific — not stored in gOS repo:"
-    echo ""
-    echo "    # Specs (96 files) — copy from backup or previous machine"
-    echo "    cp -R /path/to/backup/specs/ ${TARGET_DIR}/specs/"
-    echo ""
-    echo "    # Apps — clone your app repos"
-    echo "    git clone <prototype-repo> ${TARGET_DIR}/apps/web-prototype"
-    echo "    git clone <mobile-repo> ${TARGET_DIR}/apps/mobile"
-    echo ""
-    echo "    # Design system — regenerate"
+    echo -e "${BOLD}4. Verify${NC}"
     echo "    cd ${TARGET_DIR} && claude"
-    echo "    /design system sync"
-    echo ""
-    echo -e "${BOLD}Step 4: Verify Sister Projects${NC}"
-    echo -e "  Dux and MiroFish should have been auto-cloned above."
-    echo -e "  If not (private repo / no access), clone manually:"
-    echo ""
-    echo "    gh repo clone garygao7272/Dux ${WORKING_DIR}/Dux"
-    echo "    gh repo clone garygao7272/MiroFish ${WORKING_DIR}/MiroFish"
-    echo ""
-    echo -e "${BOLD}Step 5: Verify${NC}"
-    echo ""
-    echo "    cd ${TARGET_DIR}"
-    echo "    claude"
-    echo "    /gos              # Should show: 'Gary. Here's where we are...'"
+    echo "    /gos              # Should show briefing"
     echo "    /gos status       # Should show all green"
-    echo ""
-    echo -e "  ${DIM}If /gos reports issues, run: cd ${GOS_DIR} && ./install.sh --check${NC}"
     echo ""
 elif [[ $ERRORS -eq 0 && $WARNINGS -eq 0 ]]; then
     echo -e "${GREEN}All checks passed. gOS is ready.${NC}"
@@ -346,7 +418,7 @@ elif [[ $ERRORS -eq 0 ]]; then
     echo -e "${YELLOW}${WARNINGS} warnings, 0 errors. gOS should work.${NC}"
 else
     echo -e "${RED}${ERRORS} errors, ${WARNINGS} warnings.${NC}"
-    echo -e "Run ${CYAN}./install.sh --install${NC} to install tools, or ${CYAN}./install.sh --bootstrap <dir>${NC} for full setup."
+    echo -e "Run ${CYAN}./install.sh --global${NC} to install globally, or ${CYAN}./install.sh --install${NC} for tools only."
 fi
 
 echo ""

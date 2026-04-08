@@ -1,43 +1,44 @@
-# Project Name — Project Instructions
+# {{PROJECT_NAME}} — Project Instructions
 
-## What Is This Project
+> gOS framework, identity, and shared rules are in `~/.claude/CLAUDE.md` (loaded automatically).
+> This file contains only project-specific instructions.
+
+## What Is {{PROJECT_NAME}}
 
 <!-- Describe what this project is in 2-3 sentences -->
 
 ## Project Structure
 
 ```
-project/
+{{project_slug}}/
 ├── specs/              ← Product specs
-├── outputs/            ← Generated outputs
+├── outputs/
+│   ├── think/          ← /think staging area
+│   └── briefings/      ← /simulate output
 ├── apps/               ← Application code
 ├── sessions/           ← Session tracking
-└── .claude/            ← Claude Code config
-    ├── gOS.md          ← Soul file
-    └── commands/       ← Project-specific commands (if any)
+└── Archive/            ← Superseded files
 ```
 
-## gOS Commands
+## Audience & Personas
 
-Soul file: `.claude/gOS.md`. All 8 verbs are globally installed.
+<!-- Define the primary users/personas for this project -->
 
-| Command     | Purpose                                                      |
-| ----------- | ------------------------------------------------------------ |
-| `/gos`      | Session entry, safety, save/resume                           |
-| `/think`    | discover, research, decide, spec, intake                     |
-| `/design`   | quick, variants, flow, full, system, sync                    |
-| `/simulate` | market, scenario, backtest, dux                              |
-| `/build`    | plan, prototype, feature, component, fix, tdd, refactor      |
-| `/review`   | code, test, design, gate, prove, council, dashboard          |
-| `/ship`     | commit, pr, deploy, docs, release                            |
-| `/evolve`   | audit, upgrade, learn, reflect                               |
-| `/refine`   | prebuild convergence loop (think/design/simulate/review x N) |
+## Common Mistakes
 
-## Key Context
+<!-- Project-specific pitfalls to avoid -->
 
-<!-- Add project-specific context here:
+## MCP Servers
+
+Config: `.mcp.json`.
+
+<!-- List project-specific MCP servers -->
+
+## Key Technical Context
+
+<!-- Add project-specific context:
 - Primary tech stack
 - Key APIs/services
-- Design system references
-- Audience/personas
+- Domain-specific terminology
+- Revenue model
 -->
