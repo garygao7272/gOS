@@ -30,8 +30,16 @@ P1-P5 + criteria session COMPLETE (2026-04-09): 12-dimension scoring framework b
 
 ## Known Gaps (next session priorities)
 
-1. **Testing 3/10** — zero test files, zero TDD evidence. Add test infrastructure.
-2. **Craft 4/10** — spec compliance prescribed but not enforced. Add verification.
-3. **Learning 5/10** — hooks added but zero proof cycles run. Execute one eval end-to-end.
-4. claude-mem PATH fixed but untested — verify uvx works.
-5. state-tracker.sh not yet wired as PostToolUse hook.
+1. **Fix spec-compliance.sh** — naming bug, 30-min fix, unlocks hard enforcement
+2. **Fix spec-RAG** — remove 600-char truncation, add grep tool (Karpathy-informed tiered access)
+3. **Formalize memory auto-write** — Stop hook auto-persists L1 + signals every session
+4. **Hard phase gates** — `/think` → `/design` → `/build` requires approval (Kiro pattern)
+5. **Test scaffolder** — auto-generate RED tests from spec acceptance criteria (Testing 3→7)
+
+## Strategic Decisions (2026-04-09)
+
+- **14→8 commands:** killed finance, claw, dispatch, eval, aside, refine. Zero capability lost.
+- **Specs ARE the knowledge base** (Karpathy): tiered access (INDEX→full file→grep→vector last resort)
+- **gOS local + Managed Agents cloud:** interactive work stays local, claws go cloud
+- **Don't replace L0-L3 with flat memory stores:** tiered loading is context-efficient
+- **Roadmap spec:** `specs/gOS_evolution_roadmap.md` — 23 items across 5 priority tiers
