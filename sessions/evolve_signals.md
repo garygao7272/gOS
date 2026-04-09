@@ -65,3 +65,7 @@
 | 2026-04-09 | 02:00 | /aside | accept | First-principles dimension validation + /aside command routing |
 | 2026-04-09 | 02:00 | /gos | repeat | Stop hook skipped THIRD time — pattern: any "natural ending" triggers skip |
 | 2026-04-09 | 02:10 | /build | accept | Fixed /aside autocomplete — synced all 14 commands across 4 locations |
+| 2026-04-09 | 19:55 | /gos conductor | accept | Parallel agent diagnosis accepted — settings fine, root cause is command instructions |
+| 2026-04-09 | 19:55 | /gos conductor | accept | 6 command upgrades with Agent() patterns — accepted approach without changes |
+| 2026-04-09 | 19:55 | /gos conductor | accept | Broken symlink fix (15 dead links) + Stop hook sync — accepted |
+| 2026-04-09 | 19:55 | /gos conductor | accept | spec-compliance hook bug (naming mismatch) flagged — Gary didn't pushback |

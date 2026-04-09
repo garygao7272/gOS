@@ -54,6 +54,17 @@
         ]
       },
       {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/read-tracker.sh",
+            "timeout": 3,
+            "statusMessage": "Read tracker"
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write",
         "hooks": [
           {
@@ -92,16 +103,6 @@
             "timeout": 3
           }
         ]
-      },
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/context-monitor.sh",
-            "timeout": 5
-          }
-        ]
       }
     ],
     "PostToolUseFailure": [
@@ -112,16 +113,6 @@
             "type": "command",
             "command": "$HOME/.claude/hooks/error-tracker.sh",
             "timeout": 3
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Session ending. Do these things SILENTLY (no jargon in output), then show Gary a clean wrap-up.\n\nSILENT BOOKKEEPING (do these, don't describe them to Gary):\n1. Scan the last ~10 exchanges for evolve signals (accept/rework/reject/love/skip/repeat). Append unlogged ones to sessions/evolve_signals.md. Format: YYYY-MM-DD | HH:MM | /command | signal | one-line context\n2. If Gary corrected your approach or confirmed a non-obvious approach, update the relevant memory/feedback_*.md file.\n3. Update sessions/state.json with current phase and recovery instructions.\n\nSHOW GARY (this is the only output he sees):\nA clean wrap-up in this format:\n\n> **Wrap-up:**\n> - [1-2 bullets: what was accomplished this session]\n> - [If incomplete tasks exist: 'Still open: {task description}. Continue?']\n>\n> **Next time:** [Anticipate the logical next move based on what happened and what's pending — make a recommendation, not a list]\n>\n> **Context used:** ~N% [estimate based on conversation length]\n\nIf the session was trivially short (1-2 exchanges, no real work), just say: 'Short session — nothing to wrap up.' and skip everything."
           }
         ]
       }
