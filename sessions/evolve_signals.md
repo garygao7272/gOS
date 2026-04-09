@@ -142,6 +142,16 @@
 | Time  | Command | Sub-cmd | Signal | Context |
 | ----- | ------- | ------- | ------ | ------- |
 | 00:00 | /gos | resume | accept | Story-first briefing with ONE thing next — Gary said "let's start" immediately |
+| 00:05 | /gos | conductor | accept | Gary confirmed Sprint 1 start + asked to persist lean constraint — both executed |
+| 00:15 | /build | sprint-1 | accept | S1-1 test scaffolder (91/91 pass), S1-2 phase gates (12/12), S1-3 handoffs — all accepted, pushed |
+| 00:25 | /gos | conductor | accept | Spec Sprint recommendation (cherry-pick 3 items vs generic S2/S3) — Gary said "go, starting building" |
+| 00:35 | /build | spec-sprint | accept | Coverage matrix + freshness checker + spec quality gate — all accepted |
+| 00:40 | /review | self-eval | accept | Lean self-eval (6 checks all PASS) — Gary confirmed "if all good, push" |
+| 00:45 | /ship | push | accept | Commit + push both sprints, verified local=remote |
+| 00:50 | /gos | conductor | accept | Defer S2/S3, recommended Arx work next — Gary said "so intent clarification..." (moved to audit) |
+| 00:55 | /review | audit | accept | Intent/plan-mode/multi-agent audit across 8 commands — Gary received without rework |
+| 01:00 | /gos | conductor | accept | Gary said "implement all 3 across all gOS commands" — executed immediately |
+| 01:10 | /build | commands | accept | 7 commands updated: +intent confirmation (5), +plan mode (2), +multi-agent (1) — 25 lines total |
 | 00:05 | /build | sprint 1 | accept | Gary approved Sprint 1 start + lean constraint persistence in one message |
 | 00:10 | /build | S1-1 tests | accept | 5 new test files (46 tests), scaffolder tool, all 79/79 passing — no rework |
 | 00:15 | /build | S1-1 | accept | Found and fixed real bug in session-save.sh (grep pipefail) — bonus find |
@@ -154,3 +164,5 @@
 | 00:45 | /build | coverage-matrix | accept | tools/coverage-matrix.sh — pipeline + rubric + test coverage. No rework. |
 | 00:50 | /build | spec-freshness | accept | tools/spec-freshness.sh — found 6 orphaned Arx specs. No rework. |
 | 00:55 | /build | review spec | accept | /review spec sub-command + quality gate wired into /think spec promotion. No rework. |
+| 01:00 | /review | lean self-eval | accept | Gary requested lean/smart gate before push. 6-check self-eval: all PASS. Gary approved push. |
+| 01:05 | /ship | commit+push | accept | Spec Sprint committed (8be5ed6) and pushed. Local=remote confirmed. |

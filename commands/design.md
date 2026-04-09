@@ -17,6 +17,8 @@ description: "Design: card (author build card), ui (visualize via Figma/AIDesign
 
 Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind of design? card, ui, or system?"
 
+**Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] for [target], using [key constraints]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or screen name).
+
 ---
 
 ## Before Designing (always)

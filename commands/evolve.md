@@ -9,6 +9,8 @@ description: "Evolve — self-improve: audit health, upgrade commands, learn les
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, run `audit`.
 
+**Plan mode by default.** For `audit` and `upgrade`: present scope (what signals/commands to examine, what changes to propose) and wait for approval. Skip for `learn` (single-pass, low risk).
+
 **Output discipline (two-phase pattern):** For audit, upgrade, and reflect sub-commands, use the analysis/output separation pattern. Do your reasoning and evidence gathering inside `<analysis>` tags (private working space — not shown to Gary). Then produce the concise, actionable result inside `<output>` tags. This keeps Gary's view clean while preserving thorough analysis.
 
 ---

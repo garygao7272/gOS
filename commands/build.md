@@ -27,6 +27,10 @@ See `specs/handoff-schemas.md`.
 
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What are we building? feature, fix, or refactor?"
 
+**Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] [target] based on [spec/handoff]. Proceed?" Skip only if Gary's input specifies exact file/function.
+
+**Plan mode by default.** Present approach (files to change, test strategy, commit plan) and wait for approval before writing code. Skip only for trivial single-file fixes.
+
 > **Folded sub-commands:** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature`. `tdd` → always-on within `feature`.
 
 ---

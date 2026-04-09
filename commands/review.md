@@ -14,7 +14,9 @@ description: "Review: code, test, design, gate, council, eval — or any persona
 - **After verdict:** Write verdict and top finding to `Key Decisions`
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, council, or eval?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, spec, gate, council, or eval?"
+
+**Intent confirmation (always).** Before executing, restate scope in one line: "I'll review [target] as [sub-command], covering [files/scope]. Proceed?" Skip only if Gary said "just do it."
 
 **Plan mode enforced.** Before executing any review, state: what's being reviewed, which sub-command, what files/specs are in scope. Wait for confirmation unless Gary said "just do it."
 

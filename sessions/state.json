@@ -1,28 +1,21 @@
 {
-  "current_command": "/build",
+  "current_command": null,
   "phase": "completed",
-  "step": 3,
-  "total_steps": 3,
+  "step": 0,
+  "total_steps": 0,
   "started_at": "2026-04-10T00:00:00",
-  "last_checkpoint": "2026-04-10T00:30:00",
+  "last_checkpoint": "2026-04-10T01:15:00",
   "files_modified": [
-    "tools/test-scaffold.sh",
-    "tests/hooks/spec-compliance.bats",
-    "tests/hooks/read-tracker.bats",
-    "tests/hooks/protect-files.bats",
-    "tests/hooks/plan-gate.bats",
-    "tests/hooks/session-save.bats",
-    "tests/hooks/phase-gate.bats",
-    ".claude/hooks/phase-gate.sh",
-    ".claude/hooks/session-save.sh",
-    "settings/settings.json",
-    "specs/handoff-schemas.md",
-    "commands/gos.md",
-    "commands/think.md",
-    "commands/design.md",
-    "commands/build.md",
-    "memory/L1_essential.md",
-    "sessions/evolve_signals.md"
+    "tools/test-scaffold.sh", "tools/coverage-matrix.sh", "tools/spec-freshness.sh",
+    "tests/hooks/spec-compliance.bats", "tests/hooks/read-tracker.bats",
+    "tests/hooks/protect-files.bats", "tests/hooks/plan-gate.bats",
+    "tests/hooks/session-save.bats", "tests/hooks/phase-gate.bats",
+    ".claude/hooks/phase-gate.sh", ".claude/hooks/session-save.sh",
+    "settings/settings.json", "specs/handoff-schemas.md",
+    "commands/gos.md", "commands/think.md", "commands/design.md",
+    "commands/build.md", "commands/review.md", "commands/simulate.md",
+    "commands/evolve.md", "commands/ship.md",
+    "evals/rubrics/review.md", "memory/L1_essential.md"
   ],
-  "recovery_instructions": "Sprint 1 pushed (216682a). Spec Sprint also complete (coverage matrix, freshness checker, spec quality gate). Spec Sprint NOT yet committed. 91/91 tests pass. Awaiting Gary's go to commit+push."
+  "recovery_instructions": "Session complete. 3 commits pushed: Sprint 1 (216682a), Spec Sprint (8be5ed6), command consistency (pending push). All 8 commands now have intent confirmation + plan mode + multi-agents where applicable. 91/91 tests pass. Deferred S2/S3 — next: Arx Radar Leaders or formal rescore."
 }

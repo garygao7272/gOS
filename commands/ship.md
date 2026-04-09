@@ -15,6 +15,16 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 The complete delivery pipeline. Run when work is done and ready to go out.
 
+**Pre-ship parallel checks** — launch all in a single message before committing:
+
+```
+Agent("Run test suite, report pass/fail count", subagent_type="general-purpose", model="haiku", run_in_background=true)
+Agent("Run linter, report error count", subagent_type="general-purpose", model="haiku", run_in_background=true)
+Agent("Run spec-freshness check: bash tools/spec-freshness.sh", subagent_type="general-purpose", model="haiku", run_in_background=true)
+```
+
+If any agent reports failures → STOP and report before committing. If all clean → proceed.
+
 1. **Review gate:** Check if `/review` (code-reviewer agent) has been run on this work.
    - If review dashboard exists and is NOT CLEARED (has unresolved CRITICAL or HIGH issues): warn Gary and ask "Review has unresolved issues. Proceed anyway?"
    - If no review was run: warn "No review on record. Want to run /review first or ship anyway?"

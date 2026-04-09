@@ -19,6 +19,8 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 | `spec` | **Direct to `specs/`** | No staging |
 | `intake` | `outputs/think/research/{slug}-intake.md` | Absorb, scan, or manage sources |
 
+**Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] [topic], covering [scope]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or file path).
+
 **Plan mode by default.** Present approach and wait for approval before executing.
 
 **Swarm execution by default.** Once approved, spawn 3-5 parallel Agent workers with sub-command-specific roles. Each produces an independent artifact with zero file conflicts. Cross-examine contradictions before synthesizing.
