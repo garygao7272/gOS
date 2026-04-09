@@ -11,6 +11,51 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 ---
 
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check for any blockers or pending reviews
+2. Search L2 memory files for keywords matching this ship target (e.g., "deploy", "ship", "PR", "commit")
+3. If L2 mentions past shipping issues, blocked deploys, or process corrections — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll ship — comprehension check]
+> **SCOPE:** [which files/commits will be shipped]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **MEMORY:** [check L1_essential.md — "last ship: ...", "blocked by: ..."]
+> **RISK:** [biggest risk — shipping is irreversible for pushes/deploys]
+> **ROLLBACK:** [how to undo — "git revert", "Vercel rollback", etc.]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" and scope is a single commit.
+
+## Action Verification (mandatory — shipping is irreversible)
+
+After each ship action, verify before proceeding:
+
+| Action | Verification |
+|--------|-------------|
+| git commit | `git log --oneline -1` — confirm message and file count |
+| git push | Check remote tracking: `git log origin/main..HEAD` should be empty after push |
+| PR create | Verify PR URL is accessible and description is correct |
+| Deploy | Hit the deployment URL — confirm it responds with expected content |
+
+**On failure:** Stop immediately. Do not retry push/deploy without explicit confirmation.
+
+---
+
 ## (no args) — Full Ship Sequence
 
 The complete delivery pipeline. Run when work is done and ready to go out.

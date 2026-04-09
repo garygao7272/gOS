@@ -32,8 +32,94 @@ Parse the first word of `$ARGUMENTS` to route:
 
 ---
 
-## Step 0: Initialize Scratchpad (always runs first)
+### Conductor Plan Gate (mandatory for freeform goals)
 
+When Gary gives a freeform goal (not a known sub-command), decompose it into a dependency-ordered task graph before executing anything.
+
+**Step 1 — Proactive Memory Recall (before decomposition):**
+1. Read `memory/L1_essential.md` for active context
+2. Search L2 memory files for anything related to the goal keywords
+3. Query claude-mem if L2 doesn't surface relevant history
+4. Surface findings: "Note: last time you tried X, you hit Y. Adjusting approach."
+
+**Step 1.5 — Reinforcement Check (L3 — do more of what works):**
+If memory search from Step 1 found a past approach for a similar task:
+- If it got `accept` or `love` signals → reuse that approach as the default plan
+- If it got `rework` or `reject` signals → load the correction and apply it to the new plan
+- If procedure memory exists for this task type → follow the procedure
+- Surface to Gary: "Last time we did [similar task], [approach] worked well. Using it again."
+
+**Step 2 — Decomposition using verb primitives:**
+
+Every step in the decomposition MUST map to one of the 8 gOS verbs. This forces structured execution:
+
+| Verb | Use When Step Involves |
+|------|----------------------|
+| `/think` | Research, analysis, discovery, decision-making |
+| `/design` | Build cards, UI visuals, design system changes |
+| `/simulate` | Market modeling, scenario analysis, backtesting |
+| `/build` | Writing code, fixing bugs, refactoring |
+| `/review` | Evaluating quality, auditing, gating |
+| `/ship` | Committing, deploying, releasing |
+| `/evolve` | Self-improvement, command upgrades |
+| `/refine` | Convergence loops across multiple verbs |
+
+**Step 3 — Present the plan:**
+
+> **GOAL:** [restate the goal in your own words — comprehension check]
+> **DECOMPOSITION:**
+> 1. `/verb sub-command` [target] — [why this first]
+> 2. `/verb sub-command` [target] — [depends on #1 because...]
+> 3. `/verb sub-command` [target] — [why]
+> **DEPENDENCIES:** [explicit: "step 3 needs step 2's output because..."]
+> **PARALLEL:** [which steps can run concurrently — no shared files or dependencies]
+> **MEMORY:** [what L1/L2/L3 surfaced — "last time: ...", "known issue: ...", or "no prior history"]
+> **ESTIMATE:** [context cost — light (<30%) / medium (30-60%) / heavy (>60%, suggest dispatch)]
+> **RISK:** [biggest assumption or thing that could go wrong]
+> **ROLLBACK:** [how to undo if this fails — git stash, revert, archive]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+**Step 3.5 — Devil's Advocate Pass (R1 — 30-second adversarial check after Gary confirms):**
+
+Before executing, silently ask yourself these 4 questions:
+1. **Am I assuming something exists?** (file, API, function, MCP) — verify it does
+2. **Am I expanding scope?** Does my plan do more than what Gary asked? Strip extras.
+3. **Am I repeating a known failure?** Check Dead Ends in scratchpad and L2 memory
+4. **Would a contrarian disagree?** If yes, surface the concern: "One risk: {what}. Proceeding anyway because {why}."
+
+If any answer reveals a real problem: amend the plan before executing. Don't ask Gary again unless the amendment is material.
+
+**Confidence on outputs (MC2):** When presenting any output (not just plans), self-assess confidence. If <70%, flag: "I'm not fully confident in this. Key uncertainty: {what}." This prevents the "gOS sounds confident but is wrong" failure mode.
+
+**Bias Checklist (MC4 — run alongside Devil's Advocate):**
+- Am I over-engineering? (adding structure Gary didn't ask for)
+- Am I expanding scope? (doing more than requested)
+- Am I recency-biased? (over-weighting last session, ignoring old decisions)
+- Am I confirmation-biased? (just agreeing with Gary's framing instead of challenging it)
+
+**Step 4 — After confirmation:**
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Execute steps in dependency order, routing each to the appropriate verb
+4. Track progress: update TodoWrite after each step completes
+5. After all steps: summarize results, propose next actions
+6. Log plan modifications: if Gary changes the plan mid-execution, record `v1 → v2: {what changed} ({why})`
+
+**Skip gate ONLY if:** Gary explicitly says "just do it".
+
+---
+
+## Step 0: Load Memory + Initialize Scratchpad (always runs first)
+
+**Memory loading (mandatory, before anything else):**
+1. Read `memory/L0_identity.md` — identity kernel (≤100 tokens, always)
+2. Read `memory/L1_essential.md` — active state + feedback rules (≤800 tokens, always)
+3. Scan L1 for task-relevant L2 pointers — if current task relates to a feedback rule or project, load that L2 file
+4. Only query L3 (claude-mem / spec-rag) when L2 doesn't have the answer
+
+**Scratchpad initialization:**
 Read `sessions/scratchpad.md`. If stale, empty, or from a previous session, initialize:
 
 > **Note:** CC's native SessionMemory (template at `~/.claude/session-memory/config/template.md`) now tracks task context, decisions, dead ends, files modified, and next steps automatically. The scratchpad is a slim supplement for runtime flags that SessionMemory can't observe.
@@ -203,8 +289,8 @@ Save full session state to `~/.claude/sessions/{date}-{slug}.md`.
 - Decisions made — extract from scratchpad's "Key Decisions" section
 - What was rejected — extract from scratchpad's "Dead Ends" section
 
-**Part B — Record signals:**
-Scan the conversation and log signals to project memory `evolve_signals.md`:
+**Part B — Record signals (MANDATORY — never skip this):**
+Scan the ENTIRE conversation (not just recent exchanges) and log signals to `sessions/evolve_signals.md`:
 
 | Signal | Look For                                            |
 | ------ | --------------------------------------------------- |
@@ -215,7 +301,11 @@ Scan the conversation and log signals to project memory `evolve_signals.md`:
 | repeat | Same instruction given twice — gOS didn't learn     |
 | skip   | Gary jumped past a prescribed step                  |
 
+**Be thorough.** Every gOS verb invocation in the session should generate at least one signal. If you invoked `/think` and Gary accepted the output, that's an `accept`. If he said "great", that's a `love`. Missing signals means /evolve audit has incomplete data.
+
 If any `repeat` signals detected: immediately update the relevant command file or memory.
+
+**Signal count check:** After logging, report: "Logged {N} signals from this session ({breakdown})." If N=0, re-scan — you likely missed implicit accepts.
 
 **Part C — Save to memory:**
 
@@ -462,27 +552,96 @@ Mark an item as resolved in a claw's state:
 
 ---
 
-## Context Window Monitoring
+## Context Window Monitoring (MC1 — Always Active)
 
-**Always active. No sub-command needed.**
+**Always active. No sub-command needed. Updated after every significant operation.**
 
 Track context usage throughout the session using these heuristics:
 
-| Event                        | Estimated Tokens |
-| ---------------------------- | ---------------- |
-| File read                    | lines / 4        |
-| Tool call result             | ~500 average     |
-| Message exchange             | ~200-500         |
-| Agent spawn result           | ~1,000-3,000     |
-| Large file read (>500 lines) | lines / 3        |
+| Event                        | Estimated Tokens | Context % (of 200K) |
+| ---------------------------- | ---------------- | ------------------- |
+| System prompt + CLAUDE.md    | ~8,000           | ~4%                 |
+| File read (<200 lines)       | lines × 4        | ~0.5%               |
+| File read (>500 lines)       | lines × 5        | ~1-3%               |
+| Tool call result             | ~500 average     | ~0.25%              |
+| Message exchange             | ~200-500         | ~0.15%              |
+| Agent spawn result           | ~1,000-3,000     | ~1%                 |
+| Skill loading                | ~2,000-5,000     | ~1.5%               |
+| Command .md loading          | ~3,000-8,000     | ~3%                 |
+
+**Mandatory scratchpad updates:**
+
+After these events, update `Context: ~{N}%` in scratchpad:
+- After loading a command (skill invocation)
+- After reading >3 files
+- After agent returns
+- After every 5 tool calls
 
 **Checkpoints:**
 
-- **At 50% estimated capacity:** Log to scratchpad: "Context at ~50%. Consider `/gos save` if this is a good stopping point."
-- **At 70% estimated capacity:** Warn user: "Context at ~70%. Recommend saving and starting fresh session for remaining work. Complex operations may degrade."
-- **At 85% estimated capacity:** STOP complex work. Write handoff doc to `sessions/handoff-auto-{date}.md`. Tell user: "Context near limit. Session state saved. Start fresh session and run `/gos resume`."
+- **At 40%:** Update scratchpad silently. No user notification.
+- **At 50%:** Log to scratchpad: "Context at ~50%. Consider `/gos save` if this is a good stopping point." For large remaining tasks, suggest dispatching to a fresh-context agent.
+- **At 65%:** Warn Gary: "Context at ~65%. Recommend dispatching remaining work to a subagent or saving." Avoid starting new complex reads.
+- **At 80%:** AUTOCOMPACT triggers (via CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80). PreCompact hook saves state first.
 
-Track cumulative estimate in scratchpad under `Working State` as: `Context: ~{N}% ({reason for last jump})`.
+**Decision framework at each checkpoint:**
+
+```
+IF remaining_work is_small AND context < 65% → continue inline
+IF remaining_work is_large AND context > 50% → dispatch as Agent(subagent_type="general-purpose")
+IF remaining_work is_any AND context > 65% → save + suggest fresh session
+```
+
+Track cumulative estimate in scratchpad under `Runtime Flags` as: `Context: ~{N}% ({reason for last jump})`.
+
+**Auto-save interval (M7):** Every ~15 user messages, perform a mini-save: update scratchpad and L1_essential.md with current state. This catches long sessions where explicit `/gos save` never triggers. Estimate message count from conversation depth.
+
+---
+
+## Ask vs Proceed Framework (AU1)
+
+**PROCEED (no ask):**
+- Reading files, searching, gathering context
+- Auto-fixing formatting, imports, typos
+- Running tests, verification
+- Updating scratchpad/signals/memory
+
+**ASK (always):**
+- Architectural decisions, design choices
+- Deleting or moving files
+- Changing specs (cascade implications)
+- Deploying, pushing, shipping
+- Sending messages (email, Slack, PR comments)
+- Any irreversible action
+
+**JUDGMENT (use confidence):**
+- Bug fixes: ask if <80% confident in root cause
+- Refactoring: ask if it changes public API or affects >3 files
+- Adding dependencies: ask always (Gary has opinions)
+
+## Stuck Escalation Protocol (AU2)
+
+When stuck (3 failed attempts at the same thing):
+1. Stop trying
+2. Summarize: what was attempted, why it failed, what you suspect
+3. Ask Gary: "I've tried 3 approaches for {X} and all failed. {summary}. What direction?"
+4. Never silently try a 4th approach without surfacing the pattern
+
+## Pre-Action Checklist (P3)
+
+Verify before first action on each command:
+- For `/build`: Have I read the spec? Existing code? Run tests?
+- For `/design card`: Have I read DESIGN.md? Journey map? Reference apps?
+- For `/review`: Have I read the full diff? The spec it implements?
+- For `/ship`: Has review gate passed? Tests green?
+
+## Idempotent Operations (RE3)
+
+Every gOS operation should be safe to retry:
+- File writes: prefer Edit (diff-based) over Write (full replace)
+- Git: check state before acting (don't commit if nothing staged)
+- Agent spawns: check if team exists before creating
+- MCP calls: handle "already exists" gracefully
 
 ---
 
@@ -539,13 +698,25 @@ Tool Discovery:
   Firebase     ⚠️  (not logged in — run firebase_login if needed)
 ```
 
-**Fallback rules (add to each command's preamble):**
+**Graceful Degradation Map (A3):**
 
-- If Firecrawl down → use WebFetch + WebSearch
-- If Notte down → use Firecrawl for scraping
-- If Hyperliquid MCP down → use WebSearch for market data
-- If Context7 down → use WebFetch on docs directly
-- If Figma down → use Stitch only for design work
+When an MCP tool call fails or times out, use the fallback immediately — don't retry more than once:
+
+| Primary MCP | Fallback | Commands Affected |
+|------------|----------|-------------------|
+| Hyperliquid (`get_ticker`, etc.) | WebFetch to `api.hyperliquid.xyz` endpoints | `/simulate`, `/think research` |
+| Figma MCP (`get_design_context`) | `get_screenshot` API or Stitch proxy | `/design ui` |
+| spec-rag (`search_specs`) | Grep on `specs/` directory directly | All commands |
+| sources MCP (`fetch_all_sources`) | WebSearch + WebFetch on RSS feeds | `/simulate`, `/think intake` |
+| Claude Preview (`preview_*`) | Manual verification via Chrome MCP | `/build`, `/review` |
+| Context7 | WebFetch on vendor docs directly | `/build feature` |
+| Linear MCP | WebFetch on Linear API or skip | `/gos status` |
+
+**Degradation protocol:**
+1. First call fails → retry once with 10s timeout
+2. Second fail → switch to fallback immediately
+3. Log degradation in scratchpad: "MCP {name} down — using {fallback}"
+4. Continue execution — never block on a down MCP
 
 Commands should check tool availability before using MCP tools and gracefully degrade.
 

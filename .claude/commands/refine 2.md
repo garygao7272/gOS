@@ -34,6 +34,36 @@ Each cycle combines two strategies:
 
 ---
 
+## Plan Gate (mandatory — runs before starting the loop)
+
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check for relevant feedback rules and known gaps in the target area
+2. Search L2 memory files for keywords matching this refine target (e.g., topic name, screen name, spec area)
+3. If L2 mentions past refine sessions, convergence issues, or corrections — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll refine — comprehension check]
+> **SCOPE:** [which specs/designs/simulations are in scope]
+> **ITERATIONS:** [target iteration count and convergence criteria]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **MEMORY:** [check L1_essential.md — "last refine on this topic: ...", "known gaps: ..."]
+> **RISK:** [biggest risk — e.g., "scope too broad, may not converge in N iterations"]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each cycle
+3. Begin execution, updating TodoWrite as each cycle completes
+
+---
+
 ## Execution Pipeline
 
 ### Phase 0: Initialize

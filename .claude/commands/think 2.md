@@ -1,7 +1,9 @@
 ---
+
 effort: high
 description: "Think mode: discover, research, decide, spec, intake — outputs to outputs/think/, promotes to specs/"
 ---
+
 
 # Think Mode — Product + Strategy -> outputs/think/ -> specs/
 
@@ -43,7 +45,39 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 ---
 
+
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check Active Feedback Rules and Known Gaps
+2. Search L2 memory files for keywords matching this research topic (e.g., if researching competitors, search for "competitor", "landscape")
+3. If L2 mentions prior research, dead ends, or past decisions on this topic — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll think about — comprehension check]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **MEMORY:** [check L1_essential.md + relevant L2 files — "last time we researched X: ...", "known issue: ..."]
+> **RISK:** [biggest assumption or thing that could go wrong]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" or the task is a single atomic operation (e.g., "intake this URL").
+
+---
+
 ## discover <seed idea>
+
 
 **Purpose:** Take a raw seed idea and produce a validated product concept with clear scope.
 
@@ -88,6 +122,7 @@ Launch 3 named teammates:
 
 ---
 
+
 ## research <question>
 
 > **Includes UX research** (absorbed from the former `/design research`). All research — market, competitor, user, AND UX — lives here under `/think research`.
@@ -122,6 +157,7 @@ Launch 3 named teammates:
 **Output:** Write research brief to `outputs/think/research/{question_slug}.md`. Then suggest: "Promote to `specs/Arx_2-X_{Slug}.md`?" or "Update existing `specs/Arx_2-X` with these findings?"
 
 ---
+
 
 ## decide <question>
 
@@ -158,6 +194,7 @@ Launch 6 named teammates (all on `sonnet` except blue-hat on `opus`):
 
 ---
 
+
 ## spec <topic>
 
 > **Strategy specs only.** Build cards are authored via `/design card`, not `/think spec`. Use this for strategy-layer specs: Arx_2-1 (personas), Arx_3-2 (PRD), Arx_3-3 (journeys), Arx_3-4 (epic map), Arx_4-2 (design system).
@@ -185,6 +222,7 @@ Launch 6 named teammates (all on `sonnet` except blue-hat on `opus`):
 **Output:** New or updated spec file in `specs/`. Update `specs/INDEX.md` if a new spec was created.
 
 ---
+
 
 ## intake <url | scan <topic> | sources <action>>
 

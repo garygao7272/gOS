@@ -121,6 +121,37 @@ Before outputting any design artifact, verify this checklist. If any gate was sk
 
 ---
 
+## Plan Gate (mandatory — runs before ANY sub-command)
+
+**Proactive Memory Recall (execute before presenting the plan):**
+1. Read `memory/L1_essential.md` — check Active Feedback Rules (especially design taste, feel tokens, code-first pipeline)
+2. Search L2 memory files for keywords matching this design task (e.g., "design", "feel", "pipeline", "taste", screen name)
+3. If L2 mentions past design corrections, approved approaches, or dead ends — surface it in the MEMORY field below
+4. Only query L3 (claude-mem/spec-rag) if L2 doesn't have relevant context
+
+Then present this to Gary and WAIT for confirmation:
+
+> **PLAN:** [1-line restatement of what you'll design — comprehension check]
+> **STEPS:**
+> 1. [action] — [why this first]
+> 2. [action] — [depends on #1]
+> 3. [action] — [why]
+> **REFS:** [which reference apps are relevant — from Arx_4-3 §1]
+> **MEMORY:** [check L1_essential.md + relevant L2 files — "last design session: ...", "feedback rule: ..."]
+> **RISK:** [biggest assumption or thing that could go wrong]
+> **CONFIDENCE:** [high/medium/low] — [1-line reason]
+>
+> **Confirm?** [y / modify / abort]
+
+After confirmation:
+1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`
+2. Create TodoWrite items for each step
+3. Begin execution step by step, updating TodoWrite as each completes
+
+**Skip gate ONLY if:** Gary explicitly says "just do it" or the task is a quick token update.
+
+---
+
 ## card <screen>
 
 **Purpose:** Author or update a complete build card for a screen. The build card is the SINGLE SOURCE OF TRUTH for what gets built — combining product requirements and visual specification.
