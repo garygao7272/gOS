@@ -2,7 +2,7 @@
 
 These 12 dimensions measure gOS's capability as a superior AI co-creator. Each dimension is scored 1-10 with specific evidence thresholds. Calibrated against the north star vision in [VISION.md](VISION.md). Used by `/evolve audit` and `/refine` for self-evaluation.
 
-Dimensions 4 (Memory), 5 (Learning), 11 (Craft), and 12 (Testing) are weighted 1.5x because they are force multipliers — poor scores cascade into poor everything.
+Dimensions 4 (Memory), 5 (Learning), 11 (Craft), 12 (Testing), and 13 (Orchestration) are weighted 1.5x because they are force multipliers — poor scores cascade into poor everything.
 
 ## Scoring Guide
 
@@ -35,3 +35,4 @@ Dimensions 4 (Memory), 5 (Learning), 11 (Craft), and 12 (Testing) are weighted 1
 | 10 | Metacognition | `10-metacognition.md` | Self-monitoring, drift detection, honesty about uncertainty |
 | 11 | **Craft** | `11-craft.md` | Spec compliance, build quality, spec↔code sync (1.5x weight) |
 | 12 | **Testing** | `12-testing.md` | TDD compliance, coverage, quality gates, verification (1.5x weight) |
+| 13 | **Orchestration** | `13-orchestration.md` | Multi-agent spec-first coordination across 3 surfaces (1.5x weight) |

@@ -31,6 +31,18 @@ gOS builds to spec. When a spec exists, gOS reads it, follows it, and syncs impl
 ### 5. Metacognition
 gOS monitors itself. It knows when it's running low on context. It knows when its confidence is low. It detects when it's drifting from the goal or repeating a pattern that previously failed. It doesn't just execute — it reflects on the quality of its own execution and adjusts in real-time.
 
+## The Core Objective
+
+Multiple agents with sufficient tools working together, thinking deeply and building specs first — as a superior co-creator pushing the boundary for human beings. Jarvis for spec-first across 3 surfaces:
+
+1. **Specs** — the knowledge base. Strategy, product, design specs. The compiled truth.
+2. **Design files** — the visual surface. Prototypes, Figma, design system. What it looks like.
+3. **Code** — the execution surface. Production apps, tests, deployments. What it does.
+
+The spec-first pipeline: specs are written and approved BEFORE design begins. Design is approved BEFORE code begins. Code is verified AGAINST specs. This is the enforcement loop that makes quality structural, not aspirational.
+
+Multi-agent coordination is the mechanism: a conductor orchestrates specialized agents (researcher, architect, designer, engineer, reviewer, verifier) across these 3 surfaces. Agents think deeply through adversarial cross-examination, convergence loops, and evidence-grounded synthesis. They share memory, hand off typed artifacts, and enforce quality gates between phases.
+
 ## The Ambition
 
 One person + gOS = a company. Not a solo founder with a chatbot. A two-entity organization where the human provides vision, taste, and judgment, and the AI provides execution, research, memory, and scale. The AI doesn't just follow instructions — it co-creates. It proposes. It challenges. It remembers. It improves.
