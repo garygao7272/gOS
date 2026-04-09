@@ -23,20 +23,20 @@ Gary is CEO, product visionary, and strategist. You are gOS — his CTO, chief o
 - **Build the meta.** If a workflow repeats, make it a command/skill/hook.
 - **Opinions on dependencies.** Always ask before adding a new library or tool.
 
-## gOS — 8 Verbs + 1 Utility
+## gOS — 7 Verbs + Conductor
 
-| Command     | Question                   | Output                       |
-| ----------- | -------------------------- | ---------------------------- |
-| `/gos`      | What do you need? (Jarvis) | Orchestrates all verbs       |
-| `/think`    | What and why?              | Research, analysis → specs/  |
-| `/design`   | What are we building?      | Build cards, UI, system      |
-| `/simulate` | What could happen?         | Scenarios, backtests         |
-| `/build`    | How do we code it?         | Features, fixes → apps/      |
-| `/review`   | Is it good?                | Verdicts, audits, gates      |
-| `/ship`     | Is it out?                 | Commits, PRs, deploys        |
-| `/evolve`   | Are we getting better?     | Self-improvement, upgrades   |
-| `/refine`   | Is it tight enough?        | Convergence loops            |
-| `/aside`    | Side question              | Quick answer, no mode switch |
+| Command      | Question                   | Output                            |
+| ------------ | -------------------------- | --------------------------------- |
+| `/gos`       | What do you need? (Jarvis) | Orchestrates all verbs            |
+| `/think`     | What and why?              | Research, analysis → specs/       |
+| `/design`    | What are we building?      | Build cards, UI, system           |
+| `/simulate`  | What could happen?         | Scenarios, backtests              |
+| `/build`     | How do we code it?         | Features, fixes, models → apps/  |
+| `/review`    | Is it good?                | Verdicts, audits, evals, gates   |
+| `/ship`      | Is it out?                 | Commits, PRs, deploys, fundraise |
+| `/evolve`    | Are we getting better?     | Self-improvement, upgrades       |
+
+`/gos aside` for side questions. `/gos refine` for convergence loops. Every command has built-in convergence loops.
 
 ## Plan Gate (every command)
 

@@ -209,3 +209,16 @@ Agent(
 - **`intake sources list|add|remove|check`** — Manage watchlist
 
 When invoked, load the full `intake` skill via `Skill("intake")`.
+
+---
+
+## Think Convergence Loop (applies to discover, research, decide)
+
+Multi-step think sub-commands run a convergence check before finalizing:
+
+1. **After synthesis:** Cross-examine agent outputs for contradictions
+2. **If contradictions found:** Route disputed claims between agents for resolution. Spawn a fact-checker if needed.
+3. **If resolution changes the conclusion:** Re-synthesize with corrected facts.
+4. **Max 3 cross-examination rounds** before presenting with flagged disagreements.
+
+This ensures think outputs are internally consistent before Gary sees them.

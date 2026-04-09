@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Build: feature, fix, refactor — outputs to apps/"
+description: "Build: feature, prototype, fix, refactor, model — outputs to apps/"
 ---
 
 # Build — Engineering → apps/
@@ -184,6 +184,36 @@ Agent(
 | Mobile fit | 390x844 viewport | No horizontal scroll |
 
 **Blast-Radius Rule:** Fix ALL instances of a pattern, not just the one reported. Grep the codebase, fix everything in one pass.
+
+---
+
+## model
+
+**Purpose:** Build or edit financial models (XLSX). Routes to Anthropic xlsx skill.
+
+**Process:**
+
+1. **Invoke:** `Skill("xlsx")` with the task description
+2. **For Arx projections:** Read latest version from `other specs/Arx_Financial_Model_*.xlsx`
+3. **For new models:** Create in `other specs/` with descriptive filename
+4. **QA:** After edits, audit formula integrity and cross-sheet references
+
+**Convergence loop:** After model edits, run audit pass checking: formula errors, broken references, circular dependencies, assumption consistency. Fix issues and re-audit. Max 3 audit-fix cycles.
+
+**Rules:** NEVER use openpyxl for writing. Use OfficeCLI for edits + LibreOffice headless for recalc.
+
+---
+
+## Build Convergence Loop (applies to all sub-commands)
+
+After any build step completes:
+
+1. **Verify:** Run the Post-Build QA Gate
+2. **If failures found:** Fix → re-verify. Track fix count.
+3. **If same failure appears 3 times:** STUCK. Flag to Gary with what was tried.
+4. **Max 5 build-verify cycles** before escalating.
+
+This loop ensures nothing ships with known QA failures.
 
 ---
 

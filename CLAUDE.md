@@ -4,6 +4,21 @@
 
 gOS (Gary's Operating System) is an AI builder companion framework built on Claude Code. It turns a solo founder into a full company by providing structured commands, memory, agents, and orchestration. This CLAUDE.md is for developing gOS itself — the framework, not the projects it powers.
 
+## Commands (8 verbs + conductor)
+
+| Command      | Question                   | Output                            |
+| ------------ | -------------------------- | --------------------------------- |
+| `/gos`       | What do you need? (Jarvis) | Orchestrates all verbs            |
+| `/think`     | What and why?              | Research, analysis → specs/       |
+| `/design`    | What are we building?      | Build cards, UI, system           |
+| `/simulate`  | What could happen?         | Scenarios, backtests              |
+| `/build`     | How do we code it?         | Features, fixes, models           |
+| `/review`    | Is it good?                | Verdicts, audits, evals           |
+| `/ship`      | Is it out?                 | Commits, PRs, deploys, fundraise  |
+| `/evolve`    | Are we getting better?     | Self-improvement, upgrades        |
+
+Every command has built-in convergence loops for multi-step processes.
+
 ## Structure
 
 ```

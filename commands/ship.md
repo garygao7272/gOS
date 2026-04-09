@@ -1,6 +1,6 @@
 ---
 effort: medium
-description: "Ship — deliver: commit, pr, deploy — or full ship sequence"
+description: "Ship — deliver: commit, pr, deploy, docs, fundraise — or full ship sequence"
 ---
 
 # Ship — Delivery Pipeline
@@ -182,6 +182,26 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
    - This keeps doc commits distinct from code commits
 
 ---
+
+---
+
+## fundraise
+
+**Purpose:** Ship investor-ready materials. Bundles: IC memo + one-pager + financial projections.
+
+**Process:**
+
+1. **Gather current state:** Read latest XLSX projections from `other specs/`, read existing investor materials
+2. **Generate/update materials** via Anthropic finance skills:
+   - IC memo: `Skill("private-equity:ic-memo")`
+   - One-pager: `Skill("investment-banking:strip-profile")`
+   - Financial plan: `Skill("wealth-management:financial-plan")`
+3. **QA pass:** Check number consistency across all 3 documents
+4. **Package:** Collect all materials into `outputs/fundraise/` with date stamp
+
+**Convergence loop:** After generating, cross-check numbers between IC memo, one-pager, and projections XLSX. If mismatches found, fix and re-check. Max 3 consistency passes.
+
+**Output:** Packaged materials in `outputs/fundraise/` → "Fundraise package ready. [N] documents, all numbers consistent."
 
 ---
 

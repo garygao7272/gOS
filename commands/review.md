@@ -1,6 +1,6 @@
 ---
 effort: max
-description: "Review: code, design, gate, council, eval — or any persona name directly"
+description: "Review: code, test, design, gate, council, eval — or any persona name directly"
 ---
 
 # Review — Quality Assurance → specs/ + apps/
@@ -14,7 +14,7 @@ description: "Review: code, design, gate, council, eval — or any persona name 
 - **After verdict:** Write verdict and top finding to `Key Decisions`
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, design, gate, council, or eval?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, gate, council, or eval?"
 
 **Plan mode enforced.** Before executing any review, state: what's being reviewed, which sub-command, what files/specs are in scope. Wait for confirmation unless Gary said "just do it."
 
@@ -38,6 +38,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 - **ASK (batch into ONE question):** Logic changes, API changes, architectural decisions, dependency changes
 
 **Confidence filter:** Only report findings >80% confidence.
+
+**Convergence loop:** After auto-fixes, re-run Pass 1. If new issues introduced by fixes, fix those too. Max 3 fix-verify cycles.
 
 **Output:** Findings table (severity, file:line, issue, fix) → Auto-fixed items → Batched questions → Verdict (APPROVE/WARNING/BLOCK)
 
@@ -64,6 +66,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 5. **Capture evidence:** Test output, screenshots, console logs, network requests
 6. **Check for regressions:** Existing tests, bundle size
 
+**Convergence loop:** If tests fail, diagnose → fix → rerun. Max 5 fix-rerun cycles. If same test fails 3 times with different fixes, flag as STUCK and escalate.
+
 **Output:** Test results (total/pass/fail) → Coverage table → 4-level verification → Evidence → Verdict (PASS/FAIL)
 
 ---
@@ -82,6 +86,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 6. **Responsive check:** 390x844 primary, 375x812 secondary, no horizontal scroll
 7. **Anti-slop check:** No purple gradients, no generic grids, no AI-template aesthetics
 8. **Atomic commits for each fix**
+
+**Convergence loop:** After fixes, re-screenshot and re-audit changed areas. Continue until no new CRITICAL/HIGH visual issues. Max 3 audit-fix cycles.
 
 **Output:** Visual issues table (screen, issue, severity, fix) → State coverage matrix → Anti-slop result → Verdict (APPROVE/REFINE/REJECT)
 
@@ -107,37 +113,6 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 ---
 
-## e2e
-
-**Purpose:** Generate and run Playwright E2E tests for critical user flows. Use e2e-runner agent.
-
-**Process:**
-
-1. **Identify critical flows** (trade execution, copy trading, portfolio, onboarding)
-2. **Generate Playwright test files** — one per flow, 390x844 viewport, screenshots at each step
-3. **Run locally 3-5 times** — confirm no flaky tests
-4. **Quarantine flaky tests** to `__tests__/quarantine/`
-5. **Capture artifacts:** screenshots, video, traces
-
-**Output:** Flows table (flow, runs, pass, fail, flaky) → Quarantined list → Verdict (PASS/FAIL)
-
----
-
-## coverage
-
-**Purpose:** Test coverage analysis. Identify gaps and suggest tests.
-
-**Process:**
-
-1. **Run coverage tool** with text + json reporters
-2. **Parse results:** 0% files, below-80% files, uncovered branches/functions
-3. **Prioritize by risk:** HIGH (auth, payment, trade) 90%+, MEDIUM (UI) 80%, LOW (utilities) 60%
-4. **Suggest specific tests** for each uncovered area
-
-**Output:** Summary → Critical gaps table → Below-threshold table → Verdict (MET/NOT MET)
-
----
-
 ## council
 
 **Purpose:** Full multi-persona review with live adjudication.
@@ -150,77 +125,13 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 - **Veto:** `crypto-sec` BLOCK is absolute. Any Wave 1 user BLOCK → overall BLOCK.
 - **Adjudication:** Conductor routes conflicts via cross-examination between disagreeing agents.
 
-**Wave 1 — launch all 4 in a single message:**
+**Wave 1 — launch all 4 in a single message.** Each persona reviews through their lens with APPROVE/CONCERN/BLOCK verdict, kill shot + steel man.
 
-```
-Agent(
-  prompt = "You are S2-Jake reviewing {target}. Lens: 'Would Jake use this daily
-            and does it save him time?' Read specs/Arx_2-1* for Jake's profile.
-            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
+**If Wave 1 has no BLOCKs, launch Wave 2** (crypto-sec, trader-ux, risk-analyst, mobile-perf) — all in a single message.
 
-Agent(
-  prompt = "You are S7-Sarah reviewing {target}. Lens: 'Would Sarah set this up
-            and feel safer?' Read specs/Arx_2-1* for Sarah's profile.
-            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
+**Wave 3** — contrarian reviews all prior findings, challenges consensus.
 
-Agent(
-  prompt = "You are S1-Alex reviewing {target}. Lens: 'Does this keep Alex engaged
-            AND prevent blow-up?' Read specs/Arx_2-1* for Alex's profile.
-            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are S3-Marcus reviewing {target}. Lens: 'Does this degrade execution
-            quality or privacy?' Read specs/Arx_2-1* for Marcus's profile.
-            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-```
-
-**If Wave 1 has no BLOCKs, launch Wave 2 — all 4 in a single message:**
-
-```
-Agent(
-  prompt = "You are crypto-sec specialist reviewing {target}. Lens: key management,
-            transaction signing, MEV, input validation. BLOCK is absolute veto.
-            Verdict: APPROVE/CONCERN/BLOCK with evidence.",
-  subagent_type = "security-reviewer", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are trader-ux specialist reviewing {target}. Lens: order entry flow,
-            price display, position management. Verdict: APPROVE/CONCERN/BLOCK.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are risk-analyst reviewing {target}. Lens: margin calculations,
-            liquidation warnings, leverage guards. Verdict: APPROVE/CONCERN/BLOCK.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are mobile-perf specialist reviewing {target}. Lens: bundle size,
-            render performance, network efficiency. Verdict: APPROVE/CONCERN/BLOCK.",
-  subagent_type = "general-purpose", model = "haiku", run_in_background = true
-)
-```
-
-**Wave 3 — after Waves 1+2 report, launch contrarian:**
-
-```
-Agent(
-  prompt = "You are the contrarian reviewing {target}. You have seen all prior
-            verdicts: {summary of Wave 1+2 findings}. Challenge the consensus.
-            Find overlooked risks. Pre-mortem, kill shot, wargame, steel man.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-```
+**Convergence loop:** If council verdict is BLOCK, present findings → Gary decides fix list → apply fixes → re-run the blocking wave only. Max 2 council-fix cycles.
 
 **Persona definitions:**
 
@@ -237,6 +148,37 @@ Agent(
 | contrarian | Strategic | Pre-mortem, kill shot, wargame, steel man |
 
 **Output:** Verdicts table (persona, type, verdict, kill shot, weight) → Weighted synthesis → Top 3 findings + actions
+
+---
+
+## eval <command-name> [--runs N]
+
+**Purpose:** Measure gOS command quality against rubrics with synthetic inputs. Answers: "Is this command getting better or worse?"
+
+Default N=1. Maximum N=5 (cost guard).
+
+**Process:**
+
+1. **Load test input** from `evals/test-inputs/{command-name}-input.md`. If not found, offer to create one.
+2. **Load rubric** from `evals/rubrics/{command-name}.md`. Extract dimensions, weights, scoring criteria.
+3. **Execute run:** Spawn executor agent (sonnet, fresh context) with test input + command context. Capture output.
+4. **Score:** Spawn separate scoring agent (sonnet — no self-grading). Strict rubric scoring: 5=adequate, 7=good, 9=exceptional. Returns JSON with per-dimension scores.
+5. **Compare to baseline** from `evals/baselines/{command-name}/latest.json` if it exists. Delta >+0.5 = IMPROVED, <-0.5 = REGRESSED, else STABLE.
+6. **Report:** Dimension table with scores, baseline comparison, variance, cost estimate.
+
+If any dimension REGRESSED: flag and suggest `/evolve upgrade {command}`.
+
+**Sub-actions:**
+
+| Argument | Action |
+|----------|--------|
+| `eval <cmd>` | Run and score |
+| `eval create <cmd>` | Create new test input interactively |
+| `eval baseline <cmd>` | Set current results as baseline |
+| `eval report` | Show all commands' eval scores and trends |
+| `eval compare <cmd>` | Dimension-by-dimension baseline comparison |
+
+**Convergence loop for multi-run evals (N>1):** Run N times. If variance across runs >1.5 on any dimension, flag as unreliable and suggest refining the rubric or test input.
 
 ---
 
@@ -259,16 +201,8 @@ Any persona name can be invoked directly: `/review s2-jake`, `/review trader-ux`
 **5-step protocol:**
 
 1. **Load Persona** — adopt the specialist's expertise, vocabulary, and focus from the council table above
-2. **Research** — launch a background research agent while you begin evaluation:
-   ```
-   Agent(
-     prompt = "Research current best practices, known vulnerabilities, and industry
-               standards relevant to {persona}'s review of {target}.
-               Use WebSearch. Return sourced findings only.",
-     subagent_type = "general-purpose", model = "haiku", run_in_background = true
-   )
-   ```
-3. **Evaluate** — review through persona's lens using research findings. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, fix, location (file:line or spec:section)
+2. **Research** — launch a background research agent for current best practices relevant to the persona's lens
+3. **Evaluate** — review through persona's lens. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, fix, location (file:line or spec:section)
 4. **Verdict** — APPROVE / CONCERN / BLOCK. Always include: Steel Man ("strongest argument FOR"), Kill Shot ("single biggest risk"), Recommendation
 5. **Output** — code fixes → `apps/`, spec corrections → `specs/`, decisions → `specs/Arx_9-1_Decision_Log.md`
 

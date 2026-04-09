@@ -200,6 +200,20 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 ---
 
+---
+
+## Simulation Convergence Loop (applies to market and scenario)
+
+After producing simulation output, run a consistency check:
+
+1. **Cross-verify:** Do bull-case and bear-case agents agree on facts (even if they disagree on interpretation)? Flag factual disagreements.
+2. **Source check:** Every claim must have a source. Strip unsourced claims or research them.
+3. **If factual disagreements found:** Spawn a fact-checker agent to resolve. Update the scenario with corrected facts.
+4. **Stale data check:** If any data point is >24h old for market sims, flag as potentially stale.
+5. **Max 2 verify-correct cycles** before presenting with confidence flags.
+
+---
+
 ## Output Pipeline (shared)
 
 All simulation outputs use the same pipeline:

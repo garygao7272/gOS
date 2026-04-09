@@ -67,18 +67,16 @@ Rules:
 
 ## 8 Verbs + 1 Utility
 
-| Verb        | Question                              | Sub-commands                    | Produces                               |
-| ----------- | ------------------------------------- | ------------------------------- | -------------------------------------- |
-| `/gos`      | Am I set up?                          | status, save, resume, schedule, careful, freeze | Session state, orchestration |
-| `/think`    | What and why?                         | research, discover, decide, spec, intake | Documents, decisions, strategy specs |
-| `/design`   | What are we building?                 | card, ui, system                | Build cards, Figma/HTML prototypes, tokens |
-| `/simulate` | What could happen?                    | market, scenario                | MiroFish/Dux scenarios, signals        |
-| `/build`    | How do we code it?                    | feature, fix, refactor          | Production code, tests, components     |
-| `/review`   | Is it good?                           | code, design, gate, council, eval | Verdicts, fixes, reports             |
-| `/ship`     | Is it out?                            | commit, pr, deploy              | Commits, PRs, deployments              |
-| `/evolve`   | Are we getting better?                | audit, upgrade, learn           | Upgraded commands, retros              |
-| `/refine`   | Is it tight enough?                   | (loop — no sub-commands)        | Gap-hunt + deepen loop                 |
-Plus utility: `/aside` (side question).
+| Verb        | Question                              | Sub-commands                              | Produces                               |
+| ----------- | ------------------------------------- | ----------------------------------------- | -------------------------------------- |
+| `/gos`      | What do you need? (Jarvis)            | status, save, resume, aside, refine       | Session state, orchestration           |
+| `/think`    | What and why?                         | discover, research, decide, spec, intake  | Documents, decisions, strategy specs   |
+| `/design`   | What are we building?                 | card, ui, system                          | Build cards, prototypes, tokens        |
+| `/simulate` | What could happen?                    | market, scenario, backtest, dux, flow     | Scenarios, signals                     |
+| `/build`    | How do we code it?                    | feature, prototype, fix, refactor, model  | Production code, tests, models         |
+| `/review`   | Is it good?                           | code, test, design, gate, council, eval   | Verdicts, fixes, reports               |
+| `/ship`     | Is it out?                            | commit, pr, deploy, docs, fundraise       | Commits, PRs, deployments              |
+| `/evolve`   | Are we getting better?                | audit, upgrade, learn, reflect            | Upgraded commands, retros              |
 
 > **Parallel execution** is built into the conductor (Phase 4), not a separate command. The conductor auto-selects between 3 methods: Agents (shared files), Agents (worktree isolation), or Agent Teams (collaborative with messaging). See gos.md Phase 4 for the decision tree.
 

@@ -193,5 +193,16 @@ Agent(
 
 ---
 
-## Safety
-Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation.
+---
+
+## Design Convergence Loop (applies to card and ui)
+
+After producing design output, run a tightening pass:
+
+1. **Gate 3c (Feel Pass):** Score each dimension 1-5. Fix any <=2.
+2. **5 Premium Litmus Tests** from Arx_4-3. Fix failures.
+3. **If fixes made:** Re-screenshot, re-audit changed areas.
+4. **If new issues found after fix:** Fix and re-audit again.
+5. **Max 3 design-audit-fix cycles** before presenting to Gary.
+
+This ensures design outputs meet the quality bar before Gary reviews them.
