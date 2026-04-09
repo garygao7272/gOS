@@ -50,6 +50,12 @@
             "command": "$HOME/.claude/hooks/secret-scan.sh",
             "timeout": 10,
             "statusMessage": "Secret scan"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/health-gate.sh",
+            "timeout": 120,
+            "statusMessage": "Health gate"
           }
         ]
       },
