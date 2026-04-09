@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Evolve — self-improve: audit health, upgrade commands, learn lessons, reflect on principles"
+description: "Evolve — self-improve: audit health, upgrade commands, learn lessons"
 ---
 
 # Evolve — Self-Improvement Engine
@@ -9,7 +9,7 @@ description: "Evolve — self-improve: audit health, upgrade commands, learn les
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, run `audit`.
 
-**Output discipline (two-phase pattern):** For audit, upgrade, and reflect sub-commands, use the analysis/output separation pattern. Do your reasoning and evidence gathering inside `<analysis>` tags (private — not shown to Gary). Produce the concise, actionable result inside `<output>` tags. This keeps Gary's view clean while preserving thorough analysis.
+**Output discipline (two-phase pattern):** For audit, upgrade, and reflect sub-commands, use the analysis/output separation pattern. Do your reasoning and evidence gathering inside `<analysis>` tags (private working space — not shown to Gary). Then produce the concise, actionable result inside `<output>` tags. This keeps Gary's view clean while preserving thorough analysis.
 
 ---
 
@@ -283,7 +283,7 @@ Instead of one-shot rewriting, fork the command and compare versions empirically
 **Process:**
 
 1. **Read everything:**
-   - `.claude/gOS.md` (or `GOD.md`) — the soul and principles
+   - `~/.claude/CLAUDE.md — the identity, framework, and principles
    - All memory files — patterns across sessions
    - `sessions/evolve_signals.md` — signal history
    - Recent git history — what got built
@@ -291,7 +291,7 @@ Instead of one-shot rewriting, fork the command and compare versions empirically
 
 2. **Grade against each principle:**
 
-   For every principle in gOS.md, assign a letter grade with evidence:
+   For every principle in `~/.claude/CLAUDE.md`, assign a letter grade with evidence:
 
    ```
    # gOS Reflection — {date}
@@ -366,6 +366,3 @@ When logging signals, append to `sessions/evolve_signals.md`:
 ```
 
 Group by date. Most recent date at the top of the file.
-
-## Safety (when hooks unavailable)
-Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation. Never auto-approve destructive operations.

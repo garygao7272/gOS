@@ -1,8 +1,3 @@
----
-effort: low
-description: "Checkpoint — create or verify a workflow checkpoint (git stash or commit)"
----
-
 # Checkpoint Command
 
 Create or verify a checkpoint in your workflow.
@@ -77,6 +72,3 @@ $ARGUMENTS:
 - `verify <name>` - Verify against named checkpoint
 - `list` - Show all checkpoints
 - `clear` - Remove old checkpoints (keeps last 5)
-
-## Safety (when hooks unavailable)
-Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation. Never auto-approve destructive operations.

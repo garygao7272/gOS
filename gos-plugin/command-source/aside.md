@@ -1,5 +1,4 @@
 ---
-effort: low
 description: Answer a quick side question without interrupting or losing context from the current task. Resume work automatically after answering.
 ---
 
@@ -163,6 +162,3 @@ Node.js server but would be a real problem with worker threads or clustering.
 - Keep answers focused: the goal is to unblock the user quickly, not to deliver a lecture
 - If an aside sparks a larger discussion, finish the current task first unless the aside reveals a blocker
 - Asides are not saved to session files unless explicitly relevant to the task outcome
-
-## Safety (when hooks unavailable)
-Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation. Never auto-approve destructive operations.

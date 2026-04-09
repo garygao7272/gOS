@@ -7,202 +7,119 @@ description: "Think mode: discover, research, decide, spec, intake — outputs t
 
 **Think outputs go to `outputs/think/` first (staging), then promote to `specs/` if worthy.**
 
-The separation matters: `outputs/think/` is the workshop. `specs/` is the showroom. Not every piece of thinking deserves to become a canonical spec. Think produces working documents — research briefs, brainstorms, decision analyses. Only the conclusions worth building on get promoted to `specs/`.
+The separation matters: `outputs/think/` is the workshop. `specs/` is the showroom. Only conclusions worth building on get promoted.
 
-**Output routing by sub-command:**
+**Output routing:**
 
-| Sub-command | Output To                                 | Then                                                    |
-| ----------- | ----------------------------------------- | ------------------------------------------------------- |
-| `discover`  | `outputs/think/discover/{topic}.md`       | Suggest: "Promote to `specs/Arx_3-X` as product brief?" |
-| `research`  | `outputs/think/research/{topic}.md`       | Suggest: "Promote to `specs/Arx_2-X` as market intel?"  |
-| `decide`    | `outputs/think/decide/{topic}.md`         | Suggest: "Append to `specs/Arx_9-1_Decision_Log.md`?"   |
-| `spec`      | **Direct to `specs/`**                    | No staging — `spec` IS the promotion step               |
-| `intake`    | `outputs/think/research/{slug}-intake.md` | Absorb, scan, or manage sources                         |
+| Sub-command | Output To | Then |
+|-------------|-----------|------|
+| `discover` | `outputs/think/discover/{topic}.md` | "Promote to `specs/Arx_3-X`?" |
+| `research` | `outputs/think/research/{topic}.md` | "Promote to `specs/Arx_2-X`?" |
+| `decide` | `outputs/think/decide/{topic}.md` | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
+| `spec` | **Direct to `specs/`** | No staging |
+| `intake` | `outputs/think/research/{slug}-intake.md` | Absorb, scan, or manage sources |
 
-**Promotion flow:**
+**Plan mode by default.** Present approach and wait for approval before executing.
 
-1. Think writes to `outputs/think/{sub-command}/{topic}.md`
-2. At the end, Think recommends: "This should be promoted to `specs/Arx_X-X_{Slug}.md`" with the suggested artifact ID and altitude
-3. User approves -> file moves to `specs/`, INDEX.md updated
-4. User declines -> file stays in `outputs/think/` as reference material
+**Swarm execution by default.** Once approved, spawn 3-5 parallel Agent workers with sub-command-specific roles. Each produces an independent artifact with zero file conflicts. Cross-examine contradictions before synthesizing.
 
-**Plan mode by default.** Think mode always presents a plan for approval before executing. The whole point of Think is to align on _what_ before _how_. Use `EnterPlanMode` at the start of every Think sub-command, present the approach, and wait for approval before launching agents.
+**Scratchpad checkpoints:** On entry, after plan approval, after each agent completes, after synthesis, on dead end, after compaction.
 
-**Swarm execution by default.** Once the plan is approved, Think mode loads the `think-swarm` template from `.claude/agents/team-registry.md`. This spawns 3-5 `researcher` agents from the roster (`.claude/agents/researcher.md`) with sub-command-specific roles. Each agent produces an independent artifact with zero file conflicts. The lead runs cross-examination via `SendMessage`. Coordination protocol in `.claude/agents/README.md`.
-
-**Scratchpad checkpoints.** Update `sessions/scratchpad.md` at these moments:
-
-- **On entry:** Write current task, mode (`Think > {sub-command}`), and input to `Current Task` and `Mode & Sub-command`
-- **After plan approval:** Write the approved plan summary to `Working State`
-- **After each agent completes:** Log agent name + key finding to `Agents Launched`
-- **After synthesis:** Write key decisions to `Key Decisions Made This Session`
-- **On dead end:** Append to `Dead Ends (don't retry)`
-- **After compaction (if you notice lost context):** Re-read `sessions/scratchpad.md` to restore state
-
-Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of thinking? discover, research, decide, or spec?"
+Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?"
 
 ---
 
 ## discover <seed idea>
 
-**Purpose:** Take a raw seed idea and produce a validated product concept with clear scope.
+**Purpose:** Take a raw seed idea and produce a validated product concept.
 
-**Input:** 1-2 sentence seed idea (e.g., "copy trading that shows leader's reasoning, not just their trades")
+**Input:** 1-2 sentence seed idea
 
-**Team Mode (always for discover — adversarial validation is the core value):**
+**Process:** Spawn 3 parallel agents for adversarial validation:
 
-```
-TeamCreate(team_name="think-discover-{slug}")
-```
+1. **pm-researcher (sonnet):** JTBD analysis, positioning, customer interview questions. WHO has this pain, HOW BADLY, WHAT they do today.
+2. **first-principles (opus):** Decompose seed to atomic assumptions. Challenge each. Generate 5 alternative framings.
+3. **market-analyst (sonnet):** Search for market size, adoption rates, failed attempts, adjacent solutions in non-crypto markets.
 
-Launch 3 named teammates:
+**Cross-examination:** After all 3 report, challenge findings across agents — "Agent 1 found JTBD X. Agent 2, is that the real job or a surface symptom?"
 
-1. **`pm-researcher` (sonnet):** Use the Product-Manager-Skills plugin. Run the /discover workflow — JTBD analysis, positioning, customer interview questions. Focus on: WHO has this pain, HOW BADLY, and WHAT they do today.
+**Synthesis:** Validated user pain + first-principles framing + market evidence. Resolve contradictions — note disagreements and your recommendation.
 
-2. **`first-principles` (opus):** Use anthropic-skills:first-principles-decomposition + anthropic-skills:brainstorming-ideation. Decompose the seed to atomic assumptions. Challenge each. Generate 5 alternative framings of the same problem.
+**Exit Gate:** "What specific pain from `specs/Arx_2-1` does this solve? If new, add it."
 
-3. **`market-analyst` (sonnet):** If MAS Sequential Thinking MCP is available, use it. Otherwise, simulate six perspectives with research:
-   - Factual: What data exists? Search for market size, adoption rates.
-   - Critical: Why would this fail? Search for failed attempts.
-   - Creative: What adjacent solutions exist in non-crypto markets?
-   - Optimistic: What's the maximum upside if this works perfectly?
-
-**Adversarial cross-examination:** After all 3 teammates report, the lead routes challenges:
-
-- `SendMessage(to="first-principles", message="pm-researcher found JTBD X. Challenge: is that the real job or a surface symptom?")`
-- `SendMessage(to="market-analyst", message="first-principles decomposed to assumption Y. What evidence supports or refutes?")`
-
-**Synthesis:** After cross-examination, synthesize:
-
-- The validated user pain (from pm-researcher, pressure-tested by first-principles)
-- The first-principles framing (from first-principles, grounded by market-analyst)
-- The market evidence (from market-analyst, validated against JTBD)
-
-**Shutdown:** `SendMessage(to="*", message={type: "shutdown_request"})` then `TeamDelete`
-
-- Resolve any contradictions — if agents disagree, note the disagreement and your recommendation
-
-**Exit Gate:** Before moving on, answer: "What specific pain from `specs/Arx_2-1_Problem_Space_and_Audience.md` does this solve? If it's a new pain, add it to that spec."
-
-**Output:** Write product brief to `outputs/think/discover/{seed_slug}.md`. Then suggest: "Promote to `specs/Arx_3-X_{Slug}.md`?" with recommended artifact ID and altitude. Link to upstream pain in specs/Arx_2-1.
+**Output:** `outputs/think/discover/{seed_slug}.md`. Suggest promotion to `specs/Arx_3-X`.
 
 ---
 
 ## research <question>
 
-> **Includes UX research** (absorbed from the former `/design research`). All research — market, competitor, user, AND UX — lives here under `/think research`.
+> **Includes UX research** (absorbed from former `/design research`). All research — market, competitor, user, AND UX — lives here.
 
-**Purpose:** Deep market, competitor, user, or UX research grounded in evidence.
+**Purpose:** Deep research grounded in evidence.
 
-**Input:** Research question (e.g., "what do retail crypto traders actually want from copy trading?")
+**Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers. Frame recommendations as "build on top of X" not "replace with Y". (Instinct: audit-existing-tools)
 
-**Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers, and existing infrastructure. Frame recommendations as "build on top of X" not "replace with Y" — unless replacement is clearly justified. (Instinct: audit-existing-tools, confidence 0.7)
+**Process:** Spawn 3 parallel agents:
 
-**Team decision:**
+1. **deep-researcher (sonnet):** Academic papers, industry reports, expert analyses. Data and numbers.
+2. **competitor-crawler (sonnet):** Crawl 3-5 competitor products. Features, pricing, UX patterns, reviews.
+3. **cross-referencer (haiku):** Cross-reference with `specs/Arx_2-3_Competitive_Landscape.md`.
 
-- If question involves disputed claims or multi-source validation: Create team `think-research-{slug}` with 3 teammates
-- Otherwise: Use ad-hoc subagents (cheaper, no cross-examination needed)
+If disputed claims: route fact-checks between agents after initial reports.
 
-**Swarm Pattern — Launch 3 agents (as named teammates if team mode, ad-hoc otherwise):**
+**Synthesis:** Key findings (numbered, sourced) → data points → competitive table → Arx implications → open questions.
 
-1. **`deep-researcher` (sonnet):** Use Exa/Firecrawl deep research tools. Search for: academic papers, industry reports, expert analyses. Focus on data and numbers.
-
-2. **`competitor-crawler` (sonnet):** Use Firecrawl to crawl 3-5 competitor products related to the question. Extract features, pricing, UX patterns, user reviews.
-
-3. **`cross-referencer` (haiku):** Use everything-claude-code skills for structured research. Cross-reference with `specs/Arx_2-3_Competitive_Landscape.md` for existing analysis.
-
-**If team mode:** After reports, lead routes fact-checks via `SendMessage` — e.g., "deep-researcher, competitor-crawler found claim X. Verify with primary sources."
-
-**Synthesis:** Produce a research brief with:
-
-- Key findings (numbered, with sources)
-- Data points (quantified where possible)
-- Competitive comparison table
-- Implications for Arx (specific, actionable)
-- Open questions for further research
-
-**Output:** Write research brief to `outputs/think/research/{question_slug}.md`. Then suggest: "Promote to `specs/Arx_2-X_{Slug}.md`?" or "Update existing `specs/Arx_2-X` with these findings?"
+**Output:** `outputs/think/research/{question_slug}.md`. Suggest promotion or spec update.
 
 ---
 
 ## decide <question>
 
-**Purpose:** Make a product, design, or architectural decision with multi-perspective analysis.
+**Purpose:** Multi-perspective decision analysis.
 
-**Input:** Decision question (e.g., "should copy trading show full P&L transparency or only summary stats?")
+**Input:** Decision question (e.g., "should copy trading show full P&L transparency?")
 
-**Team Mode (always for decide — deliberation requires interaction):**
+**Process:** Spawn 6 parallel agents (Six Thinking Hats):
 
-```
-TeamCreate(team_name="think-decide-{slug}")
-```
+1. **white-hat (sonnet):** Data and benchmarks. Prior decisions in specs.
+2. **red-hat (sonnet):** Intuition. What would users feel?
+3. **black-hat (sonnet):** Risks. Research failures of similar decisions.
+4. **yellow-hat (sonnet):** Best case. Opportunities created.
+5. **green-hat (sonnet):** Alternatives no one considered.
+6. **blue-hat (opus):** After all 5 report, cross-examine disagreements. Synthesize recommendation with confidence (HIGH/MEDIUM/LOW).
 
-Launch 6 named teammates (all on `sonnet` except blue-hat on `opus`):
-
-1. **`white-hat`:** What data do we have? Search for relevant benchmarks. Check existing specs for prior decisions.
-2. **`red-hat`:** What does intuition say? What would users feel? What's the gut reaction?
-3. **`black-hat`:** What could go wrong? What are the risks? Research failures of similar decisions.
-4. **`yellow-hat`:** What's the best case? What opportunities does this create?
-5. **`green-hat`:** Are there alternatives no one has considered? What would a completely different approach look like?
-6. **`blue-hat` (opus):** Wait for all 5 hats to report via TaskUpdate. Then cross-examine disagreements via `SendMessage` — e.g., "black-hat, yellow-hat claims X upside. What's the specific failure mode?" Synthesize a recommendation with confidence level (HIGH/MEDIUM/LOW).
-
-**Shutdown:** After blue-hat synthesis, shut down all teammates and `TeamDelete`.
-
-**Output:** Write decision analysis to `outputs/think/decide/{question_slug}.md`. Then suggest: "Append this decision to `specs/Arx_9-1_Decision_Log.md`?" Include in the output:
-
-- Decision question
-- Context (what prompted this)
-- Options considered
-- Six Hats analysis (1 line per hat)
-- Decision made + rationale
-- Confidence level
-- Review date (when to revisit)
+**Output:** `outputs/think/decide/{question_slug}.md`. Include: question, context, options, six-hat analysis, decision + rationale, confidence, review date. Suggest appending to Decision Log.
 
 ---
 
 ## spec <topic>
 
-> **Strategy specs only.** Build cards are authored via `/design card`, not `/think spec`. Use this for strategy-layer specs: Arx_2-1 (personas), Arx_3-2 (PRD), Arx_3-3 (journeys), Arx_3-4 (epic map), Arx_4-2 (design system).
+> **Strategy specs only.** Build cards are authored via `/design card`.
 
-**Purpose:** Write or update a strategy spec file based on upstream thinking (discover, research, decide outputs).
+**Purpose:** Write or update a strategy spec from upstream thinking.
 
-**Input:** Topic or spec file to update (e.g., "update personas in Arx_2-1" or "write the PRD section on revenue model")
+**Input:** Topic or spec file (e.g., "update personas in Arx_2-1")
 
 **Process:**
 
-1. Read `specs/Arx_0-0_Artifact_Architecture.md` for naming conventions and altitude rules
-2. Read `specs/INDEX.md` for existing spec inventory
-3. If updating: read the existing spec file first
-4. If creating: determine the correct artifact ID and altitude
-5. Write the spec following the altitude convention — higher altitude = more strategic, lower = more detailed
-6. Use Context Mode if available to compress research into the writing session
+1. Read `specs/Arx_0-0_Artifact_Architecture.md` for naming/altitude rules
+2. Read `specs/INDEX.md` for inventory
+3. If updating: read existing spec. If creating: determine artifact ID + altitude.
+4. Write following altitude convention. Cascade rule: changes flow downward only.
+5. Single source of truth: link, don't duplicate.
 
-**Rules:**
-
-- Follow the naming convention: `Arx_{Group}-{Artifact}_{Slug}.md`
-- No version numbers in filenames — use git history
-- Cascade rule: changes flow downward only. If this spec change implies upstream changes, note them in `specs/Arx_9-5_Hypothesis_Question_Log.md`
-- Single source of truth: link to other specs, don't duplicate content
-
-**Output:** New or updated spec file in `specs/`. Update `specs/INDEX.md` if a new spec was created.
+**Output:** New or updated spec in `specs/`. Update `specs/INDEX.md` if new.
 
 ---
 
 ## intake <url | scan <topic> | sources <action>>
 
-**Purpose:** Absorb content from URLs, scan topics for material movements, or manage the source watchlist. Invokes the `intake` skill.
+**Purpose:** Absorb content, scan topics, manage the source watchlist. Invokes the `intake` skill.
 
-**Config:** `~/.claude/config/intake-sources.md` — the global gOS watchlist of YouTube channels, X accounts, blogs, podcasts. Universal across all projects.
+**Config:** `~/.claude/config/intake-sources.md` — global watchlist.
 
-Parse the second word to route:
+- **`intake <url>`** — Absorb: extract transcript/content, clean filler, restructure into MECE knowledge doc
+- **`intake scan <topic> [--period <timeframe>]`** — Multi-source search for material movements (default: 7 days)
+- **`intake sources list|add|remove|check`** — Manage watchlist
 
-- **`intake <url>`** — Absorb mode. Extract transcript/content from YouTube, podcast, article, X thread. Clean filler words, keep timestamps, restructure into MECE knowledge document with first-principles explanations. Output: `outputs/think/research/{slug}-intake.md`
-
-- **`intake scan <topic> [--period <timeframe>]`** — Scan mode. Multi-source search for material movements. 2-3 parallel agents: news, technical, sentiment. Default period: 7 days. Output: `outputs/think/research/{topic}-scan-{date}.md`
-
-- **`intake sources list`** — Show current watchlist from `config/intake-sources.md`
-- **`intake sources add <url> [--name <name>]`** — Add a source to the watchlist
-- **`intake sources remove <name or url>`** — Remove a source
-- **`intake sources check [--period <timeframe>]`** — Check all sources for new content. Recommend top 3 worth absorbing.
-
-When invoked, load the full `intake` skill via `Skill("intake")` and follow its instructions.
+When invoked, load the full `intake` skill via `Skill("intake")`.

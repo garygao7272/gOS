@@ -1,6 +1,6 @@
 ---
 effort: medium
-description: "Ship — deliver: commit, pr, deploy, docs, release — or full ship sequence"
+description: "Ship — deliver: commit, pr, deploy — or full ship sequence"
 ---
 
 # Ship — Delivery Pipeline
@@ -256,6 +256,3 @@ After ship completes, log the outcome signal to `sessions/evolve_signals.md`:
 - Command: `/ship`, sub-command used
 - Signal: based on Gary's response (accept/rework/reject/love)
 - Context: what was shipped, any issues encountered
-
-## Safety (when hooks unavailable)
-Before any destructive command (rm -rf, git push --force, git reset --hard, DROP TABLE, kubectl delete, docker system prune), ALWAYS ask for explicit confirmation. Never auto-approve destructive operations.

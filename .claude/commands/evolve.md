@@ -1,6 +1,6 @@
 ---
 effort: high
-description: "Evolve — self-improve: audit health, upgrade commands, learn lessons, reflect on principles"
+description: "Evolve — self-improve: audit health, upgrade commands, learn lessons"
 ---
 
 # Evolve — Self-Improvement Engine
@@ -283,7 +283,7 @@ Instead of one-shot rewriting, fork the command and compare versions empirically
 **Process:**
 
 1. **Read everything:**
-   - `.claude/gOS.md` (or `GOD.md`) — the soul and principles
+   - `~/.claude/CLAUDE.md — the identity, framework, and principles
    - All memory files — patterns across sessions
    - `sessions/evolve_signals.md` — signal history
    - Recent git history — what got built
@@ -291,7 +291,7 @@ Instead of one-shot rewriting, fork the command and compare versions empirically
 
 2. **Grade against each principle:**
 
-   For every principle in gOS.md, assign a letter grade with evidence:
+   For every principle in `~/.claude/CLAUDE.md`, assign a letter grade with evidence:
 
    ```
    # gOS Reflection — {date}

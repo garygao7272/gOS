@@ -15,4 +15,4 @@ action: |
 applied_to:
   - commands/build.md
   - commands/gos.md (context monitoring)
-status: documented
+status: applied

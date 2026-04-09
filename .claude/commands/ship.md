@@ -1,6 +1,6 @@
 ---
 effort: medium
-description: "Ship — deliver: commit, pr, deploy, docs, release — or full ship sequence"
+description: "Ship — deliver: commit, pr, deploy — or full ship sequence"
 ---
 
 # Ship — Delivery Pipeline
