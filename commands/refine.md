@@ -7,6 +7,8 @@ description: "Refine — prebuild convergence loop: think, design, simulate, rev
 
 **Purpose:** Iteratively tighten specs, designs, and simulations before building. Each cycle runs think → design → simulate → review, with review feeding gaps back into the next think pass. Stops at convergence or max iterations.
 
+**Plan mode enforced.** Before starting, state: topic, max iterations, which specs are in scope, starting gap count. Wait for confirmation.
+
 **Usage:** `/refine <topic> [max-iterations]`
 
 - `<topic>` — feature area or scope (e.g., "copy trading", "onboarding flow", "full MVP")
@@ -205,70 +207,13 @@ Each cycle uses agents efficiently — not a full team, but targeted spawns:
 
 ## Scratchpad Updates
 
-Update `sessions/scratchpad.md` at each phase transition:
-
-```markdown
-## Working State
-
-Refine > {topic}
-Cycle: {N} / {max}
-Phase: {think|design|simulate|review}
-Depth: {surface|edge-cases|adversarial|polish}
-Gap list: {count} total ({critical}/{high}/{medium}/{low})
-Last phase output: {file path}
-```
+Update `sessions/scratchpad.md` at each phase transition with: cycle/max, current phase, depth level, gap counts by severity.
 
 ---
 
 ## Refine Log Format
 
-File: `outputs/think/refine/{topic}-refine-log.md`
-
-```markdown
----
-artifact_type: decision
-created_by: /refine
-topic: { topic }
-created_at: { ISO timestamp }
-status: in-progress
----
-
-# Refine Log: {Topic}
-
-## Cycle 1 — Surface
-
-### Think
-
-- Gaps addressed: [list]
-- Specs updated: [list]
-- New findings: [list]
-
-### Design
-
-- Gaps addressed: [list]
-- Design updates: [list]
-- New findings: [list]
-
-### Simulate
-
-- Scenarios run: [list]
-- Risk flags: [list]
-
-### Review
-
-- New gaps found: {count}
-  - 🔴 CRITICAL: [list]
-  - 🟠 HIGH: [list]
-  - 🟡 MEDIUM: [list]
-  - 🟢 LOW: [list]
-- Convergence: {not yet | converged}
-
----
-
-## Cycle 2 — Edge Cases
-
-...
-```
+File: `outputs/think/refine/{topic}-refine-log.md`. Per cycle: gaps addressed, specs updated, findings, convergence status. Severity: 🔴 CRITICAL / 🟠 HIGH / 🟡 MEDIUM / 🟢 LOW.
 
 ---
 

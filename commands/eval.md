@@ -6,6 +6,8 @@ description: "Eval — measure gOS command quality against rubrics with syntheti
 
 Eval runs gOS commands against synthetic test inputs, scores output against rubrics, and compares to baselines. This is how you know if gOS commands are getting better or worse over time.
 
+**Plan mode enforced.** Before running, state: which command, how many runs, which rubric, estimated cost. Wait for confirmation.
+
 Parse the first word of `$ARGUMENTS` to route:
 
 | Argument | Action |

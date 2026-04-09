@@ -30,12 +30,29 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
 
 **Process:**
 
-1. **Gather evidence** (parallel reads):
-   - Read `sessions/evolve_signals.md` — all signals since last audit
-   - Read all `memory/feedback_*.md` — what did Gary correct?
-   - Read `memory/user_gary_soul.md` — are preferences current?
-   - `git log --oneline -30` — what was built recently?
-   - Read `sessions/scratchpad.md` — dead ends from current session
+1. **Gather evidence — launch 3 agents in a single message:**
+
+   ```
+   Agent(
+     prompt = "Read sessions/evolve_signals.md. Tally signals per command since
+               the last '--- AUDITED ---' marker. Compute health score per command:
+               (accepts + 2*loves) / total * 100. Return: command health table.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Read all memory/feedback_*.md files. Summarize: what did Gary correct?
+               What patterns repeat? Group by command. Return: correction patterns.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Run: git log --oneline -30. Summarize: what was built recently?
+               Which commands were exercised? Any shipping patterns?
+               Return: activity summary.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+   ```
 
 2. **Score each gOS command:**
 
@@ -176,12 +193,23 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
 
 **Process:**
 
-1. **Read everything:**
-   - `~/.claude/CLAUDE.md — the identity, framework, and principles
-   - All memory files — patterns across sessions
-   - `sessions/evolve_signals.md` — signal history
-   - Recent git history — what got built
-   - `CLAUDE.md` — project state
+1. **Read everything — launch 2 agents in a single message:**
+
+   ```
+   Agent(
+     prompt = "Read ~/.claude/CLAUDE.md (identity + principles) and all memory/feedback_*.md.
+               For each principle, find evidence of compliance or violation in the feedback files.
+               Return: principle → evidence mapping.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Read sessions/evolve_signals.md and git log --oneline -30.
+               Cross-reference: which commands were most used? Most reworked?
+               Return: command activity + health summary.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+   ```
 
 2. **Grade against each principle:**
 
