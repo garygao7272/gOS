@@ -27,6 +27,12 @@ Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind o
 
 > **Why DESIGN.md first:** 380 lines synthesizing 2800+320 lines. Go to sources only for edge cases.
 
+**Handoff (mandatory on approval):** When Gary approves the /design output, write `sessions/handoffs/design.json`:
+```json
+{"phase":"design","sub":"<sub-command>","output":"<path-to-artifact>","summary":"<one-line>","visual_ref":"<screenshot-or-url>","approved":true,"approved_at":"<ISO-8601>"}
+```
+This unlocks `/build` via the phase gate. See `specs/handoff-schemas.md`.
+
 **Anti-slop rules (mandatory):**
 - **Blacklist visuals:** Purple gradients, 3-column grids, generic hero sections, glassmorphism, floating shapes
 - **Blacklist fonts:** Roboto, Poppins (Geist primary; Inter system fallback only)

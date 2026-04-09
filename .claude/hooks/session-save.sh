@@ -18,7 +18,7 @@ if [ ! -f "$SCRATCHPAD" ]; then
 fi
 
 # Check if scratchpad has content beyond the template
-CONTENT_LINES=$(grep -v '^#\|^>\|^-\|^$\|^<!--' "$SCRATCHPAD" 2>/dev/null | wc -l | tr -d ' ')
+CONTENT_LINES=$(grep -cv '^#\|^>\|^-\|^$\|^<!--' "$SCRATCHPAD" 2>/dev/null || echo 0)
 if [ "$CONTENT_LINES" -lt 3 ]; then
     exit 0
 fi

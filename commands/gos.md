@@ -74,7 +74,17 @@ Then handle Gary's response as conductor input.
 
 ## status
 
-Gather in parallel: git state (branch, uncommitted, last commit), active sessions, scheduled tasks, evolve signal counts since last audit. Show as compact dashboard.
+Gather in parallel: git state (branch, uncommitted, last commit), active sessions, scheduled tasks, evolve signal counts since last audit, **pipeline phase coverage**. Show as compact dashboard.
+
+**Pipeline Coverage (from handoffs):**
+Read `sessions/handoffs/*.json` to show phase chain status:
+```
+Pipeline: /think [done] → /design [pending] → /build [pending]
+  think: research — "summary from handoff" (date)
+```
+If no handoffs exist, show `Pipeline: (no active goal)`.
+
+This tells Gary at a glance: where are we in the think→design→build chain?
 
 ---
 
@@ -229,6 +239,8 @@ When arguments don't match a sub-command, treat as a **seed goal** → 5-phase c
 ### Phase 1 — Context Loading
 
 Parse goal for context hints (prototype → `apps/`, specs → `specs/INDEX.md`, design → design system, trading → Hyperliquid MCP). Ask: "I'll load [suggested]. Anything else?"
+
+**Clear prior handoffs** on new goal: `rm -f sessions/handoffs/*.json`. Each goal starts the think→design→build chain fresh.
 
 ### Phase 2 — Intent Clarification
 

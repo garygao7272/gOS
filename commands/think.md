@@ -25,6 +25,12 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 **Scratchpad checkpoints:** On entry, after plan approval, after each agent completes, after synthesis, on dead end, after compaction.
 
+**Handoff (mandatory on approval):** When Gary approves the /think output, write `sessions/handoffs/think.json`:
+```json
+{"phase":"think","sub":"<sub-command>","output":"<path-to-artifact>","summary":"<one-line>","approved":true,"approved_at":"<ISO-8601>"}
+```
+This unlocks `/design` via the phase gate. See `specs/handoff-schemas.md`.
+
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?"
 
 ---

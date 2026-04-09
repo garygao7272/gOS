@@ -19,6 +19,12 @@ description: "Build: feature, prototype, fix, refactor, model — outputs to app
 - **On test failure:** Write to `Dead Ends (don't retry)` if abandoned
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
+**Handoff (on completion):** After build completes, write `sessions/handoffs/build.json`:
+```json
+{"phase":"build","sub":"<sub-command>","output":["<file1>","<file2>"],"summary":"<one-line>","tests":"pass|fail|none","approved_at":"<ISO-8601>"}
+```
+See `specs/handoff-schemas.md`.
+
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What are we building? feature, fix, or refactor?"
 
 > **Folded sub-commands:** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature`. `tdd` → always-on within `feature`.

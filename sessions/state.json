@@ -1,19 +1,28 @@
 {
-  "current_command": null,
+  "current_command": "/build",
   "phase": "completed",
-  "step": 0,
-  "total_steps": 0,
-  "started_at": "2026-04-09T20:00:00",
-  "last_checkpoint": "2026-04-09T22:35:00",
+  "step": 3,
+  "total_steps": 3,
+  "started_at": "2026-04-10T00:00:00",
+  "last_checkpoint": "2026-04-10T00:30:00",
   "files_modified": [
-    "commands/gos.md", "commands/review.md", "commands/build.md", "commands/ship.md",
-    "commands/think.md", "commands/design.md", "commands/simulate.md",
-    ".claude/hooks/spec-compliance.sh", "toolkit/spec-rag-mcp/server.py",
-    "settings/settings.json", "specs/gOS_evolution_roadmap.md",
-    "evals/criteria/VISION.md", "evals/criteria/13-orchestration.md",
-    "evals/criteria/scorecard-2026-04-09-v4.md", "evals/criteria/README.md",
-    "CLAUDE.md", ".claude/gOS.md", "templates/global-CLAUDE.md",
-    "memory/L1_essential.md"
+    "tools/test-scaffold.sh",
+    "tests/hooks/spec-compliance.bats",
+    "tests/hooks/read-tracker.bats",
+    "tests/hooks/protect-files.bats",
+    "tests/hooks/plan-gate.bats",
+    "tests/hooks/session-save.bats",
+    "tests/hooks/phase-gate.bats",
+    ".claude/hooks/phase-gate.sh",
+    ".claude/hooks/session-save.sh",
+    "settings/settings.json",
+    "specs/handoff-schemas.md",
+    "commands/gos.md",
+    "commands/think.md",
+    "commands/design.md",
+    "commands/build.md",
+    "memory/L1_essential.md",
+    "sessions/evolve_signals.md"
   ],
-  "recovery_instructions": "Session complete. All P0 items done. Next: Sprint 1 (test scaffolder S1-1, hard phase gates S1-2, handoff schemas S1-3). Load specs/gOS_evolution_roadmap.md for the full 4-sprint plan. Scorecard at evals/criteria/scorecard-2026-04-09-v4.md (6.78 weighted, target 8.0). Gary's constraint: keep gOS lean, don't burn tokens."
+  "recovery_instructions": "Sprint 1 complete. 91/91 tests pass. Changes NOT yet committed or pushed. Next: commit+push, then rescore or start Sprint 2. Lean constraint persisted to memory."
 }

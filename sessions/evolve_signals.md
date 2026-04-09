@@ -136,3 +136,15 @@
 | 2026-04-09 | 22:30 | /build | skip | Gary approved S1 build but context too heavy — saved for fresh session |
 | 2026-04-09 | 22:00 | /ship commit | skip | Working tree already clean when /ship commit invoked |
 | 2026-04-09 | 22:35 | /gos aside | accept | Quick answer: commits not yet on GitHub, push approved |
+
+### 2026-04-10
+
+| Time  | Command | Sub-cmd | Signal | Context |
+| ----- | ------- | ------- | ------ | ------- |
+| 00:00 | /gos | resume | accept | Story-first briefing with ONE thing next — Gary said "let's start" immediately |
+| 00:05 | /build | sprint 1 | accept | Gary approved Sprint 1 start + lean constraint persistence in one message |
+| 00:10 | /build | S1-1 tests | accept | 5 new test files (46 tests), scaffolder tool, all 79/79 passing — no rework |
+| 00:15 | /build | S1-1 | accept | Found and fixed real bug in session-save.sh (grep pipefail) — bonus find |
+| 00:20 | /build | S1-2 phase-gate | accept | TDD: wrote tests first (RED), then hook, 12/12 pass, installed in settings |
+| 00:25 | /build | S1-3 handoffs | accept | Schema spec + 3 command updates + status enhancement — no rework |
+| 00:25 | hook | spec-compliance | accept | spec-compliance.sh correctly blocked edit to session-save.sh before test was read — working as designed |

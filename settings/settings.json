@@ -78,6 +78,12 @@
             "command": "$HOME/.claude/hooks/spec-compliance.sh",
             "timeout": 5,
             "statusMessage": "Spec compliance"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/phase-gate.sh",
+            "timeout": 5,
+            "statusMessage": "Phase gate"
           }
         ]
       },
