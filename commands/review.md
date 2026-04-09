@@ -93,6 +93,36 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 ---
 
+## spec
+
+**Purpose:** Spec quality gate. Scores a spec for completeness before promoting to `specs/`. Run this before `/think spec` promotes output or before any major spec edit.
+
+**Scoring dimensions (each 0-2, total /10):**
+
+| # | Dimension | 0 | 1 | 2 |
+|---|-----------|---|---|---|
+| 1 | **Acceptance Criteria** | None | Vague or incomplete | MECE, testable, each has pass/fail condition |
+| 2 | **Edge Cases** | None mentioned | Some listed | Exhaustive: empty, overflow, error, concurrent, stale |
+| 3 | **Data Model** | No data defined | Fields listed but no types/constraints | Full schema: types, constraints, defaults, nullability |
+| 4 | **Cross-References** | No links to other specs | Some references | All dependencies linked, no orphan references |
+| 5 | **Freshness** | References stale/missing files | Minor staleness | All refs valid, recently updated |
+
+**Process:**
+
+1. **Read the spec** — understand its purpose and scope
+2. **Run freshness check** — `bash tools/spec-freshness.sh` on the spec's directory
+3. **Score each dimension** 0-2 with evidence
+4. **Verdict:**
+   - 8-10: **PROMOTE** — ready for `specs/`
+   - 5-7: **REFINE** — list what's missing, suggest fixes
+   - 0-4: **REWORK** — too incomplete, list required additions
+
+**Convergence loop:** If verdict is REFINE, present gaps → fix → rescore. Max 2 cycles.
+
+**Output:** Score table (dimension, score, evidence) → Total /10 → Verdict → Gaps to fix (if any)
+
+---
+
 ## gate
 
 **Purpose:** Pre-ship quality gate. Binary PASS/FAIL. Any failure blocks `/ship`.

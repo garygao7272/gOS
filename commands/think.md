@@ -200,6 +200,8 @@ Agent(
 4. Write following altitude convention. Cascade rule: changes flow downward only.
 5. Single source of truth: link, don't duplicate.
 
+**Quality gate:** Before promoting to `specs/`, run `/review spec` scoring (5 dimensions, /10). Only promote if score >= 8 (PROMOTE verdict). If 5-7 (REFINE), fix gaps first.
+
 **Output:** New or updated spec in `specs/`. Update `specs/INDEX.md` if new.
 
 ---

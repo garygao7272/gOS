@@ -76,15 +76,17 @@ Then handle Gary's response as conductor input.
 
 Gather in parallel: git state (branch, uncommitted, last commit), active sessions, scheduled tasks, evolve signal counts since last audit, **pipeline phase coverage**. Show as compact dashboard.
 
-**Pipeline Coverage (from handoffs):**
-Read `sessions/handoffs/*.json` to show phase chain status:
-```
-Pipeline: /think [done] → /design [pending] → /build [pending]
-  think: research — "summary from handoff" (date)
-```
-If no handoffs exist, show `Pipeline: (no active goal)`.
+**Coverage Matrix (mandatory):**
+Run `bash tools/coverage-matrix.sh` and include output in the dashboard. Shows:
+- Pipeline phase: think→design→build chain status (from `sessions/handoffs/*.json`)
+- Command coverage: which commands have rubrics
+- Hook coverage: which hooks have tests
+- Gaps: explicitly lists what's missing
 
-This tells Gary at a glance: where are we in the think→design→build chain?
+**Spec Freshness (optional, on request or if specs changed):**
+Run `bash tools/spec-freshness.sh` — reports broken cross-refs, orphaned specs, stale files.
+
+This tells Gary at a glance: where are we, and what's unspecced/untested?
 
 ---
 

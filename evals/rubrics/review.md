@@ -26,3 +26,23 @@ The test input MUST contain:
 ## Overall Score
 
 Weighted average: `(detection * 30 + false_positives * 20 + fix_quality * 25 + prioritization * 25) / 100`
+
+---
+
+# Eval Rubric: /review spec
+
+## Dimensions
+
+| Dimension | Weight | 1-3 (Poor) | 4-6 (Adequate) | 7-8 (Good) | 9-10 (Exceptional) |
+|-----------|--------|-----------|----------------|-----------|-------------------|
+| Dimension coverage (30%) | 30 | Scored <3 of 5 dimensions | Scored 3-4 dimensions | All 5 dimensions scored with evidence | All 5 + suggested improvements per gap |
+| Freshness check (20%) | 20 | Didn't run freshness tool | Ran but ignored warnings | Ran and reported all findings | Ran, reported, and fixed broken refs |
+| Verdict accuracy (25%) | 25 | Verdict doesn't match scores | Verdict roughly matches | Verdict matches, clear threshold reasoning | Verdict + specific fix list for each gap |
+| Convergence (25%) | 25 | No fix-rescore cycle | Offered fixes but didn't rescore | Fixed and rescored once | Fixed, rescored, reached PROMOTE |
+
+## Scoring Rules
+
+- Dimension coverage: all 5 scored = 8, with actionable suggestions = 10
+- Freshness: tool output included in report = 8, fixes applied = 10
+- Verdict: correct threshold (8-10=PROMOTE, 5-7=REFINE, 0-4=REWORK) = 8
+- Convergence: at least one fix-rescore loop completed = 8

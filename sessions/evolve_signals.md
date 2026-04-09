@@ -148,3 +148,9 @@
 | 00:20 | /build | S1-2 phase-gate | accept | TDD: wrote tests first (RED), then hook, 12/12 pass, installed in settings |
 | 00:25 | /build | S1-3 handoffs | accept | Schema spec + 3 command updates + status enhancement — no rework |
 | 00:25 | hook | spec-compliance | accept | spec-compliance.sh correctly blocked edit to session-save.sh before test was read — working as designed |
+| 00:30 | /ship | commit+push | accept | Sprint 1 committed (216682a) and pushed to GitHub — no issues |
+| 00:35 | /gos | recommend | accept | Gary asked "do you recommend S2/S3 for spec capability?" — gOS recommended focused Spec Sprint instead of generic S2/S3, cherry-picking spec-relevant items. Awaiting go/no-go. |
+| 00:40 | /build | spec sprint | accept | Gary said "go, starting building" — all 3 spec sprint items delivered without rework |
+| 00:45 | /build | coverage-matrix | accept | tools/coverage-matrix.sh — pipeline + rubric + test coverage. No rework. |
+| 00:50 | /build | spec-freshness | accept | tools/spec-freshness.sh — found 6 orphaned Arx specs. No rework. |
+| 00:55 | /build | review spec | accept | /review spec sub-command + quality gate wired into /think spec promotion. No rework. |
