@@ -11,7 +11,7 @@ valid_to: open
 
 ## Current Focus
 
-P1-P5 + criteria session COMPLETE (2026-04-09): 12-dimension scoring framework built (evals/criteria/ — 12 dimension files + VISION.md + 2 scorecards). Honest self-score: 6.6/10 weighted. Weakest: Testing 3/10, Craft 4/10, Learning 5/10. 14 commands synced across 4 locations. 9 hook scripts installed globally. 11 eval rubrics. install.sh merges hooks.
+Major gOS overhaul COMPLETE (2026-04-09 evening): 14→8 commands (killed finance, claw, dispatch, eval, aside, refine — zero capability lost). 13-dimension scoring (added Orchestration 1.5x). Score: 6.78 weighted. Weakest: Orchestration 4.5, Testing 5, Craft 5.5, Learning 6. P0 fixes landed (spec-compliance blocks 8/8, spec-RAG tiered, Stop hook auto-persist). 7 research briefs from multi-agent swarms. Evolution roadmap at specs/gOS_evolution_roadmap.md. Next: Sprint 1 — test scaffolder + hard phase gates + handoff schemas (→7.8).
 
 ## Active Feedback Rules
 
@@ -28,13 +28,13 @@ P1-P5 + criteria session COMPLETE (2026-04-09): 12-dimension scoring framework b
 - VISION.md: north star = "superior alien AI co-creator" with 5 properties (2026-04-09)
 - Honest score 6.6 (was inflated 8.0 without craft/testing) (2026-04-09)
 
-## Known Gaps (next session priorities)
+## Next Session: Sprint 1 (all dimensions to 8+)
 
-1. **Fix spec-compliance.sh** — naming bug, 30-min fix, unlocks hard enforcement
-2. **Fix spec-RAG** — remove 600-char truncation, add grep tool (Karpathy-informed tiered access)
-3. **Formalize memory auto-write** — Stop hook auto-persists L1 + signals every session
-4. **Hard phase gates** — `/think` → `/design` → `/build` requires approval (Kiro pattern)
-5. **Test scaffolder** — auto-generate RED tests from spec acceptance criteria (Testing 3→7)
+1. **S1-1: Test scaffolder** — reads spec acceptance criteria, generates test stubs. Testing 5→8, Craft 5.5→7.
+2. **S1-2: Hard phase gates** — PreToolUse hook blocks /design without /think output, /build without /design output. Planning 8→9, Craft→8, Orch→6.
+3. **S1-3: Handoff schemas + coverage matrix** — typed verb output formats + `/gos status` shows spec/design/code/test coverage. Action→8, Orch→7.
+
+Load `specs/gOS_evolution_roadmap.md` for full plan. Scorecard at `evals/criteria/scorecard-2026-04-09-v4.md`.
 
 ## Strategic Decisions (2026-04-09)
 
@@ -42,4 +42,5 @@ P1-P5 + criteria session COMPLETE (2026-04-09): 12-dimension scoring framework b
 - **Specs ARE the knowledge base** (Karpathy): tiered access (INDEX→full file→grep→vector last resort)
 - **gOS local + Managed Agents cloud:** interactive work stays local, claws go cloud
 - **Don't replace L0-L3 with flat memory stores:** tiered loading is context-efficient
-- **Roadmap spec:** `specs/gOS_evolution_roadmap.md` — 23 items across 5 priority tiers
+- **13 dimensions:** added Orchestration (1.5x) measuring multi-agent spec-first coordination
+- **Core objective codified in VISION.md:** multi-agent spec-first across 3 surfaces
