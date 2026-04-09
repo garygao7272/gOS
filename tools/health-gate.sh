@@ -61,7 +61,28 @@ if [ -x "$MATRIX" ]; then
   bash "$MATRIX"
 fi
 
-# --- 5. New untracked files (warn if >5) ---
+# --- 5. Global sync check (commands + hooks vs ~/.claude/) ---
+echo ""
+SYNC_DRIFT=0
+for f in "$PROJECT_DIR"/commands/*.md; do
+  name=$(basename "$f")
+  [ -f "$HOME/.claude/commands/$name" ] || { SYNC_DRIFT=$((SYNC_DRIFT + 1)); continue; }
+  diff -q "$f" "$HOME/.claude/commands/$name" >/dev/null 2>&1 || SYNC_DRIFT=$((SYNC_DRIFT + 1))
+done
+for f in "$PROJECT_DIR"/.claude/hooks/*.sh; do
+  name=$(basename "$f")
+  [ -f "$HOME/.claude/hooks/$name" ] || { SYNC_DRIFT=$((SYNC_DRIFT + 1)); continue; }
+  diff -q "$f" "$HOME/.claude/hooks/$name" >/dev/null 2>&1 || SYNC_DRIFT=$((SYNC_DRIFT + 1))
+done
+if [ "$SYNC_DRIFT" -gt 0 ]; then
+  echo "Global sync: WARN — $SYNC_DRIFT files differ from ~/.claude/"
+  echo "  Fix: cp commands/*.md ~/.claude/commands/ && cp .claude/hooks/*.sh ~/.claude/hooks/"
+  WARNINGS=$((WARNINGS + 1))
+else
+  echo "Global sync: OK — all commands + hooks match ~/.claude/"
+fi
+
+# --- 6. New untracked files (warn if >5) ---
 echo ""
 UNTRACKED=$(cd "$PROJECT_DIR" && git status --porcelain 2>/dev/null | grep '^?' | wc -l | tr -d ' ')
 if [ "$UNTRACKED" -gt 5 ]; then
