@@ -13,3 +13,4 @@ sessions/scratchpad.md
 __pycache__/
 *.pyc
 .claude/middleware/__pycache__/
+Archive/
