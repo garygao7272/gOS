@@ -35,11 +35,38 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Input:** 1-2 sentence seed idea
 
-**Process:** Spawn 3 parallel agents for adversarial validation:
+**Process:** Spawn 3 parallel agents for adversarial validation. **All 3 launch in a single message:**
 
-1. **pm-researcher (sonnet):** JTBD analysis, positioning, customer interview questions. WHO has this pain, HOW BADLY, WHAT they do today.
-2. **first-principles (opus):** Decompose seed to atomic assumptions. Challenge each. Generate 5 alternative framings.
-3. **market-analyst (sonnet):** Search for market size, adoption rates, failed attempts, adjacent solutions in non-crypto markets.
+```
+Agent(
+  prompt = "You are pm-researcher. Analyze: '{seed}'.
+            WHO has this pain, HOW BADLY, WHAT they do today.
+            Output: JTBD analysis, positioning, customer interview questions.
+            Read specs/Arx_2-1* for existing persona context.",
+  subagent_type = "general-purpose",
+  model = "sonnet",
+  run_in_background = true
+)
+
+Agent(
+  prompt = "You are first-principles analyst. Decompose '{seed}' to atomic assumptions.
+            Challenge each assumption. Generate 5 alternative framings.
+            Read specs/ for existing Arx context.",
+  subagent_type = "general-purpose",
+  model = "opus",
+  run_in_background = true
+)
+
+Agent(
+  prompt = "You are market-analyst. Research '{seed}'.
+            Search for: market size, adoption rates, failed attempts,
+            adjacent solutions in non-crypto markets.
+            Use WebSearch for current data. Every claim needs a source.",
+  subagent_type = "general-purpose",
+  model = "sonnet",
+  run_in_background = true
+)
+```
 
 **Cross-examination:** After all 3 report, challenge findings across agents — "Agent 1 found JTBD X. Agent 2, is that the real job or a surface symptom?"
 
@@ -59,11 +86,37 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers. Frame recommendations as "build on top of X" not "replace with Y". (Instinct: audit-existing-tools)
 
-**Process:** Spawn 3 parallel agents:
+**Process:** Spawn 3 parallel agents. **All 3 launch in a single message:**
 
-1. **deep-researcher (sonnet):** Academic papers, industry reports, expert analyses. Data and numbers.
-2. **competitor-crawler (sonnet):** Crawl 3-5 competitor products. Features, pricing, UX patterns, reviews.
-3. **cross-referencer (haiku):** Cross-reference with `specs/Arx_2-3_Competitive_Landscape.md`.
+```
+Agent(
+  prompt = "You are deep-researcher. Research '{question}'.
+            Find: academic papers, industry reports, expert analyses.
+            Focus on data and numbers. Every claim sourced.
+            Use WebSearch extensively.",
+  subagent_type = "general-purpose",
+  model = "sonnet",
+  run_in_background = true
+)
+
+Agent(
+  prompt = "You are competitor-crawler. Research '{question}'.
+            Crawl 3-5 competitor products: features, pricing, UX patterns, reviews.
+            Use WebSearch + WebFetch for product pages.",
+  subagent_type = "general-purpose",
+  model = "sonnet",
+  run_in_background = true
+)
+
+Agent(
+  prompt = "You are cross-referencer. Research '{question}'.
+            Cross-reference findings with specs/Arx_2-3_Competitive_Landscape.md.
+            Read the spec, identify gaps or contradictions with current landscape.",
+  subagent_type = "general-purpose",
+  model = "haiku",
+  run_in_background = true
+)
+```
 
 If disputed claims: route fact-checks between agents after initial reports.
 
@@ -79,14 +132,47 @@ If disputed claims: route fact-checks between agents after initial reports.
 
 **Input:** Decision question (e.g., "should copy trading show full P&L transparency?")
 
-**Process:** Spawn 6 parallel agents (Six Thinking Hats):
+**Process:** Spawn 5 parallel agents (Six Thinking Hats), then 1 adjudicator. **First 5 launch in a single message:**
 
-1. **white-hat (sonnet):** Data and benchmarks. Prior decisions in specs.
-2. **red-hat (sonnet):** Intuition. What would users feel?
-3. **black-hat (sonnet):** Risks. Research failures of similar decisions.
-4. **yellow-hat (sonnet):** Best case. Opportunities created.
-5. **green-hat (sonnet):** Alternatives no one considered.
-6. **blue-hat (opus):** After all 5 report, cross-examine disagreements. Synthesize recommendation with confidence (HIGH/MEDIUM/LOW).
+```
+Agent(
+  prompt = "You are white-hat analyst. Question: '{question}'.
+            Provide ONLY data and benchmarks. Check specs/Arx_9-1_Decision_Log.md
+            for prior decisions. Numbers, facts, evidence only.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are red-hat analyst. Question: '{question}'.
+            Intuition pass. What would users FEEL? Gut reactions from
+            S7-Sarah (cautious), S2-Jake (efficiency), S1-Alex (excitement).
+            Read specs/Arx_2-1* for persona context.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are black-hat analyst. Question: '{question}'.
+            Risks ONLY. Research failures of similar decisions.
+            Use WebSearch for case studies. What goes wrong and why.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are yellow-hat analyst. Question: '{question}'.
+            Best case ONLY. What opportunities does this create?
+            Second-order benefits. Strategic upside.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are green-hat analyst. Question: '{question}'.
+            Alternatives ONLY. Generate 3-5 options no one considered.
+            Lateral thinking. Reframe the question itself.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+```
+
+**After all 5 report,** the lead (opus) cross-examines disagreements and synthesizes recommendation with confidence (HIGH/MEDIUM/LOW).
 
 **Output:** `outputs/think/decide/{question_slug}.md`. Include: question, context, options, six-hat analysis, decision + rationale, confidence, review date. Suggest appending to Decision Log.
 

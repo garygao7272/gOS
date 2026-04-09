@@ -32,10 +32,31 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Process:**
 
-1. **Data collection (parallel):**
-   - Hyperliquid MCP: `get_tickers`, `get_candlestick` (BTC/ETH/SOL, 1h+4h), `get_trades`, `get_book`
-   - Macro via WebSearch: S&P 500, DXY, VIX, Treasury yields, Fed expectations
-   - Crypto via WebSearch: BTC dominance, total market cap, protocol news, regulatory
+1. **Data collection — launch 3 agents in a single message:**
+
+   ```
+   Agent(
+     prompt = "Fetch Hyperliquid market data for {period}:
+               get_tickers, get_candlestick (BTC/ETH/SOL, 1h+4h),
+               get_trades (BTC, count=50), get_book (BTC, depth=20).
+               Return structured data summary.",
+     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Research macro context for {period}: S&P 500, DXY, VIX,
+               Treasury yields, Fed rate expectations. Use WebSearch.
+               Every data point sourced. APAC + US focus.",
+     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Research crypto context for {period}: BTC dominance,
+               total market cap, protocol news, regulatory developments.
+               Use WebSearch. Every claim sourced.",
+     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+   )
+   ```
 2. **Regime detection:** Analyze price action across timeframes, cross-reference with macro, classify bull/bear/neutral/transition with confidence (0-100%)
 3. **Scenario generation:** Top 3 by probability (bull/base/bear). Each: trigger, probability, targets, timeline, catalysts
 4. **Trade recommendations:** Entry/target/stop/size/timeframe/rationale per trade. Portfolio-level risk assessment.
@@ -52,13 +73,36 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Purpose:** Forward-looking projection. "What if ETH drops 40%", "what if competitor raises $50M".
 
-**Team decision:** If conflicting evidence → team with `historical-analyst`, `current-context`, `second-order` agents. Otherwise ad-hoc.
+**Team decision:** If conflicting evidence → team agents. Otherwise ad-hoc.
 
 **Process:**
 
 1. Parse what-if statement
 2. **Classify:** Market scenario (use Hyperliquid + WebSearch), Product scenario (use specs/ + WebSearch), Business scenario (use WebSearch)
-3. **Research (parallel):** Historical precedents, current context, second-order effects
+3. **Research — launch 3 agents in a single message:**
+
+   ```
+   Agent(
+     prompt = "Historical analyst for scenario: '{what-if}'.
+               Find 3-5 historical precedents. Dates, outcomes,
+               what was different. Use WebSearch. Sources required.",
+     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Current-context analyst for scenario: '{what-if}'.
+               Current market state, positioning, sentiment.
+               Use WebSearch + Hyperliquid MCP if market scenario.",
+     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Second-order analyst for scenario: '{what-if}'.
+               Map cascading effects: if X then Y then Z.
+               Consider Arx-specific impact. Read specs/ for context.",
+     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+   )
+   ```
 4. **Project outcomes:** Best case (20th %ile), Expected (50th), Worst (80th), Black swan (95th) — each with probability and Arx impact
 5. **Decision matrix:** Actions by timeframe (week/month/quarter) × likelihood
 6. **Key assumptions** that must hold
@@ -116,7 +160,24 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Process:**
 
-1. **Load context (parallel):** Persona from Arx_2-1, screen inventory from Arx_4-1-0, journey maps from Arx_3-3, navigation graph from build cards
+1. **Load context — launch 2 agents in a single message:**
+
+   ```
+   Agent(
+     prompt = "Load persona context for {persona} from specs/Arx_2-1*.
+               Extract: goals, pain points, skill level, risk tolerance,
+               preferred interaction patterns. Return structured profile.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+
+   Agent(
+     prompt = "Load app context: screen inventory from specs/Arx_4-1-0*,
+               journey maps from specs/Arx_3-3*, navigation graph from
+               specs/Arx_4-1-1-* build cards. Return: screen list with
+               entry/exit points, tap counts, data dependencies.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+   ```
 2. **Identify entry point:** Cold start, home screen, or deep link
 3. **Trace optimal path.** For each screen, record from its build card:
    - Taps, cognitive decisions, data entry fields, information presented

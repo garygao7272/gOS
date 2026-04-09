@@ -64,7 +64,17 @@ For each cycle (1 to max_iterations):
 │ Focus: address top 3-5 gaps by severity                  │
 │ Depth: apply depth ladder for current cycle number       │
 │ Output: updated specs or new spec sections               │
-│ Agent: 2-3 parallel researchers (sonnet)                 │
+│                                                          │
+│ Spawn 2-3 researchers in a single message:               │
+│                                                          │
+│ Agent(                                                   │
+│   prompt = "Research gap #{N}: '{gap}'.                   │
+│             Depth: {cycle_depth}. Read {spec}.            │
+│             Propose spec update. Findings only.",         │
+│   model = "sonnet", run_in_background = true             │
+│ )                                                        │
+│ // repeat for each top gap — all in ONE message          │
+│                                                          │
 │ → Write findings to refine log                           │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
@@ -86,7 +96,22 @@ For each cycle (1 to max_iterations):
 │ Focus: scenario generation at current depth              │
 │ Depth: happy path → edge → adversarial → scale          │
 │ Output: scenario findings, risk flags                    │
-│ Agent: bull-case + bear-case builders (sonnet)           │
+│                                                          │
+│ Spawn bull + bear in a single message:                   │
+│                                                          │
+│ Agent(                                                   │
+│   prompt = "Bull-case for '{topic}' at                   │
+│             {cycle_depth}. Optimistic scenarios           │
+│             from specs. Risk flags.",                     │
+│   model = "sonnet", run_in_background = true             │
+│ )                                                        │
+│ Agent(                                                   │
+│   prompt = "Bear-case for '{topic}' at                   │
+│             {cycle_depth}. Pessimistic scenarios.         │
+│             Failure modes + edge cases.",                 │
+│   model = "sonnet", run_in_background = true             │
+│ )                                                        │
+│                                                          │
 │ → Write scenario results to refine log                   │
 └──────────────────────┬──────────────────────────────────┘
                        ↓

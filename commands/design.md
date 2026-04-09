@@ -111,8 +111,25 @@ Build in code first (fastest iteration, real interactions), then push to Figma f
 
 **Pre-flight:** Build card exists? Feel section present? DESIGN.md current?
 
-### Step 1: Gather Context (parallel)
-Build card, DESIGN.md, Apple Craft Reference, fixture data, feel token
+### Step 1: Gather Context (parallel — all in ONE message)
+
+```
+Agent(
+  prompt = "Read these files and extract design-relevant context:
+            1. Build card at specs/Arx_4-1-1-*_{screen}*.md
+            2. DESIGN.md — full design language
+            3. specs/Arx_4-3_Design_Taste.md — Apple craft reference
+            Return: feel token, color palette, typography, component list.",
+  subagent_type = "general-purpose", model = "haiku", run_in_background = true
+)
+
+Agent(
+  prompt = "Read specs/Arx_4-1-1-8_Mock_Data_Fixtures.md and extract
+            fixture data for '{screen}'. Return realistic mock data
+            for all states: populated, empty, loading, error, overflow.",
+  subagent_type = "general-purpose", model = "haiku", run_in_background = true
+)
+```
 
 ### Step 2: Generate HTML Prototype
 Dispatch subagent to write self-contained HTML file. Include: full build card content, ALL design tokens from DESIGN.md §1, Apple craft specs (animation curves, springs, glass tiers, micro-interactions), Inter + JetBrains Mono from CDN, 390×844 viewport, fixture data. Apply mandatory features from Apple Craft Reference: loading skeleton, price tick flash, list stagger-in, card tap feedback, glass cards, sparkline draw, all state transitions animated.
@@ -150,7 +167,29 @@ Use Figma MCP to recreate with design system components. Import components by ke
 4. Figma variables via MCP
 5. `apps/web-prototype` CSS `:root` variables
 
-**Audit checks:** Token values match across targets, component names match, icon registry covers all card types, no hardcoded colors in layouts, DESIGN.md in sync with sources.
+**Audit — parallel agents check each target (all in ONE message):**
+
+```
+Agent(
+  prompt = "Audit design token consistency between specs/Arx_4-2_Design_System.md
+            and DESIGN.md. Report any drift: token values, names, missing entries.",
+  subagent_type = "general-purpose", model = "haiku", run_in_background = true
+)
+
+Agent(
+  prompt = "Audit apps/web-prototype/ CSS :root variables against
+            specs/Arx_4-2_Design_System.md. Report hardcoded colors,
+            missing tokens, value mismatches.",
+  subagent_type = "general-purpose", model = "haiku", run_in_background = true
+)
+
+Agent(
+  prompt = "Audit build card component references across specs/Arx_4-1-1-*.md
+            against the component registry in specs/Arx_4-2_Design_System.md.
+            Report missing components, name mismatches, icon gaps.",
+  subagent_type = "general-purpose", model = "haiku", run_in_background = true
+)
+```
 
 ---
 

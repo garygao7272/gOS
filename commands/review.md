@@ -148,6 +148,78 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 - **Veto:** `crypto-sec` BLOCK is absolute. Any Wave 1 user BLOCK → overall BLOCK.
 - **Adjudication:** Conductor routes conflicts via cross-examination between disagreeing agents.
 
+**Wave 1 — launch all 4 in a single message:**
+
+```
+Agent(
+  prompt = "You are S2-Jake reviewing {target}. Lens: 'Would Jake use this daily
+            and does it save him time?' Read specs/Arx_2-1* for Jake's profile.
+            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are S7-Sarah reviewing {target}. Lens: 'Would Sarah set this up
+            and feel safer?' Read specs/Arx_2-1* for Sarah's profile.
+            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are S1-Alex reviewing {target}. Lens: 'Does this keep Alex engaged
+            AND prevent blow-up?' Read specs/Arx_2-1* for Alex's profile.
+            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are S3-Marcus reviewing {target}. Lens: 'Does this degrade execution
+            quality or privacy?' Read specs/Arx_2-1* for Marcus's profile.
+            Verdict: APPROVE/CONCERN/BLOCK. Include kill shot + steel man.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+```
+
+**If Wave 1 has no BLOCKs, launch Wave 2 — all 4 in a single message:**
+
+```
+Agent(
+  prompt = "You are crypto-sec specialist reviewing {target}. Lens: key management,
+            transaction signing, MEV, input validation. BLOCK is absolute veto.
+            Verdict: APPROVE/CONCERN/BLOCK with evidence.",
+  subagent_type = "security-reviewer", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are trader-ux specialist reviewing {target}. Lens: order entry flow,
+            price display, position management. Verdict: APPROVE/CONCERN/BLOCK.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are risk-analyst reviewing {target}. Lens: margin calculations,
+            liquidation warnings, leverage guards. Verdict: APPROVE/CONCERN/BLOCK.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+
+Agent(
+  prompt = "You are mobile-perf specialist reviewing {target}. Lens: bundle size,
+            render performance, network efficiency. Verdict: APPROVE/CONCERN/BLOCK.",
+  subagent_type = "general-purpose", model = "haiku", run_in_background = true
+)
+```
+
+**Wave 3 — after Waves 1+2 report, launch contrarian:**
+
+```
+Agent(
+  prompt = "You are the contrarian reviewing {target}. You have seen all prior
+            verdicts: {summary of Wave 1+2 findings}. Challenge the consensus.
+            Find overlooked risks. Pre-mortem, kill shot, wargame, steel man.",
+  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
+)
+```
+
 **Persona definitions:**
 
 | Persona | Type | Review Lens |
@@ -185,8 +257,16 @@ Any persona name can be invoked directly: `/review s2-jake`, `/review trader-ux`
 **5-step protocol:**
 
 1. **Load Persona** — adopt the specialist's expertise, vocabulary, and focus from the council table above
-2. **Research** — launch an agent to search for current best practices, known vulnerabilities, industry standards. Evidence-backed reviews, not LLM intuition.
-3. **Evaluate** — review through persona's lens. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, fix, location (file:line or spec:section)
+2. **Research** — launch a background research agent while you begin evaluation:
+   ```
+   Agent(
+     prompt = "Research current best practices, known vulnerabilities, and industry
+               standards relevant to {persona}'s review of {target}.
+               Use WebSearch. Return sourced findings only.",
+     subagent_type = "general-purpose", model = "haiku", run_in_background = true
+   )
+   ```
+3. **Evaluate** — review through persona's lens using research findings. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, fix, location (file:line or spec:section)
 4. **Verdict** — APPROVE / CONCERN / BLOCK. Always include: Steel Man ("strongest argument FOR"), Kill Shot ("single biggest risk"), Recommendation
 5. **Output** — code fixes → `apps/`, spec corrections → `specs/`, decisions → `specs/Arx_9-1_Decision_Log.md`
 

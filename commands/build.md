@@ -30,8 +30,48 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What are we building?
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
 **Team decision:**
-- Complex features touching 3+ systems → spawn parallel Agent workers (architect on opus, engineers on sonnet with worktree isolation, verifier on haiku). Architect produces API contract first, then engineers work in parallel.
+- Complex features touching 3+ systems → spawn parallel Agent workers. Architect first, then engineers in parallel.
 - Simple features → sequential execution (single session).
+
+**Complex feature agent pattern:**
+
+Step 1 — Architect designs the API contract (blocking):
+```
+Agent(
+  prompt = "You are the architect for '{feature}'.
+            Read {spec}. Design the API contract: types, interfaces,
+            data flow, module boundaries. Output: contract.md with
+            types, function signatures, file layout.",
+  subagent_type = "architect", model = "opus"
+)
+```
+
+Step 2 — Engineers implement in parallel (all in ONE message):
+```
+Agent(
+  prompt = "You are engineer-1. Implement {module_1} per this contract:
+            {contract from architect}. TDD: write tests first, then implement.
+            Follow existing patterns in the codebase.",
+  subagent_type = "general-purpose", model = "sonnet",
+  isolation = "worktree", run_in_background = true
+)
+
+Agent(
+  prompt = "You are engineer-2. Implement {module_2} per this contract:
+            {contract from architect}. TDD: write tests first, then implement.",
+  subagent_type = "general-purpose", model = "sonnet",
+  isolation = "worktree", run_in_background = true
+)
+```
+
+Step 3 — Verifier checks all outputs:
+```
+Agent(
+  prompt = "Verify all engineer outputs against the architect contract.
+            Check: types match, tests pass, no file conflicts, 80%+ coverage.",
+  subagent_type = "code-reviewer", model = "haiku"
+)
+```
 
 **Before building:**
 
