@@ -2,6 +2,8 @@
 name: Large Structural Writes — Fresh Context Executor
 description: Approved structural rewrites of large files must use a fresh-context agent, not inline execution at the end of a long session
 type: feedback
+valid_from: 2026-04-06
+valid_to: open
 ---
 
 # Large Structural Writes — Fresh Context Executor

@@ -1,0 +1,100 @@
+{
+  "mcpServers": {
+    "slack": {
+      "type": "http",
+      "url": "https://slack.mcp.anthropic.com/mcp"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
+    },
+    "hyperliquid": {
+      "command": "node",
+      "args": [
+        "tools/hyperliquid-mcp/index.js"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--browser",
+        "chrome",
+        "--device",
+        "iPhone 14 Pro",
+        "--headless"
+      ]
+    },
+    "discord": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-discord"
+      ],
+      "env": {
+        "DISCORD_TOKEN": "${DISCORD_TOKEN}"
+      }
+    },
+    "telegram": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@overpod/mcp-telegram"
+      ],
+      "env": {
+        "TELEGRAM_API_ID": "${TELEGRAM_API_ID}",
+        "TELEGRAM_API_HASH": "${TELEGRAM_API_HASH}"
+      }
+    },
+    "notte": {
+      "command": "tools/notte-env/bin/python",
+      "args": [
+        "-m",
+        "notte_mcp.server"
+      ],
+      "env": {
+        "NOTTE_API_KEY": "${NOTTE_API_KEY}"
+      }
+    },
+    "spec-rag": {
+      "command": "tools/spec-rag-env/bin/python",
+      "args": [
+        "tools/spec-rag-mcp/server.py"
+      ],
+      "env": {
+        "SPECS_DIR": "specs",
+        "LANCEDB_DIR": ".lancedb"
+      }
+    },
+    "sources": {
+      "command": "tools/sources-env/bin/python",
+      "args": [
+        "tools/sources-mcp/server.py"
+      ],
+      "env": {
+        "SOURCES_CONFIG": "tools/sources-mcp/sources.json",
+        "SUPADATA_API_KEY": "sd_0c9d55d50735c49c41135e63de33a613"
+      }
+    },
+    "stitch": {
+      "command": "node",
+      "args": [
+        "tools/stitch-proxy.mjs"
+      ],
+      "env": {
+        "STITCH_API_KEY": "${STITCH_API_KEY}"
+      }
+    },
+    "aidesigner": {
+      "type": "http",
+      "url": "https://api.aidesigner.ai/api/v1/mcp"
+    }
+  }
+}

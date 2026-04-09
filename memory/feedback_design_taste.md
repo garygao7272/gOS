@@ -2,6 +2,8 @@
 name: Design Taste Preferences
 description: Gary's design reference ceiling (now floor), taste principles, and corrections on how gOS approaches visual design work
 type: feedback
+valid_from: 2026-04-06
+valid_to: open
 ---
 
 # Design Taste Preferences

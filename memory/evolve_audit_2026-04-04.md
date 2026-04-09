@@ -2,6 +2,8 @@
 name: Evolve Audit 2026-04-04
 description: Second real audit — 5 new signals since last audit, all commands healthy, signal capture still manual-only
 type: project
+valid_from: 2026-04-04
+valid_to: open
 ---
 
 # Evolve Audit — 2026-04-04

@@ -2,6 +2,8 @@
 name: Financial Modeling Session Learnings
 description: Deep session on financial projections — Gary's preferences on model structure, benchmarking, and investor readiness
 type: feedback
+valid_from: 2026-04-07
+valid_to: open
 ---
 
 ## Key Learnings

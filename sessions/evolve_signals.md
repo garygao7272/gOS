@@ -1,7 +1,29 @@
 # Evolve Signals
 
 > Raw feedback signals from every gOS command invocation.
-> Appended by session-save.sh Stop hook. Audited weekly by `/evolve audit`.
+> Audited by `/evolve audit` (every 4 hours during active development).
+
+## 2026-04-08 — Workflow Playbook Overhaul Session
+
+- `accept` /gos conductor — prototype audit + build card work accepted, moved to next task
+- `rework` /design card C5-NEW — "this is not really what i have in mind for this playbook" — Gary wanted 3-surface workflow, not governance doc
+- `rework` /think research — "remove the fat, following first principles" — too much process, not enough pipeline
+- `accept` /design card C5-NEW v7.0 — risk-first rewrite with chips, R:R bar accepted
+- `accept` /review code — all HIGH/MEDIUM findings fixed without pushback
+- `rework` 0-1 v1 — "product management playbook sounds complicated, just workflow playbook"
+- `accept` 0-1 rename to Workflow Playbook
+- `rework` templates — "template files should be kept separate" + "remove inventory that goes stale"
+- `accept` T1-T7 as separate files
+- `rework` 0-1 — "remove thinking process explanations, confirm written style for each artifact"
+- `accept` ★/◆/○ human judgment framework
+- `accept` 0-0 rename to Artifact Registry + trim overlapping sections
+- `rework` template numbering — "change index to follow natural sequence of 6 stages"
+- `accept` T1-T14 renumbered by stage sequence
+- `accept` Journey Card concept — "where do we capture this level of flow"
+- `love` Journey Card template — Gary engaged deeply, asked which gOS command covers it
+- `accept` Mermaid diagrams in templates (flowchart, stateDiagram, sequenceDiagram, journey)
+- `accept` /review gOS alignment — audit findings accepted, pipeline rewritten to verb-centric format
+- `repeat` Gary had to re-explain "no duplication, decomposition, drill down" principle 3× across sessions — need to internalize this as a core rule
 
 ## Signal Key
 
@@ -16,56 +38,91 @@
 
 ## Log
 
-| Date | Time | Command | Signal | Context |
-|------|------|---------|--------|---------|
-| 2026-04-09 | 00:45 | /gos resume | rework | Resume briefing format "very confusing" — too much info, no hierarchy, unclear next action |
-| 2026-04-09 | 01:00 | /gos resume | rework | Stop hook output also confusing — "TodoWrite, signals, feedback memory" meaningless to user |
-| 2026-04-09 | 01:05 | /gos | accept | Redesigned resume + briefing + stop hook to Story+Table+Next Move format, synced 4 locations |
-| 2026-04-09 | 01:20 | /think research | accept | Research on BATS, Promptfoo, ECC instincts, ROEGATE, agentmemory — accepted without changes |
-| 2026-04-09 | 01:25 | /think research | rework | Gary asked about MemPalace vs agentmemory distinction — research missed context of existing tools |
-| 2026-04-09 | 01:30 | /think research | accept | Karpathy LLM Wiki comparison + compilation layer recommendation — Gary engaged |
-| 2026-04-09 | 01:45 | /think research | accept | Full 6-phase plan with Karpathy wiki integration presented — Gary asked to save and start |
-| 2026-04-09 | 02:00 | /gos conductor | accept | Gary approved autonomous execution: "loop through all phases, build, review, ship" |
-| 2026-04-09 | 02:30 | /build | accept | All 6 phases built, 32 tests passing, 3 instincts extracted, wiki + lint + craft gate shipped |
-| 2026-04-09 | 03:00 | /review eval | accept | Independent agent scored 6.75 (honest, brutal) — Gary accepted without pushback |
-| 2026-04-09 | 03:00 | /review eval | accept | Gary's instruction "evaluate on real value, not meaningless improvements" drove honest scoring |
-| 2026-04-09 | 03:15 | /think research | accept | Improvement plan against v3 scorecard — "don't build more infrastructure, go use it" |
-| 2026-03-29 | 18:45 | /evolve | accept | Self-evaluation: 4 design weaknesses identified and agreed |
-| 2026-03-29 | 18:45 | /evolve | accept | Taste as separate Arx_4-3 spec artifact (not .claude/) |
-| 2026-03-29 | 18:45 | /evolve | rework | Gary corrected: apps are FLOOR not ceiling; taste in specs/ not .claude/ |
-| 2026-03-29 | 18:45 | /evolve | accept | Full implementation plan (7 tasks) executed and completed |
-| 2026-03-29 | 18:45 | /evolve | accept | Stitch MCP API key configured, headless workflow |
-| 2026-03-29 | 18:45 | /evolve | accept | Evaluation dry-run confirmed 4/4 weaknesses addressed |
-| 2026-03-29 | 02:30 | /refine | accept | v5 spec 27-item audit + fixes accepted, C4.2b added |
-| 2026-03-29 | 02:30 | /refine | accept | C5.6 Phase 2 cascade (7 refs) annotated with MVP fallbacks |
-| 2026-03-29 | 02:30 | /refine | accept | §8.3 Position + §8.4 Copy Portfolio display objects added |
-| 2026-03-29 | 02:30 | /refine | accept | Structural reorg plan approved: Data→Compute→Display→Feed→Journeys→Contract |
-| 2026-03-29 | 02:30 | /refine | repeat | Reorg task approved but never executed — 2 sessions hit context limit before Write |
-| 2026-03-27 | 18:38 | /design | accept | Phase 5 report + Iter 3 fixes accepted without changes |
-| 2026-03-27 | 18:38 | /design | accept | DB schema + design rationale fixes accepted |
-| 2026-03-27 | 18:38 | /design | skip | Gary chose "1 and 3", skipped PRD alignment (item 2) |
-| 2026-03-27 | 15:34 | /review | accept | Relationship rationale + naming warning patch accepted |
-| 2026-03-27 | 15:34 | /review | accept | 4 dropped D1 specs restored without changes |
-| 2026-03-27 | 15:34 | /review | love | "yes please" to Follow collapse + filter chip restoration |
-| 2026-03-27 | 15:34 | /review | accept | Common Labels system with permutation table accepted |
-| 2026-03-27 | 15:34 | /review | accept | Full stale reference cleanup (10-point verification) accepted |
-| 2026-04-09 | 00:00 | /gos | rework | Resume loaded wrong session (harness build instead of gOS restructure) |
-| 2026-04-09 | 00:05 | /gos | rework | Initial plan had different scope than Gary's P1-P5 table — Gary provided exact priorities |
-| 2026-04-09 | 00:10 | /gos | skip | Gary said "full conductor mode" — skipped briefing, went straight to P1-P5 work |
-| 2026-04-09 | 00:30 | /gos | accept | P3 hooks wired (9 scripts, 6 events) — accepted without changes |
-| 2026-04-09 | 00:40 | /gos | accept | P1-P5 execution — all 5 priorities built |
-| 2026-04-09 | 00:50 | /gos | accept | Bonus: fixed 10 broken symlinks + gos-plugin path |
-| 2026-04-09 | 00:55 | /gos | repeat | Stop hook tasks skipped — session ended without mandatory signal scan + memory update |
-| 2026-04-09 | 01:00 | /ship | accept | "yes commit to git repo" — clean execution |
-| 2026-04-09 | 01:05 | /aside | accept | Untracked files assessment — clear keep/remove recommendation |
-| 2026-04-09 | 01:05 | /gos | repeat | Stop hook caught gOS AGAIN skipping mandatory signal+memory tasks |
-| 2026-04-09 | 01:20 | /refine | accept | 10-dimension criteria created as evals/criteria/ files + scorecard |
-| 2026-04-09 | 01:40 | /think | accept | VISION.md north star doc — "superior alien AI co-creator" vision documented |
-| 2026-04-09 | 01:45 | /review | accept | Honest 12-dim review: 8.0→6.6 after adding craft+testing. Intuition validated |
-| 2026-04-09 | 02:00 | /aside | accept | First-principles dimension validation + /aside command routing |
-| 2026-04-09 | 02:00 | /gos | repeat | Stop hook skipped THIRD time — pattern: any "natural ending" triggers skip |
-| 2026-04-09 | 02:10 | /build | accept | Fixed /aside autocomplete — synced all 14 commands across 4 locations |
-| 2026-04-09 | 19:55 | /gos conductor | accept | Parallel agent diagnosis accepted — settings fine, root cause is command instructions |
-| 2026-04-09 | 19:55 | /gos conductor | accept | 6 command upgrades with Agent() patterns — accepted approach without changes |
-| 2026-04-09 | 19:55 | /gos conductor | accept | Broken symlink fix (15 dead links) + Stop hook sync — accepted |
-| 2026-04-09 | 19:55 | /gos conductor | accept | spec-compliance hook bug (naming mismatch) flagged — Gary didn't pushback |
+--- AUDITED 2026-04-04 ---
+
+| 2026-04-08 16:30 | /think | research | accept | Harness engineering research delivered — Gary received without changes, asked no rework |
+| 2026-04-08 16:30 | /gos | conductor | skip | Gary said "full conductor mode" but immediately gave /think task — skipped briefing |
+| 2026-04-08 17:15 | /think | research | accept | Lark MCP landscape research — 3-agent swarm (registry+GitHub+web), 36 servers found, synthesis accepted |
+| 2026-04-09 00:00 | /gos | init | skip | Gary said "full conductor mode" — skipped briefing, went straight to question |
+| 2026-04-09 00:05 | /think | research | accept | "What can we learn from it" — 3 actionable learnings (instinct loop, guardrails, eval) delivered, no rework |
+| 2026-04-09 00:15 | /gos | continue | accept | Gary said "continue" — cleared 3-session backlog, wrote harness research to outputs/think/research/ |
+| 2026-04-09 00:15 | /think | research | accept | Lark official MCP/CLI deep-dive — confirmed mail IS covered (67 tools in MCP, full skill in CLI), accepted |
+| 2026-04-09 01:00 | /gos | resume | repeat | Gary said "i am confused, what's next" after briefing — gOS not effectively orienting after multi-session meta-work gap. Need clearer "here's the ONE thing" recommendation, not open-ended menu. |
+| 2026-04-09 01:30 | /think | decide | pending | Gary confirmed 0-0/0-1 discussion topic. gOS delivered concrete analysis: "written for a team that doesn't exist yet" + trim recommendation. Session ended before Gary responded — signal TBD next session. |
+
+--- AUDITED 2026-04-07 (scheduled) ---
+
+--- AUDITED 2026-04-08 (scheduled) ---
+
+### 2026-04-06
+
+| Time  | Command | Sub-cmd               | Signal | Context                                                                            |
+| ----- | ------- | --------------------- | ------ | ---------------------------------------------------------------------------------- |
+| 00:15 | /gos    | resume                | accept | Session resumed from scratchpad, Gary said "full conductor mode, go"               |
+| 00:20 | /gos    | conductor             | accept | DESIGN.md 7-section rewrite + 4-1-1-8 slimming — shipped without changes           |
+| 00:30 | /review | design-variant        | accept | 10 findings identified and fixed. Gary said "yes ship it" immediately              |
+| 00:35 | /gos    | conductor             | accept | All 10 review findings executed and committed. Gary said "fix all remaining"       |
+| 00:40 | /review | re-review             | accept | Clean re-review, 2 remaining items found and fixed                                 |
+| 00:50 | /think  | research Q1+Q2        | accept | 4 parallel agents: Figma MCP, design leaders, build cards, simulations — all used  |
+| 01:00 | /gos    | conductor Q1          | accept | 5-step plan approved and executed. Figma file + AIDesigner + Feel sections         |
+| 01:05 | /think  | optimization          | love   | Gary said "yes please" to feel-as-tokens insight — abstraction was his idea        |
+| 01:10 | /review | pipeline              | accept | 3 remaining quality gaps identified, Gary said "fix all 3"                         |
+| 01:15 | /think  | references            | accept | Tier 1/2/3 reference list accepted, Gary said "fix all 3 problems"                 |
+| 01:18 | /gos    | conductor             | accept | Reference screenshots + boundary fixtures + transitions — all shipped              |
+| 01:20 | /think  | build card philosophy | love   | Gary asked "can it replace epics?" — confirmed yes. "yes please" to documenting it |
+
+### 2026-04-03
+
+| Time  | Command | Sub-cmd     | Signal | Context                                                                                              |
+| ----- | ------- | ----------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| 15:00 | /think  | research    | accept | CC keywords/tricks research — 3 parallel agents, synthesis accepted                                  |
+| 15:30 | /think  | research    | love   | "search widely online" — Gary specifically requested broader research, output used as basis for plan |
+| 16:00 | /evolve | audit       | accept | Plan for effort frontmatter + quick wins approved and executed                                       |
+| 16:30 | /ship   | commit+push | accept | Committed and pushed to both Arx and gOS repos                                                       |
+| 17:00 | /gos    | conductor   | accept | Evolve self-assessment — C+ grade accepted, Gary agreed and requested 4h audit cadence               |
+
+### 2026-03-29
+
+| Time  | Command | Sub-cmd | Signal | Context                                                                  |
+| ----- | ------- | ------- | ------ | ------------------------------------------------------------------------ |
+| 18:45 | /evolve | upgrade | accept | Self-evaluation: 4 design weaknesses identified and agreed               |
+| 18:45 | /evolve | upgrade | accept | Taste as separate Arx_4-3 spec artifact (not .claude/)                   |
+| 18:45 | /evolve | upgrade | rework | Gary corrected: apps are FLOOR not ceiling; taste in specs/ not .claude/ |
+| 18:45 | /evolve | upgrade | accept | Full implementation plan (7 tasks) executed and completed                |
+| 18:45 | /evolve | upgrade | accept | Stitch MCP API key configured, headless workflow                         |
+| 18:45 | /evolve | upgrade | accept | Evaluation dry-run confirmed 4/4 weaknesses addressed                    |
+| 02:30 | /refine | spec    | accept | v5 spec 27-item audit + fixes accepted, C4.2b added                      |
+| 02:30 | /refine | spec    | accept | C5.6 Phase 2 cascade (7 refs) annotated with MVP fallbacks               |
+| 02:30 | /refine | spec    | accept | §8.3 Position + §8.4 Copy Portfolio display objects added                |
+
+### 2026-04-08 evening — Harness Engineering Research
+
+| Time  | Command | Sub-cmd  | Signal | Context                                                                                           |
+| ----- | ------- | -------- | ------ | ------------------------------------------------------------------------------------------------- |
+| 20:00 | /gos    | init     | skip   | Gary said "full conductor mode" but immediately gave /think task — skipped briefing               |
+| 20:05 | /think  | research | accept | Harness engineering definition + top 5 repos delivered — Gary received without rework             |
+| 20:10 | /think  | research | rework | "are you sure these are the top 5?" — Gary challenged accuracy, demanded code-level verification  |
+| 20:25 | /think  | research | accept | Corrected top 5 (found 3 missed repos: deer-flow 59K, learn-claude-code 50K, oh-my-openagent 50K) |
+| 20:30 | /think  | research | accept | Full gap analysis: gOS vs 5 repos, 12 gaps ranked CRITICAL/HIGH/MEDIUM/LOW — accepted             |
+| 02:30 | /refine | spec     | accept | Structural reorg plan approved: Data→Compute→Display→Feed→Journeys→Contract                       |
+| 02:30 | /refine | spec     | repeat | Reorg task approved but never executed — 2 sessions hit context limit before Write                |
+
+### 2026-03-27
+
+| Time  | Command | Sub-cmd | Signal | Context                                                       |
+| ----- | ------- | ------- | ------ | ------------------------------------------------------------- |
+| 15:34 | /review | spec    | accept | Relationship rationale + naming warning patch accepted        |
+| 15:34 | /review | spec    | accept | 4 dropped D1 specs restored without changes                   |
+| 15:34 | /review | spec    | love   | "yes please" to Follow collapse + filter chip restoration     |
+| 15:34 | /review | spec    | accept | Common Labels system with permutation table accepted          |
+| 15:34 | /review | spec    | accept | Full stale reference cleanup (10-point verification) accepted |
+
+### 2026-03-25 — 2026-03-26
+
+| Time             | Command | Sub-cmd   | Signal                | Context                                                                                                                                              |
+| ---------------- | ------- | --------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| —                | /design | conductor | (no signals captured) | 3-iteration Radar S7 redesign — multiple sessions                                                                                                    |
+| —                | /think  | finance   | (no signals captured) | Advance Wealth AWS infra — 30+ sessions, zero signals logged                                                                                         |
+| 2026-04-08 16:15 | /gos    | conductor | accept                | Phase 4 plan (6 batches, 22 items) — Gary confirmed "y" without modifications                                                                        |
+| 2026-04-08 16:17 | /gos    | conductor | accept                | Batches A-C completed, D-E launched — no rework requested                                                                                            |
+| 2026-04-08 16:30 | /evolve | learn     | reject                | Phase 1 auto-signal hook (UserPromptSubmit) had to be removed — blocked startup. MCP servers without tokens also blocked. Self-inflicted regression. |

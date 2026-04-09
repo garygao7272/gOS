@@ -1,6 +1,7 @@
 ---
 name: arx-ui-stack
 description: Reference card for all Arx UI building blocks — packages, versions, CDNs, usage patterns for web and React Native
+paths: "apps/**"
 ---
 
 # Arx UI Stack — Quick Reference

@@ -2,6 +2,8 @@
 name: Stitch MCP Fix
 description: Custom proxy replaces buggy @_davideast/stitch-mcp — root cause and working solution documented
 type: feedback
+valid_from: 2026-04-05
+valid_to: open
 ---
 
 `@_davideast/stitch-mcp` v0.5.1 proxy has two bugs that prevent it from working in Claude Code:

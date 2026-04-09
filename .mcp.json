@@ -1,0 +1,105 @@
+{
+  "mcpServers": {
+    "slack": {
+      "type": "http",
+      "url": "https://slack.mcp.anthropic.com/mcp"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      },
+      "disabled": true
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
+    },
+    "hyperliquid": {
+      "command": "node",
+      "args": [
+        "/Users/garyg/Documents/Claude Working Folder/toolkit/hyperliquid-mcp/index.js"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--browser",
+        "chrome",
+        "--device",
+        "iPhone 14 Pro",
+        "--headless"
+      ]
+    },
+    "discord": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-discord"
+      ],
+      "env": {
+        "DISCORD_TOKEN": "${DISCORD_TOKEN}"
+      },
+      "disabled": true
+    },
+    "telegram": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@overpod/mcp-telegram"
+      ],
+      "env": {
+        "TELEGRAM_API_ID": "${TELEGRAM_API_ID}",
+        "TELEGRAM_API_HASH": "${TELEGRAM_API_HASH}"
+      },
+      "disabled": true
+    },
+    "notte": {
+      "command": "/Users/garyg/Documents/Claude Working Folder/toolkit/notte-env/bin/python",
+      "args": [
+        "-m",
+        "notte_mcp.server"
+      ],
+      "env": {
+        "NOTTE_API_KEY": "${NOTTE_API_KEY}"
+      },
+      "disabled": true
+    },
+    "spec-rag": {
+      "command": "/Users/garyg/Documents/Claude Working Folder/toolkit/spec-rag-env/bin/python",
+      "args": [
+        "/Users/garyg/Documents/Claude Working Folder/toolkit/spec-rag-mcp/server.py"
+      ],
+      "env": {
+        "SPECS_DIR": "specs",
+        "LANCEDB_DIR": ".lancedb"
+      }
+    },
+    "sources": {
+      "command": "/Users/garyg/Documents/Claude Working Folder/toolkit/sources-env/bin/python",
+      "args": [
+        "/Users/garyg/Documents/Claude Working Folder/toolkit/sources-mcp/server.py"
+      ],
+      "env": {
+        "SOURCES_CONFIG": "/Users/garyg/Documents/Claude Working Folder/toolkit/sources-mcp/sources.json",
+        "SUPADATA_API_KEY": "sd_0c9d55d50735c49c41135e63de33a613"
+      }
+    },
+    "stitch": {
+      "command": "node",
+      "args": [
+        "/Users/garyg/Documents/Claude Working Folder/toolkit/stitch-proxy.mjs"
+      ],
+      "env": {
+        "STITCH_API_KEY": "${STITCH_API_KEY}"
+      },
+      "disabled": true
+    },
+    "aidesigner": {
+      "type": "http",
+      "url": "https://api.aidesigner.ai/api/v1/mcp"
+    }
+  }
+}

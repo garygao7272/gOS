@@ -2,6 +2,8 @@
 name: gOS rename from god/writ
 description: Renamed the command system from "god/writ" (38 commands) to "gOS" (8 verbs + 1 utility) on 2026-03-21, inspired by gstack and GSD
 type: project
+valid_from: 2026-03-21
+valid_to: open
 ---
 
 On 2026-03-21, restructured the entire command system:
