@@ -3,17 +3,16 @@
 # BLOCKS edits to governed files unless the governing spec was read first.
 # Governed files: commands/*.md (if rubric exists), hooks/*.sh (if .bats exists)
 # Read tracking: read-tracker.sh logs spec reads to /tmp/gos-spec-reads-{date}
-set -euo pipefail
 
 INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null) || exit 0
 
 case "$TOOL_NAME" in
   Edit|Write) ;;
   *) exit 0 ;;
 esac
 
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""' 2>/dev/null) || exit 0
 [ -n "$FILE_PATH" ] || exit 0
 
 # Determine governing spec
@@ -47,6 +46,6 @@ if [ -f "$READS_LOG" ] && grep -q "$SPEC_BASE" "$READS_LOG" 2>/dev/null; then
   exit 0
 fi
 
-# BLOCK: spec not read
-echo "BLOCKED: Read $SPEC first before editing $(basename "$FILE_PATH")"
+# BLOCK: spec not read — message to stderr for Claude Code
+echo "BLOCKED: Read $SPEC first before editing $(basename "$FILE_PATH")" >&2
 exit 2
