@@ -1,0 +1,39 @@
+{
+  "job_id": "example-job-id",
+  "command": "/think discover",
+  "task": "One-line task restatement",
+  "task_class": "exploration | synthesis | verification | execution",
+  "risk_level": "low | medium | high",
+  "round": 1,
+  "max_rounds": 3,
+  "created_at": "ISO-8601",
+  "roster": [
+    {
+      "agent": "first-principles",
+      "model": "opus",
+      "contract": {
+        "lens": "Their one-liner from registry",
+        "task": "Specific sub-question this agent owns",
+        "reads": ["file/path1.md", "file/path2.md"],
+        "writes": "outputs/gos-jobs/{job-id}/artifacts/first-principles.md",
+        "exit_criteria": [
+          "Specific condition 1",
+          "Specific condition 2"
+        ],
+        "forbidden": [
+          "Don't speculate outside own lens",
+          "Don't propose solutions — that's for synthesis"
+        ]
+      }
+    }
+  ],
+  "synthesis_agent": "adjudicator",
+  "validator_agent": "pev-validator",
+  "convergence_criteria": {
+    "max_rounds": 3,
+    "new_info_threshold": 0.2,
+    "agreement_threshold": 0.8,
+    "veto_halts": true
+  },
+  "token_budget": 150000
+}

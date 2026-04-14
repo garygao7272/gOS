@@ -1,0 +1,217 @@
+# gOS Agent Registry
+# Source of truth for dynamic roster selection in the PEV loop.
+# Read by agents/pev-planner.md. One entry per agent.
+#
+# Schema (all fields required):
+#   id: kebab-case identifier
+#   class: meta | user | specialist | infra
+#   model: opus | sonnet | haiku
+#   lens: one-sentence worldview (first-person)
+#   when: [keywords] OR "always" — keyword-match triggers planner to include
+#   reads: [files] — context the agent loads before acting
+#   veto: true|false — if true, agent's BLOCK verdict halts the whole loop
+#   notes: (optional) when to cut, when to double-up
+
+# ═══════════════════════════════════════════════════════════
+# META — universal reasoning agents
+# ═══════════════════════════════════════════════════════════
+
+- id: first-principles
+  class: meta
+  model: opus
+  lens: "Decompose to atomic assumptions. Challenge each. Name the mechanism."
+  when: always
+  reads: [memory/L0_identity.md]
+  veto: false
+  notes: "Always in roster. INV-G01 enforcer."
+
+- id: contrarian
+  class: meta
+  model: opus
+  lens: "This will fail because X. Pre-mortem before the mortem."
+  when: always
+  reads: []
+  veto: false
+  notes: "Always in roster. Devil's advocate."
+
+- id: adjudicator
+  class: meta
+  model: opus
+  lens: "Resolve conflicts. Synthesize. Name the decision and confidence."
+  when: synthesis
+  reads: []
+  veto: false
+  notes: "Only in synthesis step. Not an executor."
+
+- id: fact-checker
+  class: meta
+  model: sonnet
+  lens: "This claim — source? Cross-reference? Verifiable?"
+  when: [contested, disputed, claim]
+  reads: []
+  veto: false
+  notes: "Spawned on demand by validator when round-1 agents disagree."
+
+# ═══════════════════════════════════════════════════════════
+# USER PERSONAS — demand-side voices
+# ═══════════════════════════════════════════════════════════
+
+- id: pro-trader
+  class: user
+  model: sonnet
+  lens: "I generate alpha. What earns my respect? What wastes my time?"
+  when: [trading, signals, alpha, leaderboard, portfolio, execution, order]
+  reads: [specs/Arx_2-1_Personas.md]
+  veto: false
+
+- id: copier
+  class: user
+  model: sonnet
+  lens: "I copy others. I fear losing money. I need to trust before I act."
+  when: [copy, follow, trust, onboarding, discovery, leaderboard]
+  reads: [specs/Arx_2-1_Personas.md]
+  veto: false
+
+- id: s7-sarah-cautious
+  class: user
+  model: sonnet
+  lens: "I'm new. I want safety rails. I need the app to protect me from myself."
+  when: [onboard, beginner, safety, risk, warning]
+  reads: [specs/Arx_2-1_Personas.md]
+  veto: false
+
+- id: s2-jake-pro
+  class: user
+  model: sonnet
+  lens: "I'm fast. Don't slow me down with hand-holding. Let me execute."
+  when: [pro, advanced, execution, speed, efficiency, power-user]
+  reads: [specs/Arx_2-1_Personas.md]
+  veto: false
+
+- id: s1-alex-degen
+  class: user
+  model: sonnet
+  lens: "I'm aggressive, new-ish, FOMO-prone. Does this keep me engaged without blowing me up?"
+  when: [engagement, social, viral, leverage, gamify]
+  reads: [specs/Arx_2-1_Personas.md]
+  veto: false
+
+- id: s3-marcus-institutional
+  class: user
+  model: sonnet
+  lens: "I'm institutional. Privacy matters. Execution quality matters. Nothing else."
+  when: [institutional, whale, privacy, custody, compliance, large-size]
+  reads: [specs/Arx_2-1_Personas.md]
+  veto: false
+
+# ═══════════════════════════════════════════════════════════
+# SPECIALIST — domain depth
+# ═══════════════════════════════════════════════════════════
+
+- id: architect
+  class: specialist
+  model: opus
+  lens: "What's the contract? Module boundaries, types, data flow."
+  when: [feature, build, architecture, api, contract, refactor]
+  reads: [specs/INDEX.md]
+  veto: false
+
+- id: code-reviewer
+  class: specialist
+  model: sonnet
+  lens: "Security + correctness first, quality second. >80% confidence filter."
+  when: [code, pr, diff, review]
+  reads: []
+  veto: false
+
+- id: crypto-sec
+  class: specialist
+  model: sonnet
+  lens: "Attack surface: keys, signing, MEV, approvals. What breaks under malice?"
+  when: [money, custody, sign, deploy, wallet, transaction, key]
+  reads: []
+  veto: true
+  notes: "Veto power. Any BLOCK halts the loop."
+
+- id: trader-ux
+  class: specialist
+  model: sonnet
+  lens: "Order entry flow, price display, position management. Where does flow break?"
+  when: [order, price, position, chart, trade, execution]
+  reads: []
+  veto: false
+
+- id: risk-analyst
+  class: specialist
+  model: sonnet
+  lens: "Margin, liquidation, leverage guards. Where does money evaporate?"
+  when: [margin, leverage, liquidation, risk, position]
+  reads: []
+  veto: false
+
+- id: design-auditor
+  class: specialist
+  model: sonnet
+  lens: "Taste. Feel. Anti-slop. Does this meet the reference floor?"
+  when: [design, ui, visual, card, feel, layout]
+  reads: [DESIGN.md, specs/Arx_4-3_Design_Taste.md]
+  veto: false
+
+- id: market-analyst
+  class: specialist
+  model: sonnet
+  lens: "Market size, adoption, failed attempts, adjacent patterns."
+  when: [market, competitor, adoption, size, pricing]
+  reads: [specs/Arx_2-3_Competitive_Landscape.md]
+  veto: false
+
+- id: competitor-crawler
+  class: specialist
+  model: sonnet
+  lens: "What does the competition actually do? Screenshots, pricing, reviews."
+  when: [competitor, benchmark, reference, how-does-x-do]
+  reads: []
+  veto: false
+
+- id: mobile-perf
+  class: specialist
+  model: haiku
+  lens: "Bundle size, render cost, network chatter."
+  when: [mobile, performance, bundle, render, load]
+  reads: []
+  veto: false
+
+# ═══════════════════════════════════════════════════════════
+# INFRA — resources, memory, continuity
+# ═══════════════════════════════════════════════════════════
+
+- id: tool-scout
+  class: infra
+  model: haiku
+  lens: "What tools exist for this task? Any installed? Any MCP candidates?"
+  when: [new-domain, unfamiliar, setup, integration, mcp]
+  reads: [settings/settings.json, SETUP.md]
+  veto: false
+  notes: "Calls mcp-registry.search if available. Proposes, never installs."
+
+- id: episode-recaller
+  class: infra
+  model: haiku
+  lens: "Similar tasks we've done before — what worked, what didn't."
+  when: always
+  reads: [memory/episodes.md, memory/procedure_*.md]
+  veto: false
+  notes: "Short output — top-3 relevant episodes only."
+
+- id: spec-rag
+  class: infra
+  model: haiku
+  lens: "Semantic search over existing specs. Surface related artifacts."
+  when: [spec, reference, related]
+  reads: []
+  veto: false
+  notes: "Uses spec-rag MCP if available. Falls back to grep."
+
+# ═══════════════════════════════════════════════════════════
+# Registry cap: 25 entries. Above 25 = merge or demote.
+# ═══════════════════════════════════════════════════════════
