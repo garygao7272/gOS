@@ -43,46 +43,24 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Input:** 1-2 sentence seed idea
 
-**Process:** Spawn 3 parallel agents for adversarial validation. **All 3 launch in a single message:**
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-```
-Agent(
-  prompt = "You are pm-researcher. Analyze: '{seed}'.
-            WHO has this pain, HOW BADLY, WHAT they do today.
-            Output: JTBD analysis, positioning, customer interview questions.
-            Read specs/Arx_2-1* for existing persona context.",
-  subagent_type = "general-purpose",
-  model = "sonnet",
-  run_in_background = true
-)
-
-Agent(
-  prompt = "You are first-principles analyst. Decompose '{seed}' to atomic assumptions.
-            Challenge each assumption. Generate 5 alternative framings.
-            Read specs/ for existing Arx context.",
-  subagent_type = "general-purpose",
-  model = "opus",
-  run_in_background = true
-)
-
-Agent(
-  prompt = "You are market-analyst. Research '{seed}'.
-            Search for: market size, adoption rates, failed attempts,
-            adjacent solutions in non-crypto markets.
-            Use WebSearch for current data. Every claim needs a source.",
-  subagent_type = "general-purpose",
-  model = "sonnet",
-  run_in_background = true
-)
-```
-
-**Cross-examination:** After all 3 report, challenge findings across agents — "Agent 1 found JTBD X. Agent 2, is that the real job or a surface symptom?"
-
-**Synthesis:** Validated user pain + first-principles framing + market evidence. Resolve contradictions — note disagreements and your recommendation.
+1. Spawn `pev-planner` with: task = seed idea, task_class = exploration, pool hint:
+   - **Meta (always):** `first-principles`, `contrarian`
+   - **User council:** pick 2+ personas relevant to seed (default: `copier`, `pro-trader` if seed touches copy/trust/trading; else 2 from s-series)
+   - **Market:** `market-analyst`
+   - **Infra:** `episode-recaller` (prior discover jobs on similar seeds)
+2. Planner writes `outputs/gos-jobs/{job-id}/roster.json`. Present roster summary to Gary. Wait for approval.
+3. Spawn approved roster in parallel — each writes to `artifacts/{agent}.md` + append to `blackboard.md`.
+4. Spawn `pev-validator` (fresh context) → `round-{N}/verdict.md`.
+5. Decide:
+   - **CONVERGED** → `adjudicator` synthesizes → `synthesis.md` → present to Gary.
+   - **ITERATE** → planner revises roster (add fact-checker or refine contract) → round N+1 (max 3).
+   - **STUCK** → escalate to Gary with what was tried + options.
 
 **Exit Gate:** "What specific pain from `specs/Arx_2-1` does this solve? If new, add it."
 
-**Output:** `outputs/think/discover/{seed_slug}.md`. Suggest promotion to `specs/Arx_3-X`.
+**Output:** `outputs/think/discover/{seed_slug}.md` (promoted from `synthesis.md`). Suggest promotion to `specs/Arx_3-X`.
 
 ---
 
@@ -140,49 +118,23 @@ If disputed claims: route fact-checks between agents after initial reports.
 
 **Input:** Decision question (e.g., "should copy trading show full P&L transparency?")
 
-**Process:** Spawn 5 parallel agents (Six Thinking Hats), then 1 adjudicator. **First 5 launch in a single message:**
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-```
-Agent(
-  prompt = "You are white-hat analyst. Question: '{question}'.
-            Provide ONLY data and benchmarks. Check specs/Arx_9-1_Decision_Log.md
-            for prior decisions. Numbers, facts, evidence only.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
+1. Spawn `pev-planner` with: task = decision question, task_class = synthesis, pool hint:
+   - **Meta:** `first-principles` (decompose the decision), `contrarian` (pre-mortem)
+   - **User council:** ≥2 personas affected by the decision (planner picks from copier/pro-trader/s-series based on keywords)
+   - **Specialists:** match domain — `crypto-sec` if money/keys, `risk-analyst` if leverage/margin, `trader-ux` if UX flow
+   - **Evidence:** `market-analyst` for data-backed claims
+   - **Memory:** `episode-recaller` to check `specs/Arx_9-1_Decision_Log.md` for prior decisions
+2. Planner writes `roster.json`. Present to Gary. Wait for approval.
+3. Execute roster in parallel. Each agent argues from their lens; `crypto-sec` can VETO.
+4. `pev-validator` scores convergence → verdict.
+5. Decide:
+   - **CONVERGED** → `adjudicator` produces recommendation with confidence (HIGH/MEDIUM/LOW).
+   - **ITERATE** → planner refines contracts for unresolved dimension → round N+1 (max 3).
+   - **STUCK** → escalate with options for Gary.
 
-Agent(
-  prompt = "You are red-hat analyst. Question: '{question}'.
-            Intuition pass. What would users FEEL? Gut reactions from
-            S7-Sarah (cautious), S2-Jake (efficiency), S1-Alex (excitement).
-            Read specs/Arx_2-1* for persona context.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are black-hat analyst. Question: '{question}'.
-            Risks ONLY. Research failures of similar decisions.
-            Use WebSearch for case studies. What goes wrong and why.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are yellow-hat analyst. Question: '{question}'.
-            Best case ONLY. What opportunities does this create?
-            Second-order benefits. Strategic upside.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-
-Agent(
-  prompt = "You are green-hat analyst. Question: '{question}'.
-            Alternatives ONLY. Generate 3-5 options no one considered.
-            Lateral thinking. Reframe the question itself.",
-  subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-)
-```
-
-**After all 5 report,** the lead (opus) cross-examines disagreements and synthesizes recommendation with confidence (HIGH/MEDIUM/LOW).
-
-**Output:** `outputs/think/decide/{question_slug}.md`. Include: question, context, options, six-hat analysis, decision + rationale, confidence, review date. Suggest appending to Decision Log.
+**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, options, per-agent positions, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
 
 ---
 

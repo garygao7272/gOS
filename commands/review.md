@@ -198,23 +198,27 @@ Agent(
 
 **Purpose:** Full multi-persona review with live adjudication.
 
-**Team Mode (always):** Council spawns reviewer agents in 3 waves with cross-examination.
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-- **Wave 1** (4 user personas, 2x vote weight): S2 Jake, S7 Sarah, S1 Alex, S3 Marcus
-- **Wave 2** (4 specialists, 1x weight): crypto-sec, performance, UX, data. **Early termination:** if Wave 1 BLOCKs, skip Wave 2.
-- **Wave 3** (1 contrarian, 1x weight): challenge consensus, find overlooked risks
-- **Veto:** `crypto-sec` BLOCK is absolute. Any Wave 1 user BLOCK → overall BLOCK.
-- **Adjudication:** Conductor routes conflicts via cross-examination between disagreeing agents.
+1. Spawn `pev-planner` with: task = review target, task_class = verification, risk_level = medium/high, pool hint:
+   - **User council (2x vote weight):** `s2-jake`, `s7-sarah`, `s1-alex`, `s3-marcus` — planner may drop one if target clearly doesn't touch their lens
+   - **Specialists (1x weight):** `crypto-sec` (VETO), `trader-ux`, `risk-analyst`, `mobile-perf`
+   - **Strategic (1x):** `contrarian` (pre-mortem)
+   - Planner can add `design-auditor` if target is UI/prototype
+2. Present roster to Gary. Wait for approval.
+3. Execute in parallel — each persona produces APPROVE/CONCERN/BLOCK verdict with kill shot + steel man. Vote weight carried in `contract.weight`.
+4. `pev-validator` scores:
+   - **Veto:** `crypto-sec` BLOCK → verdict STUCK (BLOCK absolute).
+   - **Wave-1 user BLOCK** → STUCK (user veto).
+   - Otherwise compute weighted consensus.
+5. Decide:
+   - **CONVERGED (APPROVE)** → `adjudicator` writes final synthesis → present.
+   - **ITERATE** → planner re-runs blocking subset only (not full council) → round N+1 (max 2 cycles).
+   - **STUCK** → present findings to Gary, wait for fix list, then re-run blocking subset.
 
-**Wave 1 — launch all 4 in a single message.** Each persona reviews through their lens with APPROVE/CONCERN/BLOCK verdict, kill shot + steel man.
+**Output:** Verdicts table (persona, type, verdict, kill shot, weight) → Weighted synthesis → Top 3 findings + actions. Artifact: `outputs/gos-jobs/{job-id}/synthesis.md`.
 
-**If Wave 1 has no BLOCKs, launch Wave 2** (crypto-sec, trader-ux, risk-analyst, mobile-perf) — all in a single message.
-
-**Wave 3** — contrarian reviews all prior findings, challenges consensus.
-
-**Convergence loop:** If council verdict is BLOCK, present findings → Gary decides fix list → apply fixes → re-run the blocking wave only. Max 2 council-fix cycles.
-
-**Persona definitions:**
+**Persona lenses** (planner uses these when writing contracts):
 
 | Persona | Type | Review Lens |
 |---------|------|-------------|
@@ -222,13 +226,11 @@ Agent(
 | s7-sarah | User | "Would Sarah set this up and feel safer?" |
 | s1-alex | User | "Does this keep Alex engaged AND prevent blow-up?" |
 | s3-marcus | User | "Does this degrade execution quality or privacy?" |
-| crypto-sec | Specialist | Key management, transaction signing, MEV, input validation |
+| crypto-sec | Specialist (VETO) | Key management, transaction signing, MEV, input validation |
 | trader-ux | Specialist | Order entry flow, price display, position management |
 | risk-analyst | Specialist | Margin calculations, liquidation warnings, leverage guards |
 | mobile-perf | Specialist | Bundle size, render performance, network efficiency |
 | contrarian | Strategic | Pre-mortem, kill shot, wargame, steel man |
-
-**Output:** Verdicts table (persona, type, verdict, kill shot, weight) → Weighted synthesis → Top 3 findings + actions
 
 ---
 
