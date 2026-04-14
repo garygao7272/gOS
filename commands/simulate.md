@@ -30,40 +30,21 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Purpose:** MiroFish market simulation. Regime detection, scenario generation, trade recommendations.
 
-**Team Mode:** Spawn `bull-case` + `bear-case` agents (sonnet) for adversarial scenario construction. Lead adjudicates: where do they agree (high confidence)? Where diverge (flag uncertainty)?
-
 **Period parsing:** Default 24h. Accepts: `48h`, `3d`, `7d`/`1w`, `2w`, `1m`, month names.
 
-**Process:**
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-1. **Data collection — launch 3 agents in a single message:**
-
-   ```
-   Agent(
-     prompt = "Fetch Hyperliquid market data for {period}:
-               get_tickers, get_candlestick (BTC/ETH/SOL, 1h+4h),
-               get_trades (BTC, count=50), get_book (BTC, depth=20).
-               Return structured data summary.",
-     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-   )
-
-   Agent(
-     prompt = "Research macro context for {period}: S&P 500, DXY, VIX,
-               Treasury yields, Fed rate expectations. Use WebSearch.
-               Every data point sourced. APAC + US focus.",
-     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-   )
-
-   Agent(
-     prompt = "Research crypto context for {period}: BTC dominance,
-               total market cap, protocol news, regulatory developments.
-               Use WebSearch. Every claim sourced.",
-     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-   )
-   ```
-2. **Regime detection:** Analyze price action across timeframes, cross-reference with macro, classify bull/bear/neutral/transition with confidence (0-100%)
-3. **Scenario generation:** Top 3 by probability (bull/base/bear). Each: trigger, probability, targets, timeline, catalysts
-4. **Trade recommendations:** Entry/target/stop/size/timeframe/rationale per trade. Portfolio-level risk assessment.
+1. Spawn `pev-planner` with: task = market sim for `{period}`, task_class = exploration, pool hint:
+   - `market-data-fetcher` — Hyperliquid: tickers, candles (BTC/ETH/SOL, 1h+4h), trades, book depth
+   - `market-analyst` (macro contract) — S&P 500, DXY, VIX, Treasury yields, Fed expectations; APAC+US focus
+   - `market-analyst` (crypto contract) — BTC dominance, total cap, protocol news, regulatory
+   - `bull-case` — adversarial bull scenario with triggers + targets
+   - `bear-case` — adversarial bear scenario with triggers + targets
+   - Optional `episode-recaller` if similar period was run recently
+2. Planner writes `roster.json`. Present. Approve.
+3. Execute in parallel. Each agent sources every claim; WebSearch required for external data.
+4. `pev-validator` cross-examines bull vs bear on factual claims (agree on facts, may disagree on interpretation). Any unsourced claim → ITERATE with `fact-checker`.
+5. **CONVERGED** → `adjudicator` synthesizes: regime classification (bull/bear/neutral/transition + confidence 0-100%), 3 scenarios (bull/base/bear with probability/targets/timeline/catalysts), trade recommendations (entry/target/stop/size/rationale), portfolio risk summary.
 
 **Output sections:** Regime Assessment (indicators table) → Key Events → Scenarios (3) → Risk Signals → Opportunities table → Portfolio Risk Summary
 
@@ -77,39 +58,20 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Purpose:** Forward-looking projection. "What if ETH drops 40%", "what if competitor raises $50M".
 
-**Team decision:** If conflicting evidence → team agents. Otherwise ad-hoc.
+**Classify first:** Market scenario (Hyperliquid + WebSearch), Product scenario (specs/ + WebSearch), Business scenario (WebSearch).
 
-**Process:**
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-1. Parse what-if statement
-2. **Classify:** Market scenario (use Hyperliquid + WebSearch), Product scenario (use specs/ + WebSearch), Business scenario (use WebSearch)
-3. **Research — launch 3 agents in a single message:**
-
-   ```
-   Agent(
-     prompt = "Historical analyst for scenario: '{what-if}'.
-               Find 3-5 historical precedents. Dates, outcomes,
-               what was different. Use WebSearch. Sources required.",
-     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-   )
-
-   Agent(
-     prompt = "Current-context analyst for scenario: '{what-if}'.
-               Current market state, positioning, sentiment.
-               Use WebSearch + Hyperliquid MCP if market scenario.",
-     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-   )
-
-   Agent(
-     prompt = "Second-order analyst for scenario: '{what-if}'.
-               Map cascading effects: if X then Y then Z.
-               Consider Arx-specific impact. Read specs/ for context.",
-     subagent_type = "general-purpose", model = "sonnet", run_in_background = true
-   )
-   ```
-4. **Project outcomes:** Best case (20th %ile), Expected (50th), Worst (80th), Black swan (95th) — each with probability and Arx impact
-5. **Decision matrix:** Actions by timeframe (week/month/quarter) × likelihood
-6. **Key assumptions** that must hold
+1. Spawn `pev-planner` with: task = scenario `{what-if}`, task_class = exploration, pool hint:
+   - `market-analyst` (historical contract) — 3-5 precedents with dates, outcomes, what was different
+   - `market-analyst` (current contract) — current state, positioning, sentiment (+ Hyperliquid MCP if market-class)
+   - `first-principles` — second-order cascading effects: if X then Y then Z; Arx-specific impact
+   - `contrarian` — pre-mortem on the what-if framing itself (is the question well-posed?)
+   - Optional `spec-rag` if product/business scenario touches Arx specs
+2. Planner writes `roster.json`. Present. Approve.
+3. Execute in parallel. Every claim sourced.
+4. `pev-validator` checks: factual disagreements across agents, unsourced claims, time-staleness. Disputed facts → ITERATE with `fact-checker`.
+5. **CONVERGED** → `adjudicator` writes: Projected Outcomes (best 20th / expected 50th / worst 80th / black-swan 95th percentile + probabilities + Arx impact), Decision Matrix (actions × timeframe × likelihood), Key Assumptions that must hold.
 
 **Output sections:** Current State → Historical Precedents → Projected Outcomes table → Second-Order Effects → Decision Matrix → Key Assumptions
 

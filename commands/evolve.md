@@ -30,33 +30,21 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
 - Scheduled: weekly
 - After 20+ signals accumulated without an audit
 
-**Process:**
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-1. **Gather evidence — launch 3 agents in a single message:**
+1. Spawn `pev-planner` with: task = health audit, task_class = verification, pool hint:
+   - `signal-tallier` — read `sessions/evolve_signals.md` since last `--- AUDITED ---` marker, compute health per command: `(accepts + 2*loves) / total * 100`
+   - `feedback-miner` — read all `memory/feedback_*.md`, group correction patterns by command, surface repeats (3+)
+   - `activity-summarizer` — `git log --oneline -30`, map commits to commands exercised, shipping cadence
+   - Optional `episode-recaller` — pull prior audit (`memory/evolve_audit_*.md`) for trend comparison
+2. Planner writes `roster.json`. Present. Approve.
+3. Execute in parallel. Each agent writes to `artifacts/{agent}.md`.
+4. `pev-validator` cross-checks: do signal counts reconcile with git activity? Do feedback patterns map to reworks in signals? Inconsistency → ITERATE.
+5. **CONVERGED** → `adjudicator` produces the health table, shipping stats, trend comparison, diagnosis, and prioritized recommendations (see steps 2-8 below).
 
-   ```
-   Agent(
-     prompt = "Read sessions/evolve_signals.md. Tally signals per command since
-               the last '--- AUDITED ---' marker. Compute health score per command:
-               (accepts + 2*loves) / total * 100. Return: command health table.",
-     subagent_type = "general-purpose", model = "haiku", run_in_background = true
-   )
+**Audit outputs:**
 
-   Agent(
-     prompt = "Read all memory/feedback_*.md files. Summarize: what did Gary correct?
-               What patterns repeat? Group by command. Return: correction patterns.",
-     subagent_type = "general-purpose", model = "haiku", run_in_background = true
-   )
-
-   Agent(
-     prompt = "Run: git log --oneline -30. Summarize: what was built recently?
-               Which commands were exercised? Any shipping patterns?
-               Return: activity summary.",
-     subagent_type = "general-purpose", model = "haiku", run_in_background = true
-   )
-   ```
-
-2. **Score each gOS command:**
+1. **Score each gOS command:**
 
    For each command, tally signals and compute a health score:
 
@@ -68,7 +56,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
 
    Flag any command below 70% health.
 
-3. **Produce the health table:**
+2. **Produce the health table:**
 
    ```
    # gOS Health Audit — {date}
@@ -84,7 +72,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
    ...
    ```
 
-4. **Shipping analytics** (formerly retro):
+3. **Shipping analytics** (formerly retro):
 
    ```
    ## Shipping Stats
@@ -94,12 +82,12 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
    - Lines changed: {from git diff --stat}
    ```
 
-5. **Trends:** For each command, compare current health to previous audit:
+4. **Trends:** For each command, compare current health to previous audit:
    - Improving (health went up)
    - Stable (within 5%)
    - Degrading (health went down)
 
-6. **Diagnose issues:**
+5. **Diagnose issues:**
 
    | Pattern | What It Means | Fix |
    |---------|--------------|-----|
@@ -109,12 +97,12 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
    | Never used | Command isn't useful or isn't discoverable | Merge, rename, or document better |
    | High love rate | This command nails it | Protect — don't change what works |
 
-7. **Generate recommendations:**
+6. **Generate recommendations:**
    - Rank issues by impact (most reworks + rejects first)
    - Propose specific fixes (file + section + change)
    - Flag commands to add/remove/merge
 
-8. **Present to Gary:**
+7. **Present to Gary:**
    ```
    ## Recommendations
    1. {specific fix} — impact: {high/medium}
@@ -124,7 +112,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
    Want me to apply them?
    ```
 
-9. **After audit:** Log audit results to `memory/evolve_audit_{date}.md`. Mark signal log with `--- AUDITED {date} ---` separator.
+8. **After audit:** Log audit results to `memory/evolve_audit_{date}.md`. Mark signal log with `--- AUDITED {date} ---` separator.
 
 ---
 

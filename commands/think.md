@@ -72,43 +72,20 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers. Frame recommendations as "build on top of X" not "replace with Y". (Instinct: audit-existing-tools)
 
-**Process:** Spawn 3 parallel agents. **All 3 launch in a single message:**
+### Execution — PEV (see `specs/pev-protocol.md`)
 
-```
-Agent(
-  prompt = "You are deep-researcher. Research '{question}'.
-            Find: academic papers, industry reports, expert analyses.
-            Focus on data and numbers. Every claim sourced.
-            Use WebSearch extensively.",
-  subagent_type = "general-purpose",
-  model = "sonnet",
-  run_in_background = true
-)
+1. Spawn `pev-planner` with: task = research question, task_class = exploration, pool hint:
+   - `market-analyst` — academic papers, industry reports, data + sources
+   - `competitor-crawler` — 3-5 competitors' features/pricing/UX/reviews
+   - `spec-rag` — cross-reference with `specs/Arx_2-3_Competitive_Landscape.md`, identify gaps
+   - `first-principles` — decompose the research question into atomic sub-questions
+   - `tool-scout` (if question touches tooling/MCP/infra) — audit existing stack first
+2. Planner writes `roster.json`. Present. Approve.
+3. Execute in parallel. Each agent sources every claim; WebSearch required for external facts.
+4. `pev-validator` cross-examines disputed claims across artifacts. If fact conflict → ITERATE with `fact-checker` added.
+5. **CONVERGED** → `adjudicator` writes: numbered findings with sources → data points → competitive table → Arx implications → open questions.
 
-Agent(
-  prompt = "You are competitor-crawler. Research '{question}'.
-            Crawl 3-5 competitor products: features, pricing, UX patterns, reviews.
-            Use WebSearch + WebFetch for product pages.",
-  subagent_type = "general-purpose",
-  model = "sonnet",
-  run_in_background = true
-)
-
-Agent(
-  prompt = "You are cross-referencer. Research '{question}'.
-            Cross-reference findings with specs/Arx_2-3_Competitive_Landscape.md.
-            Read the spec, identify gaps or contradictions with current landscape.",
-  subagent_type = "general-purpose",
-  model = "haiku",
-  run_in_background = true
-)
-```
-
-If disputed claims: route fact-checks between agents after initial reports.
-
-**Synthesis:** Key findings (numbered, sourced) → data points → competitive table → Arx implications → open questions.
-
-**Output:** `outputs/think/research/{question_slug}.md`. Suggest promotion or spec update.
+**Output:** `outputs/think/research/{question_slug}.md` (promoted from `synthesis.md`). Suggest promotion or spec update.
 
 ---
 
