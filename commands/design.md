@@ -136,25 +136,14 @@ Build in code first (fastest iteration, real interactions), then push to Figma f
 
 **Pre-flight:** Build card exists? Feel section present? DESIGN.md current?
 
-### Step 1: Gather Context (parallel — all in ONE message)
+### Step 1: Gather Context — PEV (see `specs/pev-protocol.md`)
 
-```
-Agent(
-  prompt = "Read these files and extract design-relevant context:
-            1. Build card at specs/Arx_4-1-1-*_{screen}*.md
-            2. DESIGN.md — full design language
-            3. specs/Arx_4-3_Design_Taste.md — Apple craft reference
-            Return: feel token, color palette, typography, component list.",
-  subagent_type = "general-purpose", model = "haiku", run_in_background = true
-)
+Spawn `pev-planner` with task_class=synthesis, pool hint:
+- `spec-rag` — read build card + DESIGN.md + Arx_4-3, extract feel/palette/type/components
+- `spec-rag` (2nd contract) — read Arx_4-1-1-8 fixtures, extract mock data for all 5 states
+- Optional: `design-auditor` if screen already has prior prototypes (fold in lessons)
 
-Agent(
-  prompt = "Read specs/Arx_4-1-1-8_Mock_Data_Fixtures.md and extract
-            fixture data for '{screen}'. Return realistic mock data
-            for all states: populated, empty, loading, error, overflow.",
-  subagent_type = "general-purpose", model = "haiku", run_in_background = true
-)
-```
+Planner writes roster. Execute in parallel. `pev-validator` checks the two artifacts are consistent (fixtures match components referenced). Output feeds Step 2.
 
 ### Step 2: Generate HTML Prototype
 Dispatch subagent to write self-contained HTML file. Include: full build card content, ALL design tokens from DESIGN.md §1, Apple craft specs (animation curves, springs, glass tiers, micro-interactions), Inter + JetBrains Mono from CDN, 390×844 viewport, fixture data. Apply mandatory features from Apple Craft Reference: loading skeleton, price tick flash, list stagger-in, card tap feedback, glass cards, sparkline draw, all state transitions animated.
@@ -192,29 +181,15 @@ Use Figma MCP to recreate with design system components. Import components by ke
 4. Figma variables via MCP
 5. `apps/web-prototype` CSS `:root` variables
 
-**Audit — parallel agents check each target (all in ONE message):**
+**Audit — PEV (see `specs/pev-protocol.md`):**
 
-```
-Agent(
-  prompt = "Audit design token consistency between specs/Arx_4-2_Design_System.md
-            and DESIGN.md. Report any drift: token values, names, missing entries.",
-  subagent_type = "general-purpose", model = "haiku", run_in_background = true
-)
+Spawn `pev-planner` with task_class=verification, pool hint:
+- `design-auditor` — token drift between Arx_4-2 and DESIGN.md
+- `design-auditor` (2nd contract) — CSS `:root` in `apps/web-prototype/` vs Arx_4-2 (hardcoded hex, missing tokens)
+- `design-auditor` (3rd contract) — build card component refs vs Arx_4-2 component registry
+- Optional: `tool-scout` if new design tool (Figma MCP variable) changed the source of truth
 
-Agent(
-  prompt = "Audit apps/web-prototype/ CSS :root variables against
-            specs/Arx_4-2_Design_System.md. Report hardcoded colors,
-            missing tokens, value mismatches.",
-  subagent_type = "general-purpose", model = "haiku", run_in_background = true
-)
-
-Agent(
-  prompt = "Audit build card component references across specs/Arx_4-1-1-*.md
-            against the component registry in specs/Arx_4-2_Design_System.md.
-            Report missing components, name mismatches, icon gaps.",
-  subagent_type = "general-purpose", model = "haiku", run_in_background = true
-)
-```
+Planner writes roster. Execute in parallel. `pev-validator` consolidates drift reports; any CRITICAL (e.g., hardcoded color in production) blocks with STUCK. Adjudicator synthesizes fix list for Gary.
 
 ---
 

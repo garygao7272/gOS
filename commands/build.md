@@ -67,48 +67,24 @@ DEFINITION OF DONE:
 Gary confirms → write contract to `outputs/build/{slug}/contract.md`. This is the **single source of truth** for the build session. Every later step (tests, code, verify) checks against this contract.
 
 **Team decision:**
-- Complex features touching 3+ systems → spawn parallel Agent workers. Architect first, then engineers in parallel.
+- Complex features touching 3+ systems → run via PEV (below).
 - Simple features → sequential execution (single session).
 
-**Complex feature agent pattern:**
+### Execution — PEV for complex features (see `specs/pev-protocol.md`)
 
-Step 1 — Architect designs the API contract (blocking):
-```
-Agent(
-  prompt = "You are the architect for '{feature}'.
-            Read {spec}. Design the API contract: types, interfaces,
-            data flow, module boundaries. Output: contract.md with
-            types, function signatures, file layout.",
-  subagent_type = "architect", model = "opus"
-)
-```
+Build is two-phase: architect (blocking) → parallel executors → validator.
 
-Step 2 — Engineers implement in parallel (all in ONE message):
-```
-Agent(
-  prompt = "You are engineer-1. Implement {module_1} per this contract:
-            {contract from architect}. TDD: write tests first, then implement.
-            Follow existing patterns in the codebase.",
-  subagent_type = "general-purpose", model = "sonnet",
-  isolation = "worktree", run_in_background = true
-)
-
-Agent(
-  prompt = "You are engineer-2. Implement {module_2} per this contract:
-            {contract from architect}. TDD: write tests first, then implement.",
-  subagent_type = "general-purpose", model = "sonnet",
-  isolation = "worktree", run_in_background = true
-)
-```
-
-Step 3 — Verifier checks all outputs:
-```
-Agent(
-  prompt = "Verify all engineer outputs against the architect contract.
-            Check: types match, tests pass, no file conflicts, 80%+ coverage.",
-  subagent_type = "code-reviewer", model = "haiku"
-)
-```
+1. **Phase 1 — Architect (blocking):** Spawn `pev-planner` with task_class=execution, pool hint: `architect` only. Planner writes roster with architect's contract (reads spec, writes contract.md with types/signatures/file-layout). Gary approves. Architect runs alone. Output is the executor contract for Phase 2.
+2. **Phase 2 — Engineers + Validator:** Re-invoke `pev-planner` with architect's contract + module list. Pool hint:
+   - 1 engineer per module (sonnet, `isolation: worktree`, reads architect contract + existing patterns)
+   - `code-reviewer` as validator lens (integrated in PEV via `pev-validator` reading all engineer artifacts)
+   - If risk=high or security-sensitive: add `crypto-sec` (VETO)
+3. Present roster, approve, execute in parallel.
+4. `pev-validator` checks: types match, tests pass, no file conflicts, ≥80% coverage, contract adherence.
+5. Decide:
+   - **CONVERGED** → `adjudicator` writes merge plan → Gary approves → commit.
+   - **ITERATE** → planner refines failing module's contract → round N+1 (max 2, builds are expensive).
+   - **STUCK** → escalate to Gary with what broke.
 
 **Before building:**
 
