@@ -61,6 +61,15 @@ if [ -x "$MATRIX" ]; then
   bash "$MATRIX"
 fi
 
+# --- 4b. File length check (ergonomic caps, warn-only) ---
+echo ""
+LENGTH_CHECK="$PROJECT_DIR/tools/file-length-check.sh"
+if [ -x "$LENGTH_CHECK" ]; then
+  if ! bash "$LENGTH_CHECK" | tail -20; then
+    WARNINGS=$((WARNINGS + 1))
+  fi
+fi
+
 # --- 5. Global sync check (commands + hooks vs ~/.claude/) ---
 echo ""
 SYNC_DRIFT=0

@@ -39,6 +39,33 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What are we building?
 
 **Purpose:** Full feature implementation with TDD. Strictly sequential.
 
+### Declare boundary before building (mandatory — INV-G06)
+
+Before writing any code, produce and confirm the boundary contract with Gary:
+
+```
+IN SCOPE:
+- [Specific testable outcome 1]
+- [Specific testable outcome 2]
+
+OUT OF SCOPE:
+- [What this feature explicitly does NOT include]
+- [Which adjacent system is handling X instead]
+
+NEVER (non-negotiable):
+- [Prohibition with named catastrophe, e.g., "Don't touch spec files — catastrophe: silent spec drift"]
+- [Reference relevant INV-Gxx]
+
+INVARIANTS REFERENCED: [List INV-Gxx + project INV-Pxx that apply]
+DEFINITION OF DONE:
+- [ ] [Testable outcome 1]
+- [ ] [Testable outcome 2]
+- [ ] Compliance matrix → outputs/build/{slug}/compliance.md
+- [ ] Assumption log → outputs/build/{slug}/assumptions.md
+```
+
+Gary confirms → write contract to `outputs/build/{slug}/contract.md`. This is the **single source of truth** for the build session. Every later step (tests, code, verify) checks against this contract.
+
 **Team decision:**
 - Complex features touching 3+ systems → spawn parallel Agent workers. Architect first, then engineers in parallel.
 - Simple features → sequential execution (single session).
