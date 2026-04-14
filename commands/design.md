@@ -43,6 +43,23 @@ This unlocks `/build` via the phase gate. See `specs/handoff-schemas.md`.
 
 ---
 
+## Synthesis boundary (INV-G10)
+
+`/design` is synthesis. Every card/ui/system invocation must declare before producing:
+
+```
+IN SCOPE: [what this design produces]
+OUT OF SCOPE: [adjacent design concerns handled elsewhere]
+NEVER: [visual prohibitions — e.g., "no gradients" (INV from design system), "no hardcoded hex"]
+INVARIANTS: [list INV-Gxx + DESIGN.md rules that apply]
+```
+
+For `/design card`: boundary is captured in the Product Half's Scope section — ensure IN/OUT/NEVER are explicit.
+For `/design ui`: boundary is the visual contract — what screen, what feel token, what states.
+For `/design system`: boundary is the token set being added/modified, and the propagation targets.
+
+---
+
 ## Three Mandatory Gates (NON-SKIPPABLE)
 
 ### Gate -1: REFERENCE RESEARCH (before visual decisions)

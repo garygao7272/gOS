@@ -140,6 +140,16 @@ Agent(
 
 **Spec Sync:** After building, check if implementation diverges from spec. Update spec with sync annotation.
 
+**Mandatory deliverables (INV-G06, INV-G07) — emit before declaring done:**
+
+1. **Compliance matrix** → `outputs/build/{slug}/compliance.md` — map each Definition-of-Done item to `file:line` with status (✅ / ⚠️ / ❌). Template at `outputs/build/.template/compliance.md`.
+
+2. **Assumption log** → `outputs/build/{slug}/assumptions.md` — every decision made outside the declared contract. Template at `outputs/build/.template/assumptions.md`.
+
+3. **First-principles self-check (INV-G01):** Before marking complete, verify the implementation reflects root-cause decomposition, not analogical pattern-matching. If you built "like Robinhood does", rewrite the rationale in terms of the mechanism.
+
+`/ship` blocks commits that include `/build feature` output without these files. Exempt: `/build fix` < 50 LOC, `/build prototype`, `/build refactor`.
+
 ---
 
 ## prototype <description>

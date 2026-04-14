@@ -15,6 +15,15 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 The complete delivery pipeline. Run when work is done and ready to go out.
 
+**Boundary check (INV-G06, INV-G07) — runs first:**
+
+Before any commit, if the diff includes a `/build feature` output (anything under `apps/` or a new module):
+1. Check for `outputs/build/{slug}/compliance.md` — must exist with no ⚠️/❌ rows
+2. Check for `outputs/build/{slug}/assumptions.md` — must exist (may be empty)
+3. If missing: BLOCK with "Build deliverables missing. Run /build feature emitter or `/review fresh` first."
+
+Small fixes (<50 LOC, no new files, `/build fix` only): exempt. Everything else: enforced.
+
 **Pre-ship parallel checks** — launch all in a single message before committing:
 
 ```

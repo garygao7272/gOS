@@ -24,6 +24,55 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 ---
 
+## fresh
+
+**Purpose:** Clean-context spec-vs-code verification (INV-G06). Spawns a fresh sonnet agent with **zero implementation context** — only the build contract + diff. Catches drift the implementing session is blind to.
+
+**When to run:** Automatically invoked by `/ship` for any `/build feature` output. Manual invocation for ad-hoc audits.
+
+**Input:**
+- `outputs/build/{slug}/contract.md` — declared IN/OUT/NEVER + DoD
+- `git diff {base}...HEAD` — what actually shipped
+- `outputs/build/{slug}/compliance.md` — claimed mapping (if present)
+
+**Process:**
+
+```
+Agent(
+  prompt = "You are a fresh spec-vs-code verifier. You have NO knowledge of
+            how this code was written. Below is the BUILD CONTRACT and the
+            DIFF. For each Definition-of-Done item in the contract:
+              1. Is it correctly implemented? Cite file:line.
+              2. Is it incorrectly implemented? Explain the deviation.
+              3. Is it missing? Flag it.
+            For each OUT OF SCOPE item: did any code violate it?
+            For each NEVER item: did any code violate it?
+            For code NOT in the contract: list it under 'Undeclared behavior'.
+            First-principles check (INV-G01): does the implementation reflect
+              causal decomposition, or analogical pattern-matching? Flag any
+              'like X' reasoning without a named mechanism.
+            Verdict: PASS / PARTIAL / FAIL.
+
+            CONTRACT:
+            {contract.md content}
+
+            DIFF:
+            {git diff output}",
+  subagent_type = "general-purpose",
+  model = "sonnet",
+  run_in_background = false
+)
+```
+
+**Output:** `outputs/build/{slug}/verify.md` — verdict table + gap list. `/ship` reads this and blocks on FAIL.
+
+**Anti-patterns:**
+- Never feed this agent the implementation session's conversation history
+- Never let this agent write code — read-only verifier
+- Never shortcut — even if the implementing session "already reviewed its own work", run fresh
+
+---
+
 ## code
 
 **Purpose:** 2-pass PR review with Fix-First pattern. Use code-reviewer agent. If security findings, also invoke security-reviewer agent.

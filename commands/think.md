@@ -190,6 +190,17 @@ Agent(
 
 > **Strategy specs only.** Build cards are authored via `/design card`.
 
+**Synthesis boundary (INV-G10, INV-G01).** Spec writing is synthesis — boundary discipline applies.
+
+Before writing:
+```
+IN SCOPE: [what this spec answers]
+OUT OF SCOPE: [adjacent questions handled elsewhere — name the other spec]
+NEVER: [what this spec refuses to cover — and why]
+```
+
+**First-principles self-check (INV-G01):** Before finalizing, verify every claim traces to a mechanism, not an analogy. If any section leans on "like X" without naming the underlying cause, rewrite from primitives.
+
 **Purpose:** Write or update a strategy spec from upstream thinking.
 
 **Input:** Topic or spec file (e.g., "update personas in Arx_2-1")
