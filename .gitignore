@@ -8,6 +8,7 @@
 tools/spec-rag-env/
 tools/notte-env/
 node_modules/
+toolkit/*/node_modules/
 tools/sources-env/
 sessions/scratchpad.md
 __pycache__/

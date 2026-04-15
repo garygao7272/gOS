@@ -45,6 +45,9 @@ Score estimate: 6.78 → ~7.8 weighted. Needs formal rescore.
 - invariants.md now source-controlled at gOS/invariants.md; install.sh copies it (2026-04-15)
 - claws/ now installed by install.sh --global; hook chmod verification added (2026-04-15)
 - Fresh-clone reproducibility ~70% → ~95% (install.sh verified end-to-end) (2026-04-15)
+- Parity commit 067f04c shipped: invariants.md sourced + install.sh fixes + research artifacts (2026-04-15)
+- Evaluated 4 deferred P1s post-commit: 3 turned out false on first-principles (vocab, 24M gitignore, plugin dupe); shipped defensive `toolkit/*/node_modules/` gitignore only (2026-04-15)
+- **Meta signal logged**: simplify-scout had ~75% false-positive rate on P1 recommendations — premise not verified before recommending. Evolve candidate: tighten scout-agent contracts. (2026-04-15)
 
 ## Known Issues / Gaps
 
