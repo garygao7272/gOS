@@ -155,8 +155,8 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Session ending. Auto-persist (mandatory, never skip):\n1) Scan the ENTIRE conversation for unlogged evolve signals (accept/rework/reject/love/repeat/skip) and append to sessions/evolve_signals.md\n2) Update memory/L1_essential.md if any decisions, feedback, or project state changed\n3) Update sessions/state.json with current phase and recovery instructions\n4) If any memory files need updating (feedback corrections, project state changes), write them now\nReport: '[N] signals logged, L1 [updated/unchanged], state.json [updated/unchanged]'"
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-$HOME/.claude}/hooks/session-stop-gate.sh\""
           }
         ]
       }
