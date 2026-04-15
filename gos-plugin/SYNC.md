@@ -25,4 +25,3 @@ Edit in `commands/` → sync here. Direct edits here will be overwritten on next
 ## Frozen locations (not synced)
 
 - `gos-plugin-build/commands/` — historical snapshot, FROZEN
-- `gos-v4.3/commands/` — v4.3 snapshot, FROZEN
