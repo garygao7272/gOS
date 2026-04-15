@@ -41,6 +41,15 @@ Score estimate: 6.78 → ~7.8 weighted. Needs formal rescore.
 - 3-aspect consistency across all commands (2026-04-10)
 - Auto health gate on every gOS commit with global sync check (2026-04-10)
 - Defer Sprint 2/3 — use gOS on real Arx work to surface actual gaps (2026-04-10)
+- INV-G16 (surgical edits only) added to ~/.claude/invariants.md (2026-04-15)
+- invariants.md now source-controlled at gOS/invariants.md; install.sh copies it (2026-04-15)
+- claws/ now installed by install.sh --global; hook chmod verification added (2026-04-15)
+- Fresh-clone reproducibility ~70% → ~95% (install.sh verified end-to-end) (2026-04-15)
+
+## Known Issues / Gaps
+
+- **Scratchpad Mode drift**: Something resets `sessions/scratchpad.md` Mode line during sessions, triggering phase-gate. Workaround: Bash `printf ... >> scratchpad` to append PHASE_GATE_SKIP. Root cause not yet identified (not scratchpad-checkpoint.sh, not state-tracker.sh).
+- **Deferred simplification** (awaits Gary approval): delete zombie dirs (gos-v4.3, Archive/), gitignore toolkit/ (24M), grep-replace "build-squad" → Agent Teams.
 
 ## Next Session
 

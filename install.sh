@@ -172,13 +172,19 @@ for venv_name in spec-rag-env sources-env notte-env; do
         echo -e "  ${PASS} $venv_name"
     elif [[ "$MODE" != "check" ]]; then
         python3 -m venv "$TOOLKIT/$venv_name"
+        req_found=""
         for req_path in "$TOOLKIT/$mcp_name/requirements.txt" "$GOS_DIR/toolkit/$mcp_name/requirements.txt"; do
             if [[ -f "$req_path" ]]; then
                 "$TOOLKIT/$venv_name/bin/pip" install -q -r "$req_path"
+                req_found="$req_path"
                 break
             fi
         done
-        echo -e "  ${PASS} $venv_name (created)"; ((INSTALLED++))
+        if [[ -z "$req_found" ]]; then
+            echo -e "  ${FAIL} $venv_name: requirements.txt missing (checked $TOOLKIT/$mcp_name and $GOS_DIR/toolkit/$mcp_name)"; ((ERRORS++))
+        else
+            echo -e "  ${PASS} $venv_name (created)"; ((INSTALLED++))
+        fi
     else
         echo -e "  ${FAIL} $venv_name: missing"; ((ERRORS++))
     fi
@@ -199,6 +205,15 @@ if [[ "$MODE" == "global" ]]; then
         echo -e "    ${PASS} CLAUDE.md (co-creation pact)"
     else
         echo -e "    ${FAIL} templates/global-CLAUDE.md not found"; ((ERRORS++))
+    fi
+
+    # invariants.md — falsifiable global rules (INV-G01..G16)
+    echo -e "  ${CYAN}invariants.md${NC}"
+    if [[ -f "$GOS_DIR/invariants.md" ]]; then
+        cp "$GOS_DIR/invariants.md" "$CLAUDE_HOME/invariants.md"
+        echo -e "    ${PASS} invariants.md (global invariants)"
+    else
+        echo -e "    ${FAIL} invariants.md not found in gOS repo"; ((ERRORS++))
     fi
 
     # Commands
@@ -252,6 +267,21 @@ if [[ "$MODE" == "global" ]]; then
         echo -e "    ${PASS} $(basename "$f")"
     done
 
+    # Claws — persistent scheduled agents (source-monitor, spec-drift, market-regime)
+    echo -e "  ${CYAN}Claws${NC}"
+    if [[ -d "$GOS_DIR/claws" ]]; then
+        mkdir -p "$CLAUDE_HOME/claws"
+        for claw_dir in "$GOS_DIR"/claws/*/; do
+            [[ -d "$claw_dir" ]] || continue
+            name=$(basename "$claw_dir")
+            mkdir -p "$CLAUDE_HOME/claws/$name"
+            cp -R "$claw_dir"* "$CLAUDE_HOME/claws/$name/" 2>/dev/null
+            echo -e "    ${PASS} claws/$name"
+        done
+    else
+        echo -e "    ${WARN} claws/ dir not found in gOS repo"; ((WARNINGS++))
+    fi
+
     # Settings — MERGE hooks into existing settings.json (don't overwrite plugins/env)
     echo -e "  ${CYAN}Settings${NC}"
     if [[ -f "$GOS_DIR/settings/settings.json" ]]; then
@@ -299,11 +329,16 @@ with open('$CLAUDE_HOME/settings.json', 'w') as f:
     G_CMD=$(find "$CLAUDE_HOME/commands" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
     G_AGT=$(find "$CLAUDE_HOME/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
     G_SKL=$(find "$CLAUDE_HOME/skills" -maxdepth 2 -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
+    G_HOK=$(find "$CLAUDE_HOME/hooks" -name '*.sh' 2>/dev/null | wc -l | tr -d ' ')
+    G_CLW=$(find "$CLAUDE_HOME/claws" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
 
-    for f in "CLAUDE.md" "settings.json" "commands/gos.md" "agents/README.md"; do
+    for f in "CLAUDE.md" "invariants.md" "settings.json" "commands/gos.md" "agents/README.md"; do
         [[ -f "$CLAUDE_HOME/$f" ]] && echo -e "    ${PASS} $f" || { echo -e "    ${FAIL} $f"; ((ERRORS++)); }
     done
-    echo -e "\n  ${BOLD}Global:${NC} ${G_CMD} commands, ${G_AGT} agents, ${G_SKL} skills"
+    # Verify hooks are executable (any hook missing +x breaks runtime silently)
+    UNEXEC=$(find "$CLAUDE_HOME/hooks" -name '*.sh' ! -perm -u+x 2>/dev/null | wc -l | tr -d ' ')
+    [[ "$UNEXEC" == "0" ]] && echo -e "    ${PASS} all hooks executable" || { echo -e "    ${WARN} $UNEXEC hook(s) missing +x"; ((WARNINGS++)); }
+    echo -e "\n  ${BOLD}Global:${NC} ${G_CMD} commands, ${G_AGT} agents, ${G_SKL} skills, ${G_HOK} hooks, ${G_CLW} claws"
 fi
 
 # ════════════════════════════════════════════════════════════════
