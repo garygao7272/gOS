@@ -112,7 +112,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
    Want me to apply them?
    ```
 
-8. **After audit:** Log audit results to `memory/evolve_audit_{date}.md`. Mark signal log with `--- AUDITED {date} ---` separator.
+8. **After audit:** Log audit results to `memory/evolve_audit_{date}.md`. Mark signal log with `--- AUDITED {date} ---` separator. **Then, for every recommendation that produces a rule, correction, or known-gap, write a `memory/feedback_{slug}.md` entry inline in this same pass.** Capture is always inline — step 7's "Want me to apply them?" refers only to command-file edits, not feedback capture. Rationale: 2026-04-08 audit generated 2 concrete recommendations, 0 ended up in memory; deferred capture doesn't survive the session.
 
 ---
 
