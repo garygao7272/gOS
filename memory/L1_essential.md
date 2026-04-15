@@ -47,12 +47,13 @@ Score estimate: 6.78 → ~7.8 weighted. Needs formal rescore.
 - Fresh-clone reproducibility ~70% → ~95% (install.sh verified end-to-end) (2026-04-15)
 - Parity commit 067f04c shipped: invariants.md sourced + install.sh fixes + research artifacts (2026-04-15)
 - Evaluated 4 deferred P1s post-commit: 3 turned out false on first-principles (vocab, 24M gitignore, plugin dupe); shipped defensive `toolkit/*/node_modules/` gitignore only (2026-04-15)
+- Gary approved "A" (delete outright) for zombie dirs → commit 9fd2047: -87 files / -12143 lines (gos-v4.3/, gos-v4.3.zip, Archive/). SYNC.md updated. gos-plugin-build/ preserved per its own FROZEN.md. (2026-04-15)
 - **Meta signal logged**: simplify-scout had ~75% false-positive rate on P1 recommendations — premise not verified before recommending. Evolve candidate: tighten scout-agent contracts. (2026-04-15)
 
 ## Known Issues / Gaps
 
 - **Scratchpad Mode drift**: Something resets `sessions/scratchpad.md` Mode line during sessions, triggering phase-gate. Workaround: Bash `printf ... >> scratchpad` to append PHASE_GATE_SKIP. Root cause not yet identified (not scratchpad-checkpoint.sh, not state-tracker.sh).
-- **Deferred simplification** (awaits Gary approval): delete zombie dirs (gos-v4.3, Archive/), gitignore toolkit/ (24M), grep-replace "build-squad" → Agent Teams.
+- **Archive/ has untracked leftovers** on local disk only (iCloud dupes + command-archive/ + instincts-archived-20260409/). Not in repo. Local cleanup deferred — ask Gary before removing untracked subdirs that might have value.
 
 ## Next Session
 
