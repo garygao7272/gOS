@@ -217,12 +217,37 @@ if [[ "$MODE" == "global" ]]; then
     fi
 
     # Commands
+    # NOTE: In Claude Code ≥2.1.84, files in ~/.claude/commands/ register only as
+    # skills (via the Skill tool), NOT as /-autocompletable slash commands.
+    # For slash autocomplete, commands must live in a plugin. We (a) keep the
+    # legacy copy for skill-registry fallback + `/gos …` direct invocation, and
+    # (b) sync the canonical plugin build so `gos-plugin-build/` stays current
+    # for upload. See gos-plugin-build/commands/.
     echo -e "  ${CYAN}Commands${NC}"
     for f in "$GOS_DIR"/commands/*.md; do
         [[ -f "$f" ]] || continue
         cp "$f" "$CLAUDE_HOME/commands/"
         echo -e "    ${PASS} $(basename "$f")"
     done
+
+    # Plugin build sync — keep gos-plugin-build/commands/ identical to source.
+    # The plugin uploaded at garygao7272/gOS must contain these files for slash
+    # autocomplete to work in Claude Code ≥2.1.84. After this step, re-sync the
+    # upload via Customize → Plugins → gOS → Update.
+    echo -e "  ${CYAN}Plugin Build Sync${NC}"
+    PLUGIN_BUILD_DIR="$GOS_DIR/gos-plugin-build"
+    if [[ -d "$PLUGIN_BUILD_DIR/.claude-plugin" ]]; then
+        mkdir -p "$PLUGIN_BUILD_DIR/commands"
+        for f in "$GOS_DIR"/commands/*.md; do
+            [[ -f "$f" ]] || continue
+            cp "$f" "$PLUGIN_BUILD_DIR/commands/"
+        done
+        PB_CMD=$(find "$PLUGIN_BUILD_DIR/commands" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+        echo -e "    ${PASS} gos-plugin-build/commands/ (${PB_CMD} files)"
+        echo -e "    ${DIM}→ Re-sync upload: Claude Code → Customize → Plugins → gOS → Update${NC}"
+    else
+        echo -e "    ${WARN} gos-plugin-build/.claude-plugin/ missing — plugin build skipped"; ((WARNINGS++))
+    fi
 
     # Agents
     echo -e "  ${CYAN}Agents${NC}"
