@@ -1,5 +1,4 @@
 ---
-effort: max
 description: "Simulate: market (MiroFish), scenario (what-if), backtest (historical), dux (full engine)"
 ---
 

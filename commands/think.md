@@ -1,5 +1,4 @@
 ---
-effort: high
 description: "Think mode: discover, research, decide, spec, intake — outputs to outputs/think/, promotes to specs/"
 ---
 

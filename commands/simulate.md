@@ -1,5 +1,4 @@
 ---
-effort: max
 description: "Simulate: market (MiroFish + backtest), scenario (what-if + Dux engine), flow (JTBD user journey)"
 ---
 

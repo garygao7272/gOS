@@ -1,5 +1,4 @@
 ---
-effort: medium
 description: "Ship — deliver: commit, pr, deploy, docs, fundraise — or full ship sequence"
 ---
 

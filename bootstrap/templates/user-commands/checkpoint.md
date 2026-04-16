@@ -1,5 +1,4 @@
 ---
-effort: low
 description: "Checkpoint — create or verify a workflow checkpoint (git stash or commit)"
 ---
 

@@ -1,5 +1,4 @@
 ---
-effort: high
 description: "Design: card (author build card), ui (visualize via Figma/AIDesigner/Stitch MCPs), system (design tokens + components)"
 ---
 

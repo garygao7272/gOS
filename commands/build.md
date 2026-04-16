@@ -1,5 +1,4 @@
 ---
-effort: high
 description: "Build: feature, prototype, fix, refactor, model — outputs to apps/"
 ---
 

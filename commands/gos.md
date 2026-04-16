@@ -1,5 +1,4 @@
 ---
-effort: medium
 description: "gOS — the conductor. Briefing, orchestration, session management."
 ---
 
