@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gos.evolve-audit</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS/tools/evolve-claw.sh</string>
+    </array>
+
+    <!-- Every 4h at :13 (00:13, 04:13, 08:13, 12:13, 16:13, 20:13) -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>0</integer><key>Minute</key><integer>13</integer></dict>
+        <dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>13</integer></dict>
+        <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>13</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>13</integer></dict>
+        <dict><key>Hour</key><integer>16</integer><key>Minute</key><integer>13</integer></dict>
+        <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>13</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/Users/garyg/.claude/logs/evolve-audit-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/garyg/.claude/logs/evolve-audit-launchd.err</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/garyg/.local/bin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+        <key>HOME</key>
+        <string>/Users/garyg</string>
+    </dict>
+</dict>
+</plist>

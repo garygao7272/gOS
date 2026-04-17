@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gos.evolve-sources</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS/tools/evolve-claw.sh</string>
+        <string>sources</string>
+    </array>
+
+    <!-- Daily 8:47 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>8</integer>
+        <key>Minute</key><integer>47</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/garyg/.claude/logs/evolve-sources-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/garyg/.claude/logs/evolve-sources-launchd.err</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/garyg/.local/bin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+        <key>HOME</key>
+        <string>/Users/garyg</string>
+    </dict>
+</dict>
+</plist>

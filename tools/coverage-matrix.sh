@@ -31,6 +31,10 @@ hook_total=0; hook_with_test=0; hook_missing_test=()
 for hook_file in "$hooks_dir"/*.sh; do
   [ -f "$hook_file" ] || continue
   hook_name=$(basename "$hook_file" .sh)
+  # Skip library files (sourced by hooks, not hooks themselves)
+  case "$hook_name" in
+    hook-utils) continue ;;
+  esac
   hook_total=$((hook_total + 1))
   if [ -f "$tests_dir/${hook_name}.bats" ]; then
     hook_with_test=$((hook_with_test + 1))
