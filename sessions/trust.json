@@ -1,0 +1,96 @@
+{
+  "version": "4.3",
+  "last_updated": "2026-04-17T21:15:51.447944+08:00",
+  "domains": {
+    "architecture": {
+      "level": 0,
+      "history": [
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T07:15:45Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T07:17:41Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:46:32Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:48:35Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:52:32Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:53:55Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:56:13Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:58:15Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:58:41Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T12:59:59Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:01:16Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:03:39Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:08:14Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:08:51Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:09:56Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:10:16Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:10:56Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:11:28Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:12:16Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:15:51Z"
+        }
+      ],
+      "consecutive_accepts": 0,
+      "last_reject": null,
+      "floor": null
+    }
+  },
+  "global_floor": 0,
+  "notes": "Auto-initialized by gOS plugin. Trust levels: T0=Advisory, T1=Collaborative, T2=Delegated, T3=Autonomous."
+}

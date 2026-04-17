@@ -1,10 +1,10 @@
 {
-  "current_command": "/gos — Phase A (refine rubric + Tier 1 hook tests + hook-utils bug fix) + Phase B (launchd persistence for evolve jobs) COMPLETE",
-  "phase": "completed",
-  "step": 5,
+  "current_command": "gOS > /build refactor tier-2-cleanup",
+  "phase": "COMMITTED",
+  "step": 10,
   "total_steps": 5,
   "started_at": "2026-04-15T13:32:00",
-  "last_checkpoint": "2026-04-17T14:25:00",
+  "last_checkpoint": "2026-04-17T21:09:43.880604",
   "pending_approval": null,
   "files_modified": [
     "evals/rubrics/refine.md",
@@ -17,15 +17,28 @@
     "tools/evolve-claw.sh",
     "launchd/com.gos.evolve-audit.plist",
     "launchd/com.gos.evolve-sources.plist",
-    "launchd/com.gos.evolve-specs.plist"
+    "launchd/com.gos.evolve-specs.plist",
+    "cd \"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS\" && git commit -m \"$(cat <"
   ],
   "last_commit": "69ff48e fix(gos): strip deprecated effort: frontmatter from commands",
   "evolve_persistence": {
     "mechanism": "launchd (~/Library/LaunchAgents/)",
     "jobs": {
-      "com.gos.evolve-audit":   {"schedule": "every 4h at :13", "prompt": "/evolve audit",         "status": "loaded"},
-      "com.gos.evolve-sources": {"schedule": "daily 8:47",       "prompt": "/evolve audit sources", "status": "loaded"},
-      "com.gos.evolve-specs":   {"schedule": "Mondays 9:13",     "prompt": "/evolve audit specs",   "status": "loaded"}
+      "com.gos.evolve-audit": {
+        "schedule": "every 4h at :13",
+        "prompt": "/evolve audit",
+        "status": "loaded"
+      },
+      "com.gos.evolve-sources": {
+        "schedule": "daily 8:47",
+        "prompt": "/evolve audit sources",
+        "status": "loaded"
+      },
+      "com.gos.evolve-specs": {
+        "schedule": "Mondays 9:13",
+        "prompt": "/evolve audit specs",
+        "status": "loaded"
+      }
     },
     "helper": "tools/evolve-claw.sh",
     "logs_dir": "~/.claude/logs/",
@@ -33,9 +46,12 @@
     "smoke_test_cmd": "launchctl start com.gos.evolve-audit   (triggers on-demand fire)"
   },
   "coverage_delta": {
-    "commands": "8/9 (88%) → 9/9 (100%)",
-    "hooks": "11/31 (35%) → 15/31 (48%)",
+    "commands": "8/9 (88%) \u2192 9/9 (100%)",
+    "hooks": "11/31 (35%) \u2192 15/31 (48%)",
     "tier_1_tests_added": 27,
-    "bugs_found_fixed": ["hook-utils.sh missing from .claude/hooks/ — broke security-gate and freeze-guard"]
-  }
+    "bugs_found_fixed": [
+      "hook-utils.sh missing from .claude/hooks/ \u2014 broke security-gate and freeze-guard"
+    ]
+  },
+  "recovery_instructions": "Resume at step 10: phase=COMMITTED, mode=gOS > /build refactor tier-2-cleanup"
 }

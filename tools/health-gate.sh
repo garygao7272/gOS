@@ -24,6 +24,49 @@ for f in "$PROJECT_DIR"/commands/*.md; do
   fi
 done
 
+# --- 1b. Command frontmatter validation (BLOCK on fields that break autocomplete) ---
+# Claude Code silently demotes a command → skill (no slash autocomplete) when its
+# frontmatter contains deprecated/unknown fields. Known offenders:
+#   - `effort:` — removed as a command field in a recent release. Presence on a
+#     command file demotes it to skill-only. Still valid for agents/rubrics.
+# Required: `description:` must be present.
+# Implementation note: grep returning 1 inside a $() under `set -euo pipefail`
+# causes the whole script to abort silently. We extract the frontmatter block
+# once with awk, then probe fields without pipefail-sensitive pipelines.
+echo ""
+echo "Command frontmatter:"
+FM_ERRORS=0
+for f in "$PROJECT_DIR"/commands/*.md; do
+  [ -f "$f" ] || continue
+  name=$(basename "$f")
+  # Capture frontmatter block only (between first and second `---`).
+  # `|| true` prevents pipefail-triggered abort on empty frontmatter.
+  fm_block=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm' "$f" || true)
+  has_effort=0
+  has_description=0
+  if printf '%s\n' "$fm_block" | grep -qE '^effort:'; then has_effort=1; fi
+  if printf '%s\n' "$fm_block" | grep -qE '^description:'; then has_description=1; fi
+
+  if [ "$has_effort" -eq 1 ]; then
+    echo "  ERROR: $name has deprecated 'effort:' field (demotes command → skill, kills autocomplete)"
+    FM_ERRORS=$((FM_ERRORS + 1))
+  elif [ "$has_description" -eq 0 ]; then
+    echo "  ERROR: $name missing 'description:' field (required for slash-command autocomplete)"
+    FM_ERRORS=$((FM_ERRORS + 1))
+  else
+    echo "  OK: $name"
+  fi
+done
+if [ "$FM_ERRORS" -gt 0 ]; then
+  echo ""
+  echo "  Fix 'effort:' :  sed -i '' '/^effort:/d' commands/<file>.md"
+  echo "  Fix 'description:' : add  description: \"<short summary>\"  to frontmatter"
+  echo ""
+  echo "BLOCKED — invalid command frontmatter silently demotes slash commands to skills"
+  echo "(no autocomplete in Claude Code desktop, even though files still load)"
+  exit 2
+fi
+
 # --- 2. L1 size (warn if >60 lines / ~800 tokens) ---
 echo ""
 L1="$PROJECT_DIR/memory/L1_essential.md"
