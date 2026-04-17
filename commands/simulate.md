@@ -15,7 +15,7 @@ description: "Simulate: market (MiroFish + backtest), scenario (what-if + Dux en
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command given, ask: "What kind of simulation? market (MiroFish, includes backtest), scenario (what-if, powered by Dux), or flow (JTBD user journey)?"
 
-**Intent confirmation (always).** Before planning, restate scope in one line: "I'll simulate [type] for [target], parameters: [key params]. Proceed?" Skip only if Gary specifies exact parameters.
+**Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll simulate [type] for [target], parameters: [key params]. Proceed?"
 
 **Plan mode enforced.** Before executing, state: simulation type, parameters (assets, period, scenario), data sources. Wait for confirmation.
 

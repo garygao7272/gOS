@@ -17,7 +17,7 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 | `decide` | `outputs/think/decide/{topic}.md` | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
 | `spec` | **Direct to `specs/`** | No staging |
 
-**Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] [topic], covering [scope]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or file path).
+**Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [topic], covering [scope]. Proceed?"
 
 **Plan mode by default.** Present approach and wait for approval before executing.
 

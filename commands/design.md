@@ -20,7 +20,7 @@ description: "Design: card, ui, add, audit, sync — build card, prototype, toke
 
 Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind of design? card, ui, add, audit, or sync?"
 
-**Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] for [target], using [key constraints]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or screen name).
+**Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] for [target], using [key constraints]. Proceed?"
 
 ---
 

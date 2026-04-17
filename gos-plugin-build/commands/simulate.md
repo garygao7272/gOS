@@ -89,7 +89,7 @@ Invoke as `/simulate market --backtest <strategy>`. Backtest mode extends `marke
 The Dux simulation engine is the execution backend for `/simulate scenario`. Pipeline: Seed → Ontology → Branching → Agents → Search → Evaluation → Orchestrator. Direct invocation:
 
 ```bash
-cd "/Users/garyg/Documents/Claude Working Folder/Dux" && PYTHONPATH=. python -m backend.main simulate --config "{config}" --output json
+cd "$HOME/Documents/Documents - SG-LT674/Claude Working Folder/Dux" && PYTHONPATH=. python -m backend.main simulate --config "{config}" --output json
 ```
 
 If Dux is unavailable, `/simulate scenario` runs in lightweight mode (no knowledge-graph branching). Present: best path (utility + probability + robustness), top 3 alternatives, critical decision points, recommended actions. Output to `outputs/think/research/dux-{slug}.md`.

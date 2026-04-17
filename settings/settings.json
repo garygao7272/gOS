@@ -65,15 +65,21 @@
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/secret-scan.sh",
+            "command": "$HOME/.claude/hooks/security-gate.sh",
             "timeout": 10,
-            "statusMessage": "Secret scan"
+            "statusMessage": "Security gate (secrets + dangerous cmds)"
           },
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/health-gate.sh",
             "timeout": 120,
             "statusMessage": "Health gate"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/gos-drift-gate.sh",
+            "timeout": 10,
+            "statusMessage": "gOS drift gate"
           }
         ]
       },
@@ -191,6 +197,18 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-$HOME/.claude}/hooks/session-stop-gate.sh\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notify.sh",
+            "timeout": 3,
+            "statusMessage": "Notify"
           }
         ]
       }
