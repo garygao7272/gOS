@@ -16,7 +16,7 @@
 | deployment | — | 0 | T0 (floor:T1) | — | — | awaiting data |
 | content-creation | — | 0 | T0 | — | — | awaiting data |
 | prototype-building | — | 0 | T0 | — | — | awaiting data |
-| architecture | 0% | 162 | T0 | — | — | 2026-04-17 |
+| architecture | 0% | 168 | T0 | — | — | 2026-04-17 |
 | commit-messages | — | 0 | T0 | — | — | awaiting data |
 | naming-conventions | — | 0 | T0 | — | — | awaiting data |
 | test-writing | — | 0 | T0 | — | — | awaiting data |
