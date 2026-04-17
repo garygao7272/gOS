@@ -59,7 +59,7 @@ INVARIANTS: [list INV-Gxx + DESIGN.md rules that apply]
 
 For `/design card`: boundary is captured in the Product Half's Scope section — ensure IN/OUT/NEVER are explicit.
 For `/design ui`: boundary is the visual contract — what screen, what feel token, what states.
-For `/design system`: boundary is the token set being added/modified, and the propagation targets.
+For `/design add` and `/design sync`: boundary is the token set being added/modified (for `add`) or the propagation targets being pulled back in line (for `sync`). The legacy `/design system` umbrella was split into these two atomic sub-commands.
 
 ---
 
