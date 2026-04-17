@@ -13,7 +13,12 @@ description: "Review: fresh, ultra, code, gate, council, dashboard — or any pe
 - **After verdict:** Write verdict and top finding to `Key Decisions`
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, council, dashboard, or a persona?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name, run a single-persona review. Recognized personas:
+- **Arx Independent Council archetypes:** `s2-scalper`, `s2-swing`, `s2-systematic`, `s7-yield-chaser`, `s7-conviction-copier`, `s7-diversifier` (spawn the matching `arx-s2-*` / `arx-s7-*` agent in fresh context)
+- **Legacy composite personas:** `s2-jake`, `s7-sarah`, `s1-alex`, `s3-marcus` (single-persona, deprecated in favor of archetype councils for S2/S7)
+- **Specialists:** `trader-ux`, `crypto-sec`, `risk-analyst`, `mobile-perf`, `contrarian`, `design-auditor`
+
+If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, council, dashboard, or a persona?"
 
 **Routing for `ultra` vs `council`:** if input is file paths, a diff, or a staged changeset → **ultra** (delegate to native `/ultrareview`). If input is a topic, spec, design, or strategy question → **council** (gOS persona swarm).
 
@@ -149,16 +154,52 @@ Spec quality scoring runs inline inside `/think spec` before promoting to `specs
 
 **Purpose:** Full multi-persona review with weighted adjudication. Runs via PEV (see `specs/pev-protocol.md`).
 
-> **Scope note:** The `s1-s8` personas below are Arx-specific (trader/investor segments). In non-Arx projects, Gary swaps them for that project's user segments — the PEV flow + vote-weight structure stays the same.
+> **Arx default:** The Arx council uses the **Independent Review Council** protocol — 6 archetype agents (3 S2 + 3 S7) running in fresh isolated context, reconciled by a synthesizer. See `specs/8-governance/Arx_8-6_Independent_Review_Council.md`. For non-Arx projects, the roster swaps but the PEV flow stays the same.
 
-**Roster** (planner selects; Gary approves):
+### Arx Independent Review Council (default for Arx)
+
+**When:** Major hypothesis validation, Journey/Ship Card review, design-system changes with behavior impact, copy-trading mechanisms, trust/execution/leaderboard/signal-display features.
+
+**7 parallel lanes** (fresh-context, no cross-talk):
+
+| Lane | Agent | Archetype / Focus | Lens |
+|---|---|---|---|
+| 1 | `arx-s2-scalper` | S2 Scalper (sec–min, orderflow) | Latency, bracket orders, funding visibility, session discipline |
+| 2 | `arx-s2-swing` | S2 Swing (days–weeks, narrative+momentum) | RS ranking, MA trails, thesis-invalidation, funding cost |
+| 3 | `arx-s2-systematic` | S2 Systematic (rules-based, API-driven) | API completeness, Sharpe vs expected, override EV, regime awareness |
+| 4 | `arx-s7-yield-chaser` | S7 Yield-Chaser (APY-framed, delegation) | Default sorts, survivorship, follower-return vs leader-return |
+| 5 | `arx-s7-conviction-copier` | S7 Conviction-Copier (thesis via proxy) | Open-positions-now, on-chain verification, expectancy-of-overrides |
+| 6 | `arx-s7-diversifier` | S7 Diversifier (portfolio, monthly cadence) | DD profile, correlation heatmap, regulatory standing, monthly cadence |
+| 7 | `/ultrareview` | Code-quality (native CC parallel multi-agent) | Correctness, security, performance, bugs — N/A if prose-only target |
+
+Plus: `arx-council-synthesizer` — reconciles all 7 lanes, surfaces disagreements, writes synthesis. Has no standing opinion.
+
+**Flow:**
+1. Extract self-contained target brief (must not require Arx-internal context to read).
+2. Gary approves brief.
+3. Spawn 7 lanes in parallel.
+   - Lanes 1–6: archetype profile section (`Arx_2-1-S2_*` or `Arx_2-1-S7_*`) + target brief + verdict template. NO other context.
+   - Lane 7: `/ultrareview` on target code/diff. If prose-only, ultra returns `N/A — prose target`; synthesizer treats as non-signal.
+4. Collect outputs → `outputs/gos-jobs/{job-id}/council/{archetype}.md` + `ultra.md`.
+5. Spawn `arx-council-synthesizer` with all 7 outputs. Produces `outputs/gos-jobs/{job-id}/synthesis.md`.
+6. Gary sees: synthesis + raw per-archetype verdicts + ultra findings + disagreement map.
+
+**Verdict escalation rules (enforced by synthesizer):**
+- Any S2 agent BLOCK on a **mechanical issue** (latency, API, order primitives) → overall BLOCK.
+- Any S7 agent BLOCK on a **behavioral-trap issue** (default 7d ROI sort, follower-count ranking) → overall BLOCK.
+- **Any ultra CRITICAL finding on code (security, correctness, data loss) → overall BLOCK.**
+- ≥4 of 7 lanes raise the same concern → elevate to overall CONCERN minimum.
+
+**Max one re-run per cycle.** If Gary rejects the synthesis, fix the `Arx_2-1-S*` profiles, don't re-run the council with the same profiles.
+
+**Output:** Verdict table → disagreement map → top 3 kill-shots → code-quality section → recommendation → `outputs/gos-jobs/{job-id}/synthesis.md`.
+
+### Legacy multi-specialist council (non-Arx projects, or Arx infrastructure-only reviews)
+
+Roster (planner selects; Gary approves):
 
 | Persona | Type | Weight | Lens |
 |---------|------|:---:|------|
-| s2-jake | User | 2× | Daily use + saves time |
-| s7-sarah | User | 2× | Safe setup + trust |
-| s1-alex | User | 2× | Engagement vs blow-up |
-| s3-marcus | User | 2× | Execution quality + privacy |
 | crypto-sec | Specialist | 1× **(VETO)** | Keys, signing, MEV, input validation |
 | trader-ux | Specialist | 1× | Order entry, price display, position mgmt |
 | risk-analyst | Specialist | 1× | Margin, liquidation, leverage guards |
@@ -166,11 +207,9 @@ Spec quality scoring runs inline inside `/think spec` before promoting to `specs
 | contrarian | Strategic | 1× | Pre-mortem, kill shot, wargame |
 | design-auditor | Specialist | 1× | Added only if target is UI/prototype |
 
-Planner may drop a user persona if the target clearly doesn't touch their lens.
+Planner may add S2/S7 archetype agents from the Independent Review Council roster on top.
 
-**Flow:** roster → Gary approval → parallel execution (each returns APPROVE/CONCERN/BLOCK + kill-shot + steel-man) → `pev-validator` scores. `crypto-sec` BLOCK = absolute veto (STUCK). Any wave-1 user BLOCK = STUCK. Otherwise compute weighted consensus. On CONVERGED, `adjudicator` synthesizes. On ITERATE, re-run blocking subset only (max 2 cycles). On STUCK, wait for Gary's fix list.
-
-**Output:** Verdict table → weighted synthesis → top 3 findings + actions → `outputs/gos-jobs/{job-id}/synthesis.md`.
+**Flow:** roster → Gary approval → parallel execution → `pev-validator` scores. `crypto-sec` BLOCK = absolute veto (STUCK). `adjudicator` synthesizes on CONVERGED. Max 2 cycles on ITERATE.
 
 ---
 
