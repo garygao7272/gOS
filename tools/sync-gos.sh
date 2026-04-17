@@ -1,6 +1,9 @@
 #!/bin/bash
 # sync-gos.sh — propagate gOS source to all live targets
 #
+# Implements stages 1, 2, 6, 7 of the /ship gos pipeline
+# (see outputs/think/decide/ship-gos-pipeline.md for the full 7-stage design).
+#
 # Targets (the three places gOS lives at runtime):
 #   1. Repo (git)        — already on disk; this script does NOT push
 #   2. User install      — ~/.claude/{commands,agents,skills,rules,hooks,output-styles,statusline.sh}
@@ -14,14 +17,27 @@
 # Idempotent — safe to run repeatedly.
 #
 # Usage:
-#   bash tools/sync-gos.sh           # verbose
-#   bash tools/sync-gos.sh --quiet   # only print errors + summary
+#   bash tools/sync-gos.sh               # full: validate → sync → verify (verbose)
+#   bash tools/sync-gos.sh --quiet       # full, summary only
+#   bash tools/sync-gos.sh --preflight   # stages 1+2 only (classify + validate) — pre-commit gate
+#   bash tools/sync-gos.sh --verify-only # stage 7 only (drift check)
+#   bash tools/sync-gos.sh --no-verify   # full sync without post-verification
 
 set -euo pipefail
 
 # ── Args ────────────────────────────────────────────────────────────────
+MODE="full"
 QUIET=0
-[[ "${1:-}" == "--quiet" ]] && QUIET=1
+VERIFY=1
+for a in "$@"; do
+  case "$a" in
+    --quiet)       QUIET=1 ;;
+    --preflight)   MODE="preflight" ;;
+    --verify-only) MODE="verify" ;;
+    --no-verify)   VERIFY=0 ;;
+    *) echo "Unknown arg: $a" >&2; exit 1 ;;
+  esac
+done
 
 log() { [[ "$QUIET" == "0" ]] && echo "$@"; return 0; }
 err() { echo "ERROR: $*" >&2; }
@@ -46,6 +62,171 @@ fi
 
 # ── Counters ────────────────────────────────────────────────────────────
 USER_FILES=0; PLUGIN_FILES=0; STYLES=0; HOOKS=0; STATUSLINE=0
+
+# ═══════════════════════════════════════════════════════════════════════
+# STAGE 1 — Classify changed files (framework | session | excluded | unknown)
+# ═══════════════════════════════════════════════════════════════════════
+# Returns 0 if clean (no unknowns). Sets UNKNOWNS, SESSION_FILES counters.
+classify_changes() {
+  cd "$GOS_DIR"
+  UNKNOWNS=()
+  SESSION_FILES=()
+  FRAMEWORK_FILES=()
+  # git status --porcelain: "MM path", " M path", "?? path", etc.
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    local path="${line:3}"
+    case "$path" in
+      commands/*|agents/*|hooks/*|.claude/hooks/*|rules/*|skills/*|tools/*|output-styles/*|evals/*|claws/*|bootstrap/*|settings/settings.json|install.sh|CLAUDE.md|README.md|invariants.md|gos-plugin-build/*)
+        FRAMEWORK_FILES+=("$path") ;;
+      sessions/*|memory/*|.claude/self-model.md)
+        SESSION_FILES+=("$path") ;;
+      outputs/*|apps/*|specs/*|.claude/scheduled_tasks.lock|*.bak|"* 2"|"* 2.md")
+        : # excluded — silently ignore
+        ;;
+      *)
+        UNKNOWNS+=("$path") ;;
+    esac
+  done < <(git status --porcelain 2>/dev/null)
+
+  log "  framework: ${#FRAMEWORK_FILES[@]} | session: ${#SESSION_FILES[@]} | unknown: ${#UNKNOWNS[@]}"
+  if [[ ${#UNKNOWNS[@]} -gt 0 ]]; then
+    err "unknown-scope files (add to classify rules or explicit git add):"
+    for u in "${UNKNOWNS[@]}"; do echo "  - $u" >&2; done
+    return 1
+  fi
+  return 0
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# STAGE 2 — Validate (frontmatter tests + secret scan)
+# ═══════════════════════════════════════════════════════════════════════
+# Returns 0 on clean, non-zero on any failure.
+validate_changes() {
+  local failed=0
+
+  # 2a. Frontmatter regression (bats) — only if bats + tests present
+  if command -v bats >/dev/null 2>&1 \
+     && [[ -f "$GOS_DIR/tests/hooks/command-frontmatter.bats" ]]; then
+    log "  frontmatter tests..."
+    if ! (cd "$GOS_DIR" && bats tests/hooks/command-frontmatter.bats >/dev/null 2>&1); then
+      err "command-frontmatter.bats FAILED — run manually: bats tests/hooks/command-frontmatter.bats"
+      failed=1
+    else
+      log "    ✓ all frontmatter tests pass"
+    fi
+  else
+    log "  (bats or frontmatter tests not found — skipping frontmatter check)"
+  fi
+
+  # 2b. Secret scan on staged files only (avoids scanning whole tree)
+  log "  secret scan on staged diff..."
+  local staged_diff
+  staged_diff=$(cd "$GOS_DIR" && git diff --cached 2>/dev/null || true)
+  # Common leak patterns: API keys, private keys, env files
+  local suspicious=()
+  while IFS= read -r hit; do
+    [[ -z "$hit" ]] && continue
+    suspicious+=("$hit")
+  done < <(printf '%s' "$staged_diff" | grep -Ei \
+    -e '(api[_-]?key|secret|password|token|bearer)["[:space:]]*[:=]["[:space:]]*[A-Za-z0-9+/=_-]{16,}' \
+    -e '-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----' \
+    -e 'AKIA[0-9A-Z]{16}' \
+    -e 'sk-[A-Za-z0-9]{32,}' \
+    2>/dev/null || true)
+  if [[ ${#suspicious[@]} -gt 0 ]]; then
+    err "possible secrets in staged diff (${#suspicious[@]} lines matched) — review manually before committing"
+    failed=1
+  else
+    log "    ✓ no secret patterns detected"
+  fi
+
+  return $failed
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# STAGE 7 — Verify (drift check — source vs each live target)
+# ═══════════════════════════════════════════════════════════════════════
+# Returns 0 if no drift, non-zero if any target differs from source.
+verify_sync() {
+  local drift=0
+
+  # 7a. Repo == GitHub
+  if git -C "$GOS_DIR" rev-parse --abbrev-ref --symbolic-full-name @{upstream} >/dev/null 2>&1; then
+    local local_sha remote_sha
+    local_sha="$(git -C "$GOS_DIR" rev-parse HEAD)"
+    remote_sha="$(git -C "$GOS_DIR" rev-parse '@{upstream}' 2>/dev/null || echo "")"
+    if [[ -n "$remote_sha" && "$local_sha" != "$remote_sha" ]]; then
+      err "  repo: HEAD ($local_sha) != upstream ($remote_sha)"
+      ((drift++))
+    else
+      log "  ✓ repo matches upstream"
+    fi
+  fi
+
+  # 7b. User install matches source (commands only — cheap + sufficient signal)
+  local mismatch=0
+  for f in "$GOS_DIR"/commands/*.md; do
+    [[ -f "$f" ]] || continue
+    local name; name="$(basename "$f")"
+    if [[ -f "$CLAUDE_HOME/commands/$name" ]]; then
+      diff -q "$f" "$CLAUDE_HOME/commands/$name" >/dev/null 2>&1 || ((mismatch++))
+    else
+      ((mismatch++))
+    fi
+  done
+  if [[ $mismatch -gt 0 ]]; then
+    err "  user install: $mismatch commands differ from source"
+    ((drift++))
+  else
+    log "  ✓ user install matches source"
+  fi
+
+  # 7c. Plugin cache matches source
+  if [[ -n "$PLUGIN_DIR" && -d "$PLUGIN_DIR/commands" ]]; then
+    mismatch=0
+    for f in "$GOS_DIR"/commands/*.md; do
+      [[ -f "$f" ]] || continue
+      local name; name="$(basename "$f")"
+      if [[ -f "$PLUGIN_DIR/commands/$name" ]]; then
+        diff -q "$f" "$PLUGIN_DIR/commands/$name" >/dev/null 2>&1 || ((mismatch++))
+      else
+        ((mismatch++))
+      fi
+    done
+    if [[ $mismatch -gt 0 ]]; then
+      err "  plugin cache: $mismatch commands differ from source"
+      ((drift++))
+    else
+      log "  ✓ plugin cache matches source"
+    fi
+  fi
+
+  return $drift
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# Dispatch — run the requested mode and exit
+# ═══════════════════════════════════════════════════════════════════════
+if [[ "$MODE" == "preflight" ]]; then
+  log "── Preflight: classify + validate ─────────────────────────────────"
+  classify_changes || exit 1
+  validate_changes || exit 1
+  log "✓ preflight clean"
+  exit 0
+fi
+
+if [[ "$MODE" == "verify" ]]; then
+  log "── Verify-only: drift check ───────────────────────────────────────"
+  if verify_sync; then
+    log "✓ no drift"
+    exit 0
+  else
+    exit 1
+  fi
+fi
+
+# Default (MODE=full) — continue to existing sync stages below.
 
 # ── 1. User install (~/.claude/) — delegate to install.sh --global ─────
 log "── User install (~/.claude/) ──────────────────────────────────────"
@@ -128,6 +309,25 @@ else
   log "  install via: claude plugin install gos@gos-marketplace"
 fi
 
+# ── Stage 7. Post-sync verification (default on; --no-verify to skip) ──
+VERIFY_DRIFT=0
+if [[ "$VERIFY" == "1" ]]; then
+  log ""
+  log "── Verification (drift check) ─────────────────────────────────────"
+  if verify_sync; then
+    log "  → no drift"
+  else
+    VERIFY_DRIFT=1
+    err "post-sync drift detected — re-run bash tools/sync-gos.sh"
+  fi
+fi
+
 # ── Summary ────────────────────────────────────────────────────────────
 echo ""
-echo "✓ gOS synced — user($USER_FILES) + styles($STYLES) + statusline($STATUSLINE) + plugin($PLUGIN_FILES)"
+if [[ "$VERIFY_DRIFT" == "0" ]]; then
+  echo "✓ gOS synced — user($USER_FILES) + styles($STYLES) + statusline($STATUSLINE) + plugin($PLUGIN_FILES)"
+  exit 0
+else
+  echo "⚠ gOS synced WITH DRIFT — user($USER_FILES) + styles($STYLES) + statusline($STATUSLINE) + plugin($PLUGIN_FILES)"
+  exit 1
+fi

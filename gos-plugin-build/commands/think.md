@@ -17,8 +17,6 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 | `decide` | `outputs/think/decide/{topic}.md` | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
 | `spec` | **Direct to `specs/`** | No staging |
 
-> **Intake folded out:** `/think intake` moved to the top-level `/intake` command (which already existed as a skill). Dual entry was confusing. See `commands/intake.md`.
-
 **Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] [topic], covering [scope]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or file path).
 
 **Plan mode by default.** Present approach and wait for approval before executing.
@@ -157,12 +155,6 @@ NEVER: [what this spec refuses to cover — and why]
 **Verdict:** 8-10 **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 5-7 **REFINE** → list gaps, fix, rescore (max 2 cycles). 0-4 **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first.
 
 **Output:** New or updated spec in `specs/` once ≥ 8. Scoring table logged inline so the promotion decision is auditable.
-
----
-
-## intake — folded into `/intake`
-
-URL absorption, topic scans, and source watchlist management now live at the top-level `/intake` command (which wraps the `intake` skill). See `commands/intake.md`. This removes the dual-entry ambiguity — `/intake <url>` and `/think intake <url>` used to do the same thing.
 
 ---
 

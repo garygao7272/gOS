@@ -21,12 +21,10 @@ Parse the first word of `$ARGUMENTS` to route:
 | Argument         | Action                                                          |
 | ---------------- | --------------------------------------------------------------- |
 | _(empty)_        | Briefing → "What do you need?" → conductor handles the response |
-| `status`         | Dashboard: git, sessions, scheduled tasks, evolve signals       |
-| `save`           | Save session state + learning loop                              |
-| `resume`         | Restore most recent saved session                               |
 | `aside <q>`      | Side question — answer without losing task context              |
-| `refine <topic>` | Convergence loop — think→design→simulate→review until tight     |
 | _anything else_  | **Conductor Mode** — seed goal → 5-phase orchestration          |
+
+> **Session + meta verbs live at the top level, not under `/gos`:** `/save`, `/resume`, `/refine`, `/intake`. One home per command.
 
 ---
 
@@ -71,68 +69,6 @@ Then handle Gary's response as conductor input.
 
 ---
 
-## status
-
-Gather in parallel: git state (branch, uncommitted, last commit), active sessions, scheduled tasks, evolve signal counts since last audit, **pipeline phase coverage**. Show as compact dashboard.
-
-**Coverage Matrix (mandatory):**
-Run `bash tools/coverage-matrix.sh` and include output in the dashboard. Shows:
-- Pipeline phase: think→design→build chain status (from `sessions/handoffs/*.json`)
-- Command coverage: which commands have rubrics
-- Hook coverage: which hooks have tests
-- Gaps: explicitly lists what's missing
-
-**Spec Freshness (optional, on request or if specs changed):**
-Run `bash tools/spec-freshness.sh` — reports broken cross-refs, orphaned specs, stale files.
-
-This tells Gary at a glance: where are we, and what's unspecced/untested?
-
----
-
-## save
-
-Save session state to `~/.claude/sessions/{date}-{slug}.md`. Capture: task, decisions, dead ends, branch, files, next steps.
-
-**Learning Loop (mandatory on save):**
-
-**A — Capture:** Files changed, decisions made, dead ends.
-
-**B — Record signals** to `sessions/evolve_signals.md`. Scan the ENTIRE conversation:
-
-| Signal | Look For |
-|--------|----------|
-| accept | Gary used output without changes |
-| rework | "Change this", "not quite", "simplify" |
-| reject | "No", "scratch that", "wrong approach" |
-| love | "Perfect", "great", "exactly" |
-| repeat | Same instruction given twice |
-| skip | Gary jumped past a prescribed step |
-
-Every verb invocation should generate at least one signal. Report count after logging.
-
-**C — Save to memory:** Update feedback/user/project memory files if Gary corrected approach, preferences changed, or project state shifted materially.
-
-**D — Update persistent state:** L1_essential.md, claude-mem observation, state.json.
-
-> **Session captured.** [1-line summary]. [N] files changed, [S] signals recorded.
-
----
-
-## resume
-
-1. Read state.json — check for incomplete work
-2. Read L1_essential.md
-3. Read most recent session file from `~/.claude/sessions/`
-4. Load into scratchpad
-
-**Output — Story + Table + Next Move.** No jargon. Write for a busy CEO.
-
-- **Story:** 2 sentences. Lead with outcome, not process.
-- **Table:** Max 6 rows. Priority: **Do first**, High, Medium, Low.
-- **Next move:** Recommend highest-priority action with reasoning.
-
----
-
 ## aside <question>
 
 **Purpose:** Answer a side question without losing task context. Read-only — never modify files.
@@ -155,12 +91,6 @@ ASIDE: [restated question]
 **Edge cases:**
 - Answer reveals a problem → flag with warning, wait for decision before resuming
 - Not a side question but a redirect → "That's a direction change. Keep current plan or switch?"
-
----
-
-## refine <topic> [max-iterations]
-
-Delegates to the `/refine` command. See [commands/refine.md](./refine.md) for the full depth ladder, loop phases, convergence rules, and anti-patterns. Default cap: 5 iterations. Invocation: `/gos refine copy-trading 3` or `/refine copy-trading 3` directly — same entry point.
 
 ---
 

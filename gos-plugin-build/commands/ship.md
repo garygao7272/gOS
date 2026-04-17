@@ -141,18 +141,41 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
 
 If the change doesn't fit gOS scope: STOP and say so. Do not silently fall back to the current repo.
 
-**Process:**
+**Process — 7-stage pipeline (see [outputs/think/decide/ship-gos-pipeline.md](../outputs/think/decide/ship-gos-pipeline.md) for the full design):**
 
-1. Resolve gOS repo path: `"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS"`. Verify it's a git repo (`git -C <path> rev-parse --show-toplevel`).
-2. Apply the change in the gOS repo (if it isn't already there). If you're editing from another project, the source of truth is `commands/`, `hooks/`, etc. at the gOS repo root — not the installed copies under `~/.claude/` or `{project}/.claude/`.
-3. In the gOS repo: `git status`, `git diff`, `git log --oneline -5` for commit-message style.
-4. Stage only the relevant files by name. Follow the same safety rules as `commit` (no `-A`, no secrets, no large binaries).
-5. Create a conventional commit: `feat(gos): ...`, `fix(gos): ...`, etc. Attribution stays disabled.
-6. Push: `git push` (with `-u` if new branch).
-7. Sync installed copies if relevant: `cp commands/<x>.md ~/.claude/commands/` (or re-run `./install.sh --global`) so the running session picks up the fix.
-8. Report: `Shipped to gOS. Commit: {sha} — {message}. Synced to ~/.claude/: {yes|no}`.
+| Stage | Does | Invoked by | Blocks on |
+|---|---|---|---|
+| 1. Detect | Classify changed files as framework / session / excluded / unknown | `sync-gos.sh --preflight` | unknown-scope file |
+| 2. Validate | Frontmatter regression test (bats) + secret scan on staged diff | `sync-gos.sh --preflight` | test fail or leaked secret |
+| 3. Stage | `git add <path>` by name — never `-A` or `.` | Claude | secrets / large binaries |
+| 4. Commit | Conventional msg (feat/fix/chore/refactor + `(gos)` scope) | Claude | pre-commit hook fail |
+| 5. Push | `git push origin <branch>` (or `-u` if new branch) | Claude | non-fast-forward — STOP |
+| 6. Sync | Fan out to user install + output-styles + statusline + plugin cache | `sync-gos.sh` (default mode) | install.sh failure |
+| 7. Verify | `diff -q` source vs each live target + frontmatter tests | `sync-gos.sh` (auto, end) | drift detected |
+
+**Concrete commands:**
+
+```bash
+# From anywhere — resolve gOS repo path once:
+GOS="/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS"
+
+# Stage 1+2: pre-flight gate (fast — runs before you commit)
+bash "$GOS/tools/sync-gos.sh" --preflight
+
+# Stages 3-5: git in the gOS repo
+git -C "$GOS" add <paths-by-name>
+git -C "$GOS" commit -m "feat(gos): ..."
+git -C "$GOS" push
+
+# Stage 6+7: one script — default mode runs both
+bash "$GOS/tools/sync-gos.sh" --quiet
+```
+
+**Source of truth rule:** always edit files at the gOS repo root (`commands/`, `agents/`, `hooks/`, `.claude/hooks/`, `tools/`, `output-styles/`). Never edit `~/.claude/` copies or the plugin cache directly — they get overwritten by every sync.
 
 **Never** run destructive git ops (`reset --hard`, `push --force`, `clean -fd`) inside the gOS repo from another project's session.
+
+**Fallback for older clones missing `sync-gos.sh`:** `bash install.sh --global && cp tools/gos-statusline.sh ~/.claude/statusline.sh && cp output-styles/*.md ~/.claude/output-styles/` — but the script is the canonical entry point and covers plugin-cache sync + verification that the fallback misses.
 
 ---
 
