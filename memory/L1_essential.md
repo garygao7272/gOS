@@ -1,9 +1,9 @@
 ---
 name: L1 Essential Story
-description: Active project state, current sprint, recent decisions, active feedback rules. Updated every session. ≤800 tokens.
+description: Active project state, active feedback rules, live gaps. Updated every session. ≤800 tokens / ≤80 lines.
 type: project
 layer: L1
-valid_from: 2026-04-10
+valid_from: 2026-04-17
 valid_to: open
 ---
 
@@ -11,52 +11,27 @@ valid_to: open
 
 ## Current Focus
 
-Major gOS build session (2026-04-10) — 5 commits, all pushed:
-
-**Sprint 1** (216682a): Test scaffolder + hard phase gates + handoff schemas. 91/91 tests. Hook coverage 5→11.
-
-**Spec Sprint** (8be5ed6): Coverage matrix + spec freshness checker + /review spec quality gate. Pure bash, on-demand.
-
-**Command consistency** (084d8c8): Intent confirmation + plan mode + multi-agents across all 8 commands where applicable (+25 lines total).
-
-**Health gate** (57cc526, 2531d86): Auto lean/performance checks on every gOS commit. Includes global sync check (warns when ~/.claude/ drifts from source).
-
-**Global sync**: All 30 hooks + 8 commands + settings.json synced to ~/.claude/. Available in all projects.
-
-Score estimate: 6.78 → ~7.8 weighted. Needs formal rescore.
+**Tier 1 cleanup + Claude Code Apr 2026 upgrades** (2026-04-17). PreCompact hard-block hook shipped (Item 1, 8/8 bats green). Now executing Tier 1: prompt cache TTL, MCP pruning, trash archive, L1 trim, python→jq in hook-utils, xhigh adjudicator.
 
 ## Active Feedback Rules
 
-- **Stop hook compliance** — EVERY session exit needs signal scan + L1 + state.json + report.
 - **Lean & smart** — No token bloat, no over-engineering, shell > Python when sufficient.
-- **Conservative hook rollout** — per self-inflicted regression lesson.
-- **Resume: story-first** — ONE thing next, not open-ended menu.
-- **Always sync after editing gOS** — cp commands + hooks to ~/.claude/ or health gate will warn.
+- **Stop hook default-skip** — Silent exit. Full persist ONLY on /gos save or stale-session resume (>4h).
+- **Conservative hook rollout** — one hook at a time, tested.
+- **Resume: story-first** — ONE thing next, not an open menu.
+- **Always sync after editing gOS** — cp commands + hooks to ~/.claude/ or health gate warns.
+- **Archive, don't delete** when removing files with any reference.
+- **Retry transient failures once** before diagnostic rabbit-holes.
 
-## Recent Decisions
+## Known Live Gaps
 
-- Hard phase gates: think→design→build enforced by exit-2 hook (2026-04-10)
-- Handoff protocol: JSON artifacts in sessions/handoffs/ (2026-04-10)
-- Spec quality gate: /review spec must score 8+/10 before promoting (2026-04-10)
-- 3-aspect consistency across all commands (2026-04-10)
-- Auto health gate on every gOS commit with global sync check (2026-04-10)
-- Defer Sprint 2/3 — use gOS on real Arx work to surface actual gaps (2026-04-10)
-- INV-G16 (surgical edits only) added to ~/.claude/invariants.md (2026-04-15)
-- invariants.md now source-controlled at gOS/invariants.md; install.sh copies it (2026-04-15)
-- claws/ now installed by install.sh --global; hook chmod verification added (2026-04-15)
-- Fresh-clone reproducibility ~70% → ~95% (install.sh verified end-to-end) (2026-04-15)
-- Parity commit 067f04c shipped: invariants.md sourced + install.sh fixes + research artifacts (2026-04-15)
-- Evaluated 4 deferred P1s post-commit: 3 turned out false on first-principles (vocab, 24M gitignore, plugin dupe); shipped defensive `toolkit/*/node_modules/` gitignore only (2026-04-15)
-- Gary approved "A" (delete outright) for zombie dirs → commit 9fd2047: -87 files / -12143 lines (gos-v4.3/, gos-v4.3.zip, Archive/). SYNC.md updated. gos-plugin-build/ preserved per its own FROZEN.md. (2026-04-15)
-- **Meta signal logged**: simplify-scout had ~75% false-positive rate on P1 recommendations — premise not verified before recommending. Evolve candidate: tighten scout-agent contracts. (2026-04-15)
+- **Scratchpad Mode drift**: something resets `sessions/scratchpad.md` Mode line; workaround = append `PHASE_GATE_SKIP`. Root cause unknown.
+- **Evolve T1 session-only**: 4h CronCreate audit dies on session exit. Fix = launchd plist (~30 min, deferred).
+- **CronCreate `durable: true` bug**: accepted silently, not honored. Route around via launchd.
+- **gos-plugin-build/** is the **distributed marketplace artifact** — keep tracked in git.
 
-## Known Issues / Gaps
+## Next Session Candidates
 
-- **Scratchpad Mode drift**: Something resets `sessions/scratchpad.md` Mode line during sessions, triggering phase-gate. Workaround: Bash `printf ... >> scratchpad` to append PHASE_GATE_SKIP. Root cause not yet identified (not scratchpad-checkpoint.sh, not state-tracker.sh).
-- **Archive/ has untracked leftovers** on local disk only (iCloud dupes + command-archive/ + instincts-archived-20260409/). Not in repo. Local cleanup deferred — ask Gary before removing untracked subdirs that might have value.
-
-## Next Session
-
-1. **Arx work** — Radar Leaders S0-S4 redesign (first real test of phase gates + handoffs)
-2. **Rescore** — formal 13-dimension eval
-3. **Orphan cleanup** — 6 Arx specs in gOS/specs/ need moving
+1. Continue Tier 2 (EnterWorktree path, /review ultra delegation, hook dedupe) — see outputs/think/discover/cc-2026-04-upgrades-impl-plan.md
+2. Evolve launchd plist for true 4h audit persistence
+3. Arx Radar Leaders S0-S4 redesign (first real test of phase gates + handoffs)

@@ -199,9 +199,11 @@ Each cycle uses agents efficiently — not a full team, but targeted spawns:
 | Think    | 2-3 parallel researchers        | sonnet | Independent spec sections, fast      |
 | Design   | 1 design auditor                | sonnet | Sequential design decisions          |
 | Simulate | 2 scenario builders (bull/bear) | sonnet | Adversarial pair                     |
-| Review   | 1 adjudicator                   | opus   | Deepest reasoning for gap assessment |
+| Review   | 1 adjudicator                   | opus (effort=xhigh) | Deepest reasoning for gap assessment; `xhigh` tier (CC v2.1.111+) gives near-max quality at lower cost than `max` |
 
-**Cost estimate:** ~200K tokens per cycle. 3-cycle run ≈ 600K tokens. 5-cycle run ≈ 1M tokens.
+**Adjudicator spawn hint:** when spawning the adjudicator Agent, pass `effort: "xhigh"` in the prompt metadata. If the runtime rejects `xhigh` (older CC), fall back to `high` — do NOT escalate to `max` automatically.
+
+**Cost estimate:** ~200K tokens per cycle (xhigh ≈ 15–25% cheaper than `max`). 3-cycle run ≈ 600K tokens. 5-cycle run ≈ 1M tokens.
 
 **Use teams when:** ≥3 agents in a phase need to see each other's output (rare in refine — usually independent).
 
