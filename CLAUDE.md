@@ -4,22 +4,24 @@
 
 gOS (Gary's Operating System) is an AI builder companion framework built on Claude Code. It turns a solo founder into a full company by providing structured commands, memory, agents, and orchestration. This CLAUDE.md is for developing gOS itself — the framework, not the projects it powers.
 
-## Commands (8 verbs + conductor + 1 intake + 3 aliases)
+## Commands (one home per command — no aliases, no duplicates)
 
 | Command      | Question                   | Output                            |
 | ------------ | -------------------------- | --------------------------------- |
-| `/gos`       | What do you need? (Jarvis) | Orchestrates all verbs            |
-| `/think`     | What and why?              | Research, analysis → specs/       |
-| `/design`    | What are we building?      | Build cards, UI, system           |
-| `/simulate`  | What could happen?         | Scenarios, backtests              |
-| `/build`     | How do we code it?         | Features, fixes, models           |
-| `/review`    | Is it good?                | Verdicts, audits, evals, refine   |
-| `/ship`      | Is it out?                 | Commits, pushes, PRs, gos, deploys, docs, fundraise |
-| `/evolve`    | Are we getting better?     | Self-improvement, upgrades        |
+| `/gos`       | What do you need? (Jarvis) | Briefing, aside, conductor mode   |
+| `/think`     | What and why?              | Discover, research, decide, spec  |
+| `/design`    | What are we building?      | Card, ui, add, audit, sync        |
+| `/simulate`  | What could happen?         | Market, scenario, flow            |
+| `/build`     | How do we code it?         | Feature, fix, refactor, model     |
+| `/review`    | Is it good?                | Fresh, ultra, code, gate, council, dashboard, personas |
+| `/refine`    | Converge before building?  | Think → design → simulate → review loop |
+| `/ship`      | Is it out?                 | Commit, push, pr, gos, deploy, docs, fundraise |
+| `/evolve`    | Are we getting better?     | Audit, upgrade, learn, reflect    |
 | `/intake`    | What's the source say?     | Absorb URL, scan topic, watchlist |
-| `/status` `/save` `/resume` | (aliases → `/gos *`) | Top-level convenience            |
+| `/save`      | Persist now?               | Session file + signals + memory + state |
+| `/resume`    | Where were we?             | Restore latest session → Story + Table + Next |
 
-Every command has built-in convergence loops for multi-step processes.
+Every command has exactly one canonical home. Every command has a rubric in `evals/rubrics/`. Every command has built-in convergence loops where multi-step processing applies.
 
 ## Sub-command naming rule
 

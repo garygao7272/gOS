@@ -1,5 +1,5 @@
 ---
-description: "Review: fresh, code, gate, council, eval, refine — or any persona name directly. TRIGGER when user asks to review, audit, or quality-check existing work — phrases like 'review this', 'audit X', 'is this good', 'is this safe', 'check this before I ship', 'red team this', 'second opinion on X', 'council review', or names a specific persona (s1-s8, trader-ux, crypto-sec, contrarian, etc.). SKIP for the initial creation of something — use /think or /design for that."
+description: "Review: fresh, ultra, code, gate, council, dashboard — or any persona name directly. TRIGGER when user asks to review, audit, or quality-check existing work — phrases like 'review this', 'audit X', 'is this good', 'is this safe', 'check this before I ship', 'red team this', 'second opinion on X', 'council review', or names a specific persona (s1-s8, trader-ux, crypto-sec, contrarian, etc.). SKIP for the initial creation of something — use /think or /design for that. For convergence-loop iteration use /refine; eval measurement is dropped."
 ---
 
 # Review — Quality Assurance → specs/ + apps/
@@ -13,7 +13,7 @@ description: "Review: fresh, code, gate, council, eval, refine — or any person
 - **After verdict:** Write verdict and top finding to `Key Decisions`
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? fresh, code, gate, council, eval, refine, ultra, or a persona?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, council, dashboard, or a persona?"
 
 **Routing for `ultra` vs `council`:** if input is file paths, a diff, or a staged changeset → **ultra** (delegate to native `/ultrareview`). If input is a topic, spec, design, or strategy question → **council** (gOS persona swarm).
 
@@ -171,68 +171,6 @@ Planner may drop a user persona if the target clearly doesn't touch their lens.
 **Flow:** roster → Gary approval → parallel execution (each returns APPROVE/CONCERN/BLOCK + kill-shot + steel-man) → `pev-validator` scores. `crypto-sec` BLOCK = absolute veto (STUCK). Any wave-1 user BLOCK = STUCK. Otherwise compute weighted consensus. On CONVERGED, `adjudicator` synthesizes. On ITERATE, re-run blocking subset only (max 2 cycles). On STUCK, wait for Gary's fix list.
 
 **Output:** Verdict table → weighted synthesis → top 3 findings + actions → `outputs/gos-jobs/{job-id}/synthesis.md`.
-
----
-
-## refine <topic> [max-iterations]
-
-**Purpose:** Prebuild convergence loop. Iteratively tighten specs, designs, and simulations before `/build`. Each cycle runs think → design → simulate → review; review feeds gaps back into the next cycle. Exits at convergence, stuck, good-enough, or max iterations.
-
-**Default:** 5 iterations max. Example: `/review refine copy-trading 3`.
-
-**Rubric:** `evals/rubrics/refine.md` — 5 dimensions (gap resolution, cycle rigor, convergence, depth progression, build-readiness) weighted to /10.
-
-**When to use:** Before any non-trivial `/build feature` that touches UI, flows, or specs. Skip for fixes, refactors, and single-file features.
-
-**Execution:**
-
-| Phase | Input | Focus | Agents | Output |
-|-------|-------|-------|--------|--------|
-| **THINK** | Prior gap list (or Cycle 0 scan) | Top 3-5 gaps by severity | 2-3 parallel researchers (sonnet) | Updated specs + refine log |
-| **DESIGN** | Updated specs | Visual/interaction gaps | 1 design auditor (sonnet) | Design decisions in refine log |
-| **SIMULATE** | Specs + designs | Stress scenarios (happy → edge → adversarial → scale) | Bull-case + bear-case (sonnet, parallel) | Scenario results |
-| **REVIEW** | All outputs above | NEW gaps not in previous list | Review adjudicator (opus) | Numbered gap list with severity |
-
-**Gap severity:** 🔴 CRITICAL (blocks build) · 🟠 HIGH (degrades UX) · 🟡 MEDIUM (polish) · 🟢 LOW (cosmetic).
-
-**Convergence:** end of REVIEW counts NEW 🔴 + 🟠 gaps. If `new_critical == 0 AND new_high <= 2` → **CONVERGED**, exit. If same gaps recur 2+ cycles → **STUCK**, flag. If all remaining are MEDIUM/LOW → **GOOD ENOUGH**, exit with polish list. Otherwise continue (cap = max-iterations; hard ceiling 7, diminishing returns beyond).
-
-**Output:** `outputs/think/refine/{topic}-refine-summary.md` — cycles run, exit reason, gaps resolved/remaining, then "Ready for /build?".
-
-**Anti-patterns:** Don't refine and build simultaneously — refine is prebuild. Don't refine topics without pre-existing specs — run `/think discover` first. Don't set max iterations > 7.
-
-> **Legacy entry:** `/refine <topic>` and `/gos refine <topic>` both route here. `/review refine` is canonical.
-
----
-
-## eval <command-name> [--runs N]
-
-**Purpose:** Measure gOS command quality against rubrics with synthetic inputs. Answers: "Is this command getting better or worse?"
-
-Default N=1. Maximum N=5 (cost guard).
-
-**Process:**
-
-1. **Load test input** from `evals/test-inputs/{command-name}-input.md`. If not found, offer to create one.
-2. **Load rubric** from `evals/rubrics/{command-name}.md`. Extract dimensions, weights, scoring criteria.
-3. **Execute run:** Spawn executor agent (sonnet, fresh context) with test input + command context. Capture output.
-4. **Score:** Spawn separate scoring agent (sonnet — no self-grading). Strict rubric scoring: 5=adequate, 7=good, 9=exceptional. Returns JSON with per-dimension scores.
-5. **Compare to baseline** from `evals/baselines/{command-name}/latest.json` if it exists. Delta >+0.5 = IMPROVED, <-0.5 = REGRESSED, else STABLE.
-6. **Report:** Dimension table with scores, baseline comparison, variance, cost estimate.
-
-If any dimension REGRESSED: flag and suggest `/evolve upgrade {command}`.
-
-**Sub-actions:**
-
-| Argument | Action |
-|----------|--------|
-| `eval <cmd>` | Run and score |
-| `eval create <cmd>` | Create new test input interactively |
-| `eval baseline <cmd>` | Set current results as baseline |
-| `eval report` | Show all commands' eval scores and trends |
-| `eval compare <cmd>` | Dimension-by-dimension baseline comparison |
-
-**Convergence loop for multi-run evals (N>1):** Run N times. If variance across runs >1.5 on any dimension, flag as unreliable and suggest refining the rubric or test input.
 
 ---
 
