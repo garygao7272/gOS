@@ -13,7 +13,10 @@ _parse_hook_input() {
     HOOK_RAW=$(cat)
 
     if command -v jq >/dev/null 2>&1; then
-        # Fast path: single jq invocation with shell-safe output
+        # Fast path: single jq invocation with shell-safe output.
+        # `|| true` guards against jq parse failures propagating to the
+        # caller under `set -e` — we want an empty `parsed` on bad input,
+        # not the script dying with jq's exit code.
         local parsed
         parsed=$(printf '%s' "$HOOK_RAW" | jq -r '
             def q: @sh;
@@ -27,7 +30,7 @@ _parse_hook_input() {
                   else tojson end
                 ) | .[0:5000] | q)
             ] | .[]
-        ' 2>/dev/null)
+        ' 2>/dev/null || true)
         if [ -n "$parsed" ]; then
             eval "$parsed"
         else

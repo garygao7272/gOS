@@ -1,6 +1,8 @@
 # Intent Confirmation
 
-Every gOS verb (`/think`, `/design`, `/build`, `/review`, `/simulate`, `/ship`) confirms intent in one line before executing the substantive work.
+Every gOS verb (`/think`, `/design`, `/build`, `/review`, `/simulate`, `/ship`, `/refine`) confirms intent in one line before executing the substantive work.
+
+**Currently wired** (each command file has a reference line): `/build`, `/design`, `/review`, `/simulate`, `/think`. **Not yet wired** (by intent — the verbs below handle their own intent-confirmation differently): `/ship` (confirms per-sub-command inline), `/refine` (has its own PLAN section). When adding a reference line to a new command, mirror the pattern from `commands/build.md`.
 
 ## The rule
 
@@ -28,8 +30,10 @@ Intent confirmation is the cheapest failure-mode catch gOS has. One line costs G
 
 ## How commands reference this rule
 
-Each command file keeps its per-verb template inline (it's the single action Claude takes) but points here for the rule's rationale and skip conditions:
+Each command file keeps its per-verb template inline (it's the single action Claude takes) but points here for the rule's rationale and skip conditions.
+
+**Illustrative only** — the example below uses `/build`'s specific template. When adding a reference line to a new command, copy the verb's row from the "Per-verb templates" table above, do not copy the bracketed placeholders verbatim:
 
 ```markdown
-**Intent confirmation** — see [rules/common/intent-confirmation.md](../../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [target]. Proceed?"
+**Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [target] based on [spec/handoff]. Proceed?"
 ```

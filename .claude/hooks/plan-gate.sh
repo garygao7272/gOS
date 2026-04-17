@@ -18,18 +18,24 @@
 
 set -euo pipefail
 
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+# Use hook-utils.sh parser — it handles jq failure gracefully. Previously
+# the raw `jq ... 2>/dev/null` calls combined with `set -e` meant a parse
+# failure exited the hook with status 1, which Claude Code treats as
+# "hook errored" (advisory), not "block" (exit 2). Malformed input
+# bypassed the gate entirely. Sourcing _parse_hook_input sets HOOK_TOOL_NAME,
+# HOOK_FILE_PATH, HOOK_COMMAND with empty-string defaults on any parse issue.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=hook-utils.sh
+source "$SCRIPT_DIR/hook-utils.sh"
+_parse_hook_input
+
+PROJECT_DIR="${HOOK_PROJECT_DIR:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 SCRATCHPAD="$PROJECT_DIR/sessions/scratchpad.md"
 
 [ -f "$SCRATCHPAD" ] || exit 0
 
-INPUT="$(cat)"
-TOOL_NAME=$(printf '%s' "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null)
-HOOK_FILE_PATH=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // ""' 2>/dev/null)
-HOOK_COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null)
-
 # Only gate Edit, Write, and mutating git Bash commands.
-case "$TOOL_NAME" in
+case "$HOOK_TOOL_NAME" in
     Edit|Write) ;;
     Bash)
         case "$HOOK_COMMAND" in
@@ -54,7 +60,7 @@ REQUIRED="$(awk '
 
 # --- hard block on pending ---------------------------------------------------
 if [ "$STATE" = "pending" ]; then
-    echo "PLAN GATE: blocked '$TOOL_NAME' on '${HOOK_FILE_PATH:-${HOOK_COMMAND}}'." >&2
+    echo "PLAN GATE: blocked '$HOOK_TOOL_NAME' on '${HOOK_FILE_PATH:-${HOOK_COMMAND}}'." >&2
     echo "Command awaiting plan approval: ${REQUIRED:-unknown}" >&2
     echo "" >&2
     echo "To proceed:" >&2

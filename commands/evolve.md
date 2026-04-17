@@ -67,7 +67,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
    | /think  | 15   | 12     | 2      | 0      | 1    | 93%    |
    | /build  | 23   | 18     | 4      | 1      | 0    | 78%    |
    | /ship   | 8    | 7      | 1      | 0      | 0    | 88%    |
-   | /judge  | 5    | 3      | 1      | 1      | 0    | 60%    |
+   | /review | 5    | 3      | 1      | 1      | 0    | 60%    |
    ...
    ```
 
