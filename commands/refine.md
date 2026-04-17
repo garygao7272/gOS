@@ -83,66 +83,18 @@ After confirmation:
 
 ### Phase 1-N: The Loop
 
-For each cycle (1 to max_iterations):
+Each cycle runs 4 phases in sequence. Input to phase N = output of phase N−1. Depth per cycle follows the ladder above.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│ THINK (gap-informed)                                     │
-│                                                          │
-│ Input: gap list from previous review (or Cycle 0 scan)  │
-│ Focus: address top 3-5 gaps by severity                  │
-│ Depth: apply depth ladder for current cycle number       │
-│ Output: updated specs or new spec sections               │
-│ Agent: 2-3 parallel researchers (sonnet)                 │
-│ → Write findings to refine log                           │
-└──────────────────────┬──────────────────────────────────┘
-                       ↓
-┌─────────────────────────────────────────────────────────┐
-│ DESIGN (spec-informed)                                   │
-│                                                          │
-│ Input: updated specs from think phase                    │
-│ Focus: visual/interaction gaps from gap list              │
-│ Depth: apply depth ladder for current cycle number       │
-│ Output: design spec updates or new wireframe sections    │
-│ Agent: design audit agent (sonnet)                       │
-│ → Write design decisions to refine log                   │
-└──────────────────────┬──────────────────────────────────┘
-                       ↓
-┌─────────────────────────────────────────────────────────┐
-│ SIMULATE (stress-test)                                   │
-│                                                          │
-│ Input: current specs + designs                           │
-│ Focus: scenario generation at current depth              │
-│ Depth: happy path → edge → adversarial → scale          │
-│ Output: scenario findings, risk flags                    │
-│ Agent: bull-case + bear-case builders (sonnet)           │
-│ → Write scenario results to refine log                   │
-└──────────────────────┬──────────────────────────────────┘
-                       ↓
-┌─────────────────────────────────────────────────────────┐
-│ REVIEW (convergence check)                               │
-│                                                          │
-│ Input: all outputs from think + design + simulate        │
-│ Focus: find NEW gaps not present in previous gap list    │
-│ Classification:                                          │
-│   🔴 CRITICAL — blocks build, must fix                   │
-│   🟠 HIGH — degrades UX significantly                    │
-│   🟡 MEDIUM — polish item, nice to have                  │
-│   🟢 LOW — cosmetic or future consideration              │
-│                                                          │
-│ Output: numbered gap list with severity + source phase   │
-│ Agent: review council (opus for adjudication)            │
-│                                                          │
-│ CONVERGENCE CHECK:                                       │
-│   new_critical = count of 🔴 gaps NOT in previous list   │
-│   new_high = count of 🟠 gaps NOT in previous list       │
-│                                                          │
-│   IF new_critical == 0 AND new_high <= 2:                │
-│     → CONVERGED. Exit loop.                              │
-│   ELSE:                                                  │
-│     → Continue. Feed gap list to next cycle's think.     │
-└─────────────────────────────────────────────────────────┘
-```
+| Phase | Input | Focus | Agents | Writes to |
+|-------|-------|-------|--------|-----------|
+| **THINK** | Gap list from previous review (or Cycle 0 scan) | Top 3-5 gaps by severity | 2-3 parallel researchers (sonnet) | Updated specs + refine log |
+| **DESIGN** | Updated specs from THINK | Visual/interaction gaps | 1 design auditor (sonnet) | Design decisions in refine log |
+| **SIMULATE** | Specs + designs | Stress scenarios (happy → edge → adversarial → scale) | Bull-case + bear-case (sonnet, parallel) | Scenario results in refine log |
+| **REVIEW** | All outputs above | NEW gaps not in previous list | Review adjudicator (opus) | Numbered gap list with severity |
+
+**Gap severity:** 🔴 CRITICAL (blocks build) · 🟠 HIGH (degrades UX) · 🟡 MEDIUM (polish) · 🟢 LOW (cosmetic).
+
+**Convergence check (end of REVIEW):** count NEW 🔴 + 🟠 gaps not in previous list. If `new_critical == 0 AND new_high <= 2` → **CONVERGED**, exit loop. Otherwise feed gap list into next cycle's THINK.
 
 ### Phase N+1: Synthesis
 

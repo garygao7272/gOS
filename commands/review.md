@@ -207,41 +207,30 @@ Agent(
 
 ## council
 
-**Purpose:** Full multi-persona review with live adjudication.
+**Purpose:** Full multi-persona review with weighted adjudication. Runs via PEV (see `specs/pev-protocol.md`).
 
-### Execution — PEV (see `specs/pev-protocol.md`)
+> **Scope note:** The `s1-s8` personas below are Arx-specific (trader/investor segments). In non-Arx projects, Gary swaps them for that project's user segments — the PEV flow + vote-weight structure stays the same.
 
-1. Spawn `pev-planner` with: task = review target, task_class = verification, risk_level = medium/high, pool hint:
-   - **User council (2x vote weight):** `s2-jake`, `s7-sarah`, `s1-alex`, `s3-marcus` — planner may drop one if target clearly doesn't touch their lens
-   - **Specialists (1x weight):** `crypto-sec` (VETO), `trader-ux`, `risk-analyst`, `mobile-perf`
-   - **Strategic (1x):** `contrarian` (pre-mortem)
-   - Planner can add `design-auditor` if target is UI/prototype
-2. Present roster to Gary. Wait for approval.
-3. Execute in parallel — each persona produces APPROVE/CONCERN/BLOCK verdict with kill shot + steel man. Vote weight carried in `contract.weight`.
-4. `pev-validator` scores:
-   - **Veto:** `crypto-sec` BLOCK → verdict STUCK (BLOCK absolute).
-   - **Wave-1 user BLOCK** → STUCK (user veto).
-   - Otherwise compute weighted consensus.
-5. Decide:
-   - **CONVERGED (APPROVE)** → `adjudicator` writes final synthesis → present.
-   - **ITERATE** → planner re-runs blocking subset only (not full council) → round N+1 (max 2 cycles).
-   - **STUCK** → present findings to Gary, wait for fix list, then re-run blocking subset.
+**Roster** (planner selects; Gary approves):
 
-**Output:** Verdicts table (persona, type, verdict, kill shot, weight) → Weighted synthesis → Top 3 findings + actions. Artifact: `outputs/gos-jobs/{job-id}/synthesis.md`.
+| Persona | Type | Weight | Lens |
+|---------|------|:---:|------|
+| s2-jake | User | 2× | Daily use + saves time |
+| s7-sarah | User | 2× | Safe setup + trust |
+| s1-alex | User | 2× | Engagement vs blow-up |
+| s3-marcus | User | 2× | Execution quality + privacy |
+| crypto-sec | Specialist | 1× **(VETO)** | Keys, signing, MEV, input validation |
+| trader-ux | Specialist | 1× | Order entry, price display, position mgmt |
+| risk-analyst | Specialist | 1× | Margin, liquidation, leverage guards |
+| mobile-perf | Specialist | 1× | Bundle size, render, network |
+| contrarian | Strategic | 1× | Pre-mortem, kill shot, wargame |
+| design-auditor | Specialist | 1× | Added only if target is UI/prototype |
 
-**Persona lenses** (planner uses these when writing contracts):
+Planner may drop a user persona if the target clearly doesn't touch their lens.
 
-| Persona | Type | Review Lens |
-|---------|------|-------------|
-| s2-jake | User | "Would Jake use this daily and does it save him time?" |
-| s7-sarah | User | "Would Sarah set this up and feel safer?" |
-| s1-alex | User | "Does this keep Alex engaged AND prevent blow-up?" |
-| s3-marcus | User | "Does this degrade execution quality or privacy?" |
-| crypto-sec | Specialist (VETO) | Key management, transaction signing, MEV, input validation |
-| trader-ux | Specialist | Order entry flow, price display, position management |
-| risk-analyst | Specialist | Margin calculations, liquidation warnings, leverage guards |
-| mobile-perf | Specialist | Bundle size, render performance, network efficiency |
-| contrarian | Strategic | Pre-mortem, kill shot, wargame, steel man |
+**Flow:** roster → Gary approval → parallel execution (each returns APPROVE/CONCERN/BLOCK + kill-shot + steel-man) → `pev-validator` scores. `crypto-sec` BLOCK = absolute veto (STUCK). Any wave-1 user BLOCK = STUCK. Otherwise compute weighted consensus. On CONVERGED, `adjudicator` synthesizes. On ITERATE, re-run blocking subset only (max 2 cycles). On STUCK, wait for Gary's fix list.
+
+**Output:** Verdict table → weighted synthesis → top 3 findings + actions → `outputs/gos-jobs/{job-id}/synthesis.md`.
 
 ---
 
@@ -304,18 +293,5 @@ Any persona name can be invoked directly: `/review s2-jake`, `/review trader-ux`
 
 ## Strategic Personas
 
-### second-opinion
-
-Cross-model review. Run internal review → package artifact + findings into a prompt for GPT-5/Gemini → instruct Gary to paste in another model → synthesize: agreements (high confidence), blind spots (only external found), noise (only internal found) → unified verdict.
-
-### contrarian
-
-Devil's advocate who assumes the feature will FAIL.
-
-1. **Pre-Mortem:** 3 failure scenarios with causal chains
-2. **Kill Shot:** Single weakest assumption
-3. **Wargame:** How would a competitor exploit each weakness?
-4. **Steel Man:** The exact narrow path to success
-5. **Research:** Failed implementations, competitor advantages, user complaints
-
-Output: Pre-Mortem → Kill Shot → Wargame → Steel Man → Verdict
+- **second-opinion** — Cross-model review. Run internal review → package artifact + findings → Gary pastes into GPT-5/Gemini → synthesize: agreements (high confidence), blind spots (external-only), noise (internal-only) → unified verdict.
+- **contrarian** — Devil's advocate assuming the feature will FAIL. Steps: (1) Pre-Mortem — 3 failure scenarios with causal chains; (2) Kill Shot — weakest assumption; (3) Wargame — how a competitor exploits each weakness; (4) Steel Man — the narrow path to success; (5) Research — failed implementations, competitor advantages, user complaints. Output: Pre-Mortem → Kill Shot → Wargame → Steel Man → Verdict.

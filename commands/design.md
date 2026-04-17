@@ -6,6 +6,8 @@ description: "Design: card (author build card), ui (visualize via Figma/AIDesign
 
 **Design owns the build card — the central artifact of the Arx 3-layer workflow. It authors cards, generates visual prototypes, and maintains the design system.**
 
+> **Scope note:** All `specs/Arx_*` paths, `DESIGN.md`, and `apps/web-prototype/` references below assume an Arx-project workspace. When invoked from another project, Gary should adapt the paths to that project's spec structure — the process (three gates, feel pass, state matrix) is project-agnostic.
+
 **3 sub-commands:**
 
 | Sub-command | Question | Tools | Output |

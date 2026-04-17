@@ -125,7 +125,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
 
 **Process:**
 
-1. Read the current command file: `.claude/commands/{command}.md`
+1. Read the current command file from the **source of truth**: `commands/{command}.md` in the gOS repo root. (`.claude/commands/{command}.md` and `~/.claude/commands/{command}.md` are install-target copies — `install.sh` overwrites them.) If the current project is gOS, edit the source directly; otherwise cd into the gOS repo first.
 2. Read all signals related to that command from `sessions/evolve_signals.md`
 3. Read feedback from memory files related to this command
 4. Identify patterns — what gets reworked? what gets rejected? why? **Flag any pattern with 3+ occurrences.**
@@ -142,7 +142,7 @@ Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` 
 
 5. Propose specific changes — show before/after for each section
 6. **Wait for approval.** Do not rewrite without Gary's go-ahead.
-7. If approved: rewrite the command file
+7. If approved: rewrite the source command file at `commands/{command}.md`. Then run `./install.sh --global` (or `cp commands/{command}.md ~/.claude/commands/`) to propagate to the installed copy — otherwise the next session still loads the old version.
 8. Commit: `evolve: upgrade /{command} — {reason}`
 9. Log the upgrade in `sessions/evolve_signals.md` with context
 
