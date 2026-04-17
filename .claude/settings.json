@@ -2,7 +2,8 @@
   "respectGitignore": true,
   "enableAllProjectMcpServers": true,
   "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
+    "ENABLE_PROMPT_CACHING_1H": "1"
   },
   "permissions": {
     "allow": [
@@ -36,12 +37,20 @@
       {
         "hooks": [
           {
+            "type": "command",
+            "command": ".claude/hooks/precompact-save.sh",
+            "timeout": 10
+          },
+          {
             "type": "prompt",
-            "prompt": "BLOCKING SAVE BEFORE COMPACTION: This is mandatory — do ALL of these before allowing compaction: 1) Scan recent conversation for evolve signals and append unlogged ones to sessions/evolve_signals.md. 2) Update sessions/scratchpad.md with FULL current task state, key decisions, dead ends, and files being edited — this is the only bridge across compaction. 3) Update memory/L1_essential.md 'Current Focus' section. 4) If any plan is in progress, write the current step number and plan state to scratchpad. 5) Update scratchpad 'Context' field to 'POST-COMPACTION (~15%)' so the next phase knows budget was reset. 6) Write a 1-line checkpoint to scratchpad: 'COMPACTION CHECKPOINT: {what was being done} at {step}'. Only after ALL steps complete should compaction proceed.",
+            "prompt": "Post-checkpoint sweep: 1) Scan recent conversation for unlogged evolve signals and append to sessions/evolve_signals.md. 2) Update sessions/scratchpad.md with current task state, decisions, dead ends, files being edited. 3) Refresh memory/L1_essential.md 'Current Focus'. The command hook (precompact-save.sh) has already written a checkpoint marker and updated Context — this prompt fills in the qualitative detail.",
             "once": true
           }
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "gos@gos-marketplace": false
   }
 }
