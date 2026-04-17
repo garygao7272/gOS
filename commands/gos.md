@@ -160,76 +160,7 @@ ASIDE: [restated question]
 
 ## refine <topic> [max-iterations]
 
-**Purpose:** Convergence loop — iteratively tighten specs, designs, and simulations before building. Each cycle: think → design → simulate → review. Review feeds gaps back into the next cycle. Stops at convergence or max iterations.
-
-**Default:** 5 iterations max. Gary can specify: `/gos refine copy-trading 3`
-
-### Depth Ladder
-
-| Cycle | Think | Design | Simulate | Review |
-|-------|-------|--------|----------|--------|
-| 1 | Spec completeness | Layout gaps, missing states | Happy path | Gap count + severity |
-| 2 | Edge cases, error paths | Empty/error/loading states | Bull/bear/edge | Persona walkthrough |
-| 3 | Attack vectors, abuse | Accessibility, deception | Tail risk, black swan | Multi-persona council |
-| 4+ | Consistency, precision | Micro-interactions, motion | Stress at scale | Diminishing returns check |
-
-### Execution
-
-**Phase 0 — Initialize:**
-1. Load specs matching topic keywords
-2. Quick scan: what specs exist? What's missing? What designs? What simulations?
-3. Produce initial gap list (Cycle 0 gaps)
-4. Create tracking file: `outputs/think/refine/{topic}-refine-log.md`
-
-**Phase 1-N — The Loop:**
-
-For each cycle (1 to max_iterations):
-
-```
-THINK (gap-informed)
-  Input: gap list from previous review
-  Focus: top 3-5 gaps by severity
-  Depth: per depth ladder
-  → Spawn 2-3 parallel researchers (sonnet)
-  → Write findings to refine log
-
-DESIGN (spec-informed)
-  Input: updated specs from think phase
-  Focus: visual/interaction gaps
-  → 1 design auditor (sonnet)
-  → Write design decisions to refine log
-
-SIMULATE (stress-test)
-  Input: current specs + designs
-  Depth: per depth ladder
-  → Spawn bull-case + bear-case agents (sonnet, parallel)
-  → Write scenario results to refine log
-
-REVIEW (convergence check)
-  Input: all outputs from think + design + simulate
-  → Find NEW gaps not in previous list
-  → Classify: CRITICAL / HIGH / MEDIUM / LOW
-  → 1 adjudicator (opus)
-```
-
-**Convergence rules:**
-
-| Condition | Action |
-|-----------|--------|
-| 0 new CRITICAL, <=2 new HIGH | **CONVERGED** — exit loop |
-| Same gaps recurring 2+ cycles | **STUCK** — flag to Gary, suggest manual decision |
-| All remaining gaps MEDIUM/LOW | **GOOD ENOUGH** — exit, note polish items |
-| Max iterations reached | **CAP HIT** — exit, report remaining gaps |
-
-**Phase N+1 — Synthesis:**
-1. Compile: cycles completed, exit reason, gaps found/resolved/remaining
-2. Write summary to `outputs/think/refine/{topic}-refine-summary.md`
-3. Present: "Refine complete. {N} cycles, {reason}. {resolved} gaps resolved, {remaining} remain. Ready for /build?"
-
-**Anti-patterns:**
-- Don't refine AND build simultaneously — refine is prebuild
-- Don't refine topics without existing specs — use `/think discover` first
-- Don't set max iterations > 7 — diminishing returns
+Delegates to the `/refine` command. See [commands/refine.md](./refine.md) for the full depth ladder, loop phases, convergence rules, and anti-patterns. Default cap: 5 iterations. Invocation: `/gos refine copy-trading 3` or `/refine copy-trading 3` directly — same entry point.
 
 ---
 
@@ -275,7 +206,7 @@ Map intent to gOS verbs. Identify dependencies and parallelism. Present phased t
 | 4-6 | Ad-hoc agents | Research 3 topics, review 2 files |
 | 7-10 | Coordinated agents | Multi-system build, full pipeline |
 
-For ad-hoc: `Agent(prompt, run_in_background: true)` for independent tasks, `Agent(prompt, isolation: "worktree")` for overlapping writes.
+For ad-hoc: `Agent(prompt, run_in_background: true)` for independent tasks, `Agent(prompt, isolation: "worktree")` for overlapping writes. **When a pre-checked-out worktree exists** (e.g., reused across refine cycles), call `EnterWorktree { path: "<existing-path>" }` instead of letting isolation re-clone — saves ~60% of executor init time on repeated spawns (CC v2.1.105+).
 
 For coordinated: spawn agents with clear roles — architect (opus) for design, engineers (sonnet) for implementation, verifier (haiku) for checks.
 

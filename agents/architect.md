@@ -1,6 +1,7 @@
 ---
 name: architect
-description: "System design, API contracts, data models. Use for build-squad technical design phase."
+description: "Arx build-squad technical architect. Project-scoped (Arx crypto terminal): system design, API contracts, data models. NOTE: a second 'architect' agent ships in gos-plugin-build/agents/ for general plugin users — distinct namespace, not a drift."
+scope: project
 model: opus
 effort: max
 memory: project

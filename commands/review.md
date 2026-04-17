@@ -13,7 +13,9 @@ description: "Review: code, test, design, gate, council, eval — or any persona
 - **After verdict:** Write verdict and top finding to `Key Decisions`
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, spec, gate, council, or eval?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, spec, gate, council, ultra, or eval?"
+
+**Routing for `ultra` vs `council`:** if input is file paths, a diff, or a staged changeset → **ultra** (delegate to native `/ultrareview`). If input is a topic, spec, design, or strategy question → **council** (gOS persona swarm).
 
 **Intent confirmation (always).** Before executing, restate scope in one line: "I'll review [target] as [sub-command], covering [files/scope]. Proceed?" Skip only if Gary said "just do it."
 
@@ -69,6 +71,16 @@ Agent(
 - Never feed this agent the implementation session's conversation history
 - Never let this agent write code — read-only verifier
 - Never shortcut — even if the implementing session "already reviewed its own work", run fresh
+
+---
+
+## ultra <files | diff>
+
+**Purpose:** Delegate to native `/ultrareview` (CC v2.1.111+) for parallel multi-agent code review. Use for large diffs (≥10 files) or cross-cutting sweeps. Use `code` instead for small targeted PRs needing Fix-First or gOS invariant (INV-Gxx) checks.
+
+**Process:** validate input (non-empty files/diff; else error "specify files or `--diff`"). Invoke native `/ultrareview`. Store output under `outputs/review/ultra/{timestamp}.md`. Drop findings <80% confidence. If any CRITICAL, escalate to `/review gate`.
+
+**Fallback:** if native `/ultrareview` unavailable (older CC / non-Max), error cleanly and suggest `/review code` — do NOT silently fall through.
 
 ---
 

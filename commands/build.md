@@ -30,7 +30,7 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What are we building?
 
 **Plan mode by default.** Present approach (files to change, test strategy, commit plan) and wait for approval before writing code. Skip only for trivial single-file fixes.
 
-> **Folded sub-commands:** `plan` → use Plan Mode (native CC). `prototype` → use `/design ui`. `component` → use `feature`. `tdd` → always-on within `feature`.
+> **Sub-command map:** `feature` (full TDD build, covers `component` + `tdd`), `prototype` (see redirect below — authored via `/design ui`), `fix`, `refactor`, `model`. For planning, use Claude Code's native Plan Mode rather than a `/build plan` sub-command.
 
 ---
 
@@ -75,7 +75,7 @@ Build is two-phase: architect (blocking) → parallel executors → validator.
 
 1. **Phase 1 — Architect (blocking):** Spawn `pev-planner` with task_class=execution, pool hint: `architect` only. Planner writes roster with architect's contract (reads spec, writes contract.md with types/signatures/file-layout). Gary approves. Architect runs alone. Output is the executor contract for Phase 2.
 2. **Phase 2 — Engineers + Validator:** Re-invoke `pev-planner` with architect's contract + module list. Pool hint:
-   - 1 engineer per module (sonnet, `isolation: worktree`, reads architect contract + existing patterns)
+   - 1 engineer per module (sonnet, `isolation: worktree`, reads architect contract + existing patterns). **Perf tip (CC v2.1.105+):** if a prepared worktree already exists, pass `EnterWorktree { path }` to skip the clone — cuts executor init by ~60% and lets you run more parallel engineers per machine.
    - `code-reviewer` as validator lens (integrated in PEV via `pev-validator` reading all engineer artifacts)
    - If risk=high or security-sensitive: add `crypto-sec` (VETO)
 3. Present roster, approve, execute in parallel.
@@ -127,37 +127,9 @@ Build is two-phase: architect (blocking) → parallel executors → validator.
 
 ---
 
-## prototype <description>
+## prototype — folded into `/design ui`
 
-**Purpose:** Single-file HTML prototype in `apps/web-prototype/`.
-
-**Before building:**
-
-1. `cd apps/web-prototype/` and read its `CLAUDE.md` (version bumping, single-file constraint)
-2. Read `SOUL.md`, `COMPONENTS.md`, relevant spec, design system
-
-**Rules:**
-
-- **One file only.** No external deps beyond CDNs.
-- **Anti-slop:** No purple gradients, 3-column grids, generic hero sections.
-- **Mobile-first:** 390x844 viewport.
-- **CSS variables only** from design system. Never hardcode.
-- **Blast radius:** NEVER modify existing prototypes unless asked. New variants → `drafts/{name}-v1.html`.
-
-**Anti-Pattern Rules:**
-1. CSS classes for toggle states (not inline styles)
-2. No template literals in static HTML
-3. CSS-first, JS-second
-4. Every option set needs "Other/All"
-
-**Build process:**
-1. Check Visual Checkpoints in scratchpad — implementation MUST match approved sketches
-2. Make changes
-3. Test at 390x844
-4. Run Post-Build QA Gate (below)
-5. `./bump.sh patch`
-
-**Auto-Deploy:** Local preview → `npx vercel --prod --archive=tgz` → report both URLs.
+HTML prototypes live at `apps/web-prototype/` and are authored via `/design ui`, which runs the design gates (Reference Research, State Matrix, Feel Pass) before generating code. Non-negotiable prototype rules (carry through either entry point): single file, no deps beyond CDNs, 390×844 mobile-first, CSS variables only (never hardcode hex), no purple gradients / 3-column grids / generic hero sections, CSS classes for toggle state (not inline styles), CSS-first JS-second. After edits: `./bump.sh patch`, then Post-Build QA Gate (below), then `npx vercel --prod --archive=tgz`. Never modify an existing prototype without approval — new variants go to `drafts/{name}-v1.html`.
 
 ---
 

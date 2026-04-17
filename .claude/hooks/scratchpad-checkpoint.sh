@@ -7,12 +7,12 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/hook-utils.sh"
-_parse_hook_input
-
+# Inline single-field parse — fires on every PostToolUse Edit/Write.
+# Sourcing hook-utils.sh adds ~6ms per fire for the other 4 fields we don't use.
+HOOK_FILE_PATH=$(jq -r '.tool_input.file_path // .tool_input.filePath // ""' 2>/dev/null || echo "")
 [ -n "$HOOK_FILE_PATH" ] || exit 0
 
+HOOK_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 SCRATCHPAD="$HOOK_PROJECT_DIR/sessions/scratchpad.md"
 REL_PATH="${HOOK_FILE_PATH#"$HOOK_PROJECT_DIR"/}"
 
