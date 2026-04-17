@@ -9,11 +9,14 @@
 #
 # Writes stdout/stderr to ~/.claude/logs/evolve-<type>-<date>.log
 
-set -uo pipefail
+set -euo pipefail
 
 AUDIT_TYPE="${1:-}"
-GOS_DIR="/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS"
-CLAUDE_BIN="/Users/garyg/.local/bin/claude"
+# Derive GOS_DIR from this script's own location so launchd + any fresh clone work.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GOS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Resolve claude binary via PATH; fall back to the known local install.
+CLAUDE_BIN="$(command -v claude || echo "$HOME/.local/bin/claude")"
 LOG_DIR="$HOME/.claude/logs"
 
 mkdir -p "$LOG_DIR"

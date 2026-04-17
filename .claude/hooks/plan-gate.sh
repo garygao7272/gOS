@@ -16,7 +16,7 @@
 # when Mode line indicates Design — preserves prior behavior.
 # ═══════════════════════════════════════════════════════════
 
-set -uo pipefail
+set -euo pipefail
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 SCRATCHPAD="$PROJECT_DIR/sessions/scratchpad.md"

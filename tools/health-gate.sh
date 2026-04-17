@@ -82,7 +82,15 @@ fi
 
 # --- 3. Test suite ---
 echo ""
-if command -v bats &>/dev/null && [ -d "$PROJECT_DIR/tests/hooks" ]; then
+if [ ! -d "$PROJECT_DIR/tests/hooks" ]; then
+  echo "Tests: SKIP — no tests/hooks/ directory"
+elif ! command -v bats &>/dev/null; then
+  # bats is a HARD dependency for the frontmatter regression + hook tests.
+  # Silent skip used to defeat the gate; now we block so the toolchain is
+  # surfaced as missing instead of hidden.
+  echo "Tests: FAIL — bats not installed; install via: brew install bats-core"
+  ERRORS=$((ERRORS + 1))
+else
   TEST_OUTPUT=$(cd "$PROJECT_DIR" && bats tests/hooks/ --tap 2>&1)
   TOTAL=$(echo "$TEST_OUTPUT" | grep -c '^ok ' 2>/dev/null || true)
   FAILED=$(echo "$TEST_OUTPUT" | grep -c '^not ok ' 2>/dev/null || true)
@@ -93,8 +101,6 @@ if command -v bats &>/dev/null && [ -d "$PROJECT_DIR/tests/hooks" ]; then
   else
     echo "Tests: PASS — $TOTAL/$TOTAL"
   fi
-else
-  echo "Tests: SKIP — bats not installed or no tests found"
 fi
 
 # --- 4. Coverage matrix ---
