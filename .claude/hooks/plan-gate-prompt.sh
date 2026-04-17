@@ -187,16 +187,21 @@ fi
 if is_gos_verb "$FIRST_TOKEN"; then
     cat <<GATE
 ─── gOS styling reminder (harness-injected) ─────────────────────────────────
-Direct-response structure (from ~/.claude/output-styles/direct-response.md):
-  1. ANSWER  — root mechanism first
-  2. DECOMPOSE — table/list
-  3. SOLUTIONS — concrete actions, ordered
-  4. WRAP — CONFIDENCE + WHY + NEXT
+Pick response shape first (from ~/.claude/output-styles/direct-response.md):
+  Atomic (yes/no, single fact)  → ANSWER only, 1 line
+  Q&A (explanation, compare)    → ANSWER + DECOMPOSE
+  Advisory ("what should I…")   → ANSWER + DECOMPOSE + SOLUTIONS
+  Action (ran tools, shipped)   → ANSWER + SUMMARY (DID / VERIFIED / REMAINING)
+  Hybrid (answered + did)       → ANSWER + DECOMPOSE + SUMMARY
+
+SUMMARY block (action responses only):
+  DID:       what was done, 1-2 sentences
+  VERIFIED:  how we know it worked — tests, diffs, HTTP, counts
+  REMAINING: outstanding items — "none" is valid
 
 Output routing: inline by default. Write a file only when content must outlive
 this session (cross-session retrieval, handoff, persistent contract, >300
-words with reusable structure, audit tracking). When writing a file, also emit
-a ≤100-word inline summary with the path.
+words with reusable structure, audit tracking).
 ──────────────────────────────────────────────────────────────────────────────
 GATE
 fi
