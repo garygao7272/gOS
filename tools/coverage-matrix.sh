@@ -18,6 +18,8 @@ cmd_total=0; cmd_with_rubric=0; cmd_missing_rubric=()
 for cmd_file in "$commands_dir"/*.md; do
   [ -f "$cmd_file" ] || continue
   cmd_name=$(basename "$cmd_file" .md)
+  # Skip alias files — their rubric coverage is shared with the command they alias
+  if grep -qE '^alias:\s*true' "$cmd_file" 2>/dev/null; then continue; fi
   cmd_total=$((cmd_total + 1))
   if [ -f "$rubrics_dir/${cmd_name}.md" ]; then
     cmd_with_rubric=$((cmd_with_rubric + 1))

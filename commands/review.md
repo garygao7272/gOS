@@ -1,5 +1,5 @@
 ---
-description: "Review: code, test, design, gate, council, eval — or any persona name directly"
+description: "Review: fresh, code, gate, council, eval, refine — or any persona name directly. TRIGGER when user asks to review, audit, or quality-check existing work — phrases like 'review this', 'audit X', 'is this good', 'is this safe', 'check this before I ship', 'red team this', 'second opinion on X', 'council review', or names a specific persona (s1-s8, trader-ux, crypto-sec, contrarian, etc.). SKIP for the initial creation of something — use /think or /design for that."
 ---
 
 # Review — Quality Assurance → specs/ + apps/
@@ -13,7 +13,7 @@ description: "Review: code, test, design, gate, council, eval — or any persona
 - **After verdict:** Write verdict and top finding to `Key Decisions`
 - **After compaction:** Re-read `sessions/scratchpad.md`
 
-Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? code, test, design, spec, gate, council, ultra, or eval?"
+Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a persona name (s2-jake, s7-sarah, s1-alex, s3-marcus, trader-ux, crypto-sec, risk-analyst, mobile-perf, contrarian), run a single-persona review. If no sub-command given, ask: "What kind of review? fresh, code, gate, council, eval, refine, ultra, or a persona?"
 
 **Routing for `ultra` vs `council`:** if input is file paths, a diff, or a staged changeset → **ultra** (delegate to native `/ultrareview`). If input is a topic, spec, design, or strategy question → **council** (gOS persona swarm).
 
@@ -107,81 +107,21 @@ Agent(
 
 ---
 
-## test
+## test — folded into `gate`
 
-**Purpose:** Combined testing — runs suite + proves changes work with evidence.
-
-**Process:**
-
-1. **Detect test framework** and run with coverage
-2. **Check coverage** — target 80%+
-3. **Run E2E if critical flows changed**
-4. **4-level verification** (every changed module):
-
-   | Level | Check | Method |
-   |-------|-------|--------|
-   | EXISTS | File/function present | `ls`, `grep` for exports |
-   | SUBSTANTIVE | Not a stub | Check for TODO, empty bodies |
-   | WIRED | Imported, routed, rendered | Trace import chain |
-   | DATA-FLOW | Data flows end-to-end | Run app, trigger feature, verify |
-
-5. **Capture evidence:** Test output, screenshots, console logs, network requests
-6. **Check for regressions:** Existing tests, bundle size
-
-**Convergence loop:** If tests fail, diagnose → fix → rerun. Max 5 fix-rerun cycles. If same test fails 3 times with different fixes, flag as STUCK and escalate.
-
-**Output:** Test results (total/pass/fail) → Coverage table → 4-level verification → Evidence → Verdict (PASS/FAIL)
+Test-suite execution + 4-level verification + evidence capture now run as part of `/review gate`. The gate checklist already includes "tests pass" and "coverage ≥ 80%"; the 4-level verification (EXISTS → SUBSTANTIVE → WIRED → DATA-FLOW) is now the verification body of `/review gate`. Use `/review gate` when you need both pass/fail + evidence. Convergence cap: 5 fix-rerun cycles; flag STUCK if the same test fails 3 times with different fixes.
 
 ---
 
-## design
+## design — folded into `/design audit`
 
-**Purpose:** Visual/UX audit of the app or prototype.
-
-**Process:**
-
-1. **Open in Claude Preview or browser**
-2. **Check all states:** Default, Loading, Empty, Error, Overflow, Hover/Active, Selected/Unselected
-3. **Typography audit:** Monospace for numbers, 11-24px scale, contrast ratios
-4. **Spacing audit:** 4px/8px grid, consistent padding, no whitespace rivers
-5. **Color audit:** Stone for structure, Water for data, temperature distribution T0(80%)/T1(15%)/T2(4%)/T3(1%)
-6. **Responsive check:** 390x844 primary, 375x812 secondary, no horizontal scroll
-7. **Anti-slop check:** No purple gradients, no generic grids, no AI-template aesthetics
-8. **Atomic commits for each fix**
-
-**Convergence loop:** After fixes, re-screenshot and re-audit changed areas. Continue until no new CRITICAL/HIGH visual issues. Max 3 audit-fix cycles.
-
-**Output:** Visual issues table (screen, issue, severity, fix) → State coverage matrix → Anti-slop result → Verdict (APPROVE/REFINE/REJECT)
+Visual/UX audits of the app or prototype now live next to the authoring commands. Use `/design audit` for state matrix, typography, spacing, color temperature, responsive, anti-slop, and 3-cycle audit-fix convergence. See `commands/design.md`.
 
 ---
 
-## spec
+## spec — folded into `/think spec`
 
-**Purpose:** Spec quality gate. Scores a spec for completeness before promoting to `specs/`. Run this before `/think spec` promotes output or before any major spec edit.
-
-**Scoring dimensions (each 0-2, total /10):**
-
-| # | Dimension | 0 | 1 | 2 |
-|---|-----------|---|---|---|
-| 1 | **Acceptance Criteria** | None | Vague or incomplete | MECE, testable, each has pass/fail condition |
-| 2 | **Edge Cases** | None mentioned | Some listed | Exhaustive: empty, overflow, error, concurrent, stale |
-| 3 | **Data Model** | No data defined | Fields listed but no types/constraints | Full schema: types, constraints, defaults, nullability |
-| 4 | **Cross-References** | No links to other specs | Some references | All dependencies linked, no orphan references |
-| 5 | **Freshness** | References stale/missing files | Minor staleness | All refs valid, recently updated |
-
-**Process:**
-
-1. **Read the spec** — understand its purpose and scope
-2. **Run freshness check** — `bash tools/spec-freshness.sh` on the spec's directory
-3. **Score each dimension** 0-2 with evidence
-4. **Verdict:**
-   - 8-10: **PROMOTE** — ready for `specs/`
-   - 5-7: **REFINE** — list what's missing, suggest fixes
-   - 0-4: **REWORK** — too incomplete, list required additions
-
-**Convergence loop:** If verdict is REFINE, present gaps → fix → rescore. Max 2 cycles.
-
-**Output:** Score table (dimension, score, evidence) → Total /10 → Verdict → Gaps to fix (if any)
+Spec quality scoring runs inline inside `/think spec` before promoting to `specs/`. The rubric stays the same (5 dimensions × 0-2 → /10, with 8-10 = PROMOTE, 5-7 = REFINE, 0-4 = REWORK). See `commands/think.md`.
 
 ---
 
@@ -231,6 +171,37 @@ Planner may drop a user persona if the target clearly doesn't touch their lens.
 **Flow:** roster → Gary approval → parallel execution (each returns APPROVE/CONCERN/BLOCK + kill-shot + steel-man) → `pev-validator` scores. `crypto-sec` BLOCK = absolute veto (STUCK). Any wave-1 user BLOCK = STUCK. Otherwise compute weighted consensus. On CONVERGED, `adjudicator` synthesizes. On ITERATE, re-run blocking subset only (max 2 cycles). On STUCK, wait for Gary's fix list.
 
 **Output:** Verdict table → weighted synthesis → top 3 findings + actions → `outputs/gos-jobs/{job-id}/synthesis.md`.
+
+---
+
+## refine <topic> [max-iterations]
+
+**Purpose:** Prebuild convergence loop. Iteratively tighten specs, designs, and simulations before `/build`. Each cycle runs think → design → simulate → review; review feeds gaps back into the next cycle. Exits at convergence, stuck, good-enough, or max iterations.
+
+**Default:** 5 iterations max. Example: `/review refine copy-trading 3`.
+
+**Rubric:** `evals/rubrics/refine.md` — 5 dimensions (gap resolution, cycle rigor, convergence, depth progression, build-readiness) weighted to /10.
+
+**When to use:** Before any non-trivial `/build feature` that touches UI, flows, or specs. Skip for fixes, refactors, and single-file features.
+
+**Execution:**
+
+| Phase | Input | Focus | Agents | Output |
+|-------|-------|-------|--------|--------|
+| **THINK** | Prior gap list (or Cycle 0 scan) | Top 3-5 gaps by severity | 2-3 parallel researchers (sonnet) | Updated specs + refine log |
+| **DESIGN** | Updated specs | Visual/interaction gaps | 1 design auditor (sonnet) | Design decisions in refine log |
+| **SIMULATE** | Specs + designs | Stress scenarios (happy → edge → adversarial → scale) | Bull-case + bear-case (sonnet, parallel) | Scenario results |
+| **REVIEW** | All outputs above | NEW gaps not in previous list | Review adjudicator (opus) | Numbered gap list with severity |
+
+**Gap severity:** 🔴 CRITICAL (blocks build) · 🟠 HIGH (degrades UX) · 🟡 MEDIUM (polish) · 🟢 LOW (cosmetic).
+
+**Convergence:** end of REVIEW counts NEW 🔴 + 🟠 gaps. If `new_critical == 0 AND new_high <= 2` → **CONVERGED**, exit. If same gaps recur 2+ cycles → **STUCK**, flag. If all remaining are MEDIUM/LOW → **GOOD ENOUGH**, exit with polish list. Otherwise continue (cap = max-iterations; hard ceiling 7, diminishing returns beyond).
+
+**Output:** `outputs/think/refine/{topic}-refine-summary.md` — cycles run, exit reason, gaps resolved/remaining, then "Ready for /build?".
+
+**Anti-patterns:** Don't refine and build simultaneously — refine is prebuild. Don't refine topics without pre-existing specs — run `/think discover` first. Don't set max iterations > 7.
+
+> **Legacy entry:** `/refine <topic>` and `/gos refine <topic>` both route here. `/review refine` is canonical.
 
 ---
 

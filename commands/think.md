@@ -1,5 +1,5 @@
 ---
-description: "Think mode: discover, research, decide, spec, intake — outputs to outputs/think/, promotes to specs/"
+description: "Think mode: discover, research, decide, spec — outputs to outputs/think/, promotes to specs/. TRIGGER when user asks to research something, decide between options, explore a question deeply, or spec a new concept — phrases like 'research X', 'what do we know about X', 'should we X or Y', 'help me think through X', 'decide on X', 'spec out X', 'dig into X'. SKIP for quick factual questions, or when user explicitly asks for just a one-line answer."
 ---
 
 # Think Mode — Product + Strategy -> outputs/think/ -> specs/
@@ -16,7 +16,8 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 | `research` | `outputs/think/research/{topic}.md` | "Promote to `specs/Arx_2-X`?" |
 | `decide` | `outputs/think/decide/{topic}.md` | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
 | `spec` | **Direct to `specs/`** | No staging |
-| `intake` | `outputs/think/research/{slug}-intake.md` | Absorb, scan, or manage sources |
+
+> **Intake folded out:** `/think intake` moved to the top-level `/intake` command (which already existed as a skill). Dual entry was confusing. See `commands/intake.md`.
 
 **Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] [topic], covering [scope]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or file path).
 
@@ -32,7 +33,7 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 ```
 This unlocks `/design` via the phase gate. See `specs/handoff-schemas.md`.
 
-Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?"
+Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
 
 ---
 
@@ -141,23 +142,27 @@ NEVER: [what this spec refuses to cover — and why]
 4. Write following altitude convention. Cascade rule: changes flow downward only.
 5. Single source of truth: link, don't duplicate.
 
-**Quality gate:** Before promoting to `specs/`, run `/review spec` scoring (5 dimensions, /10). Only promote if score >= 8 (PROMOTE verdict). If 5-7 (REFINE), fix gaps first.
+**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 5 dimensions (each 0-2, total /10):
 
-**Output:** New or updated spec in `specs/`. Update `specs/INDEX.md` if new.
+| # | Dimension | 0 | 1 | 2 |
+|---|-----------|---|---|---|
+| 1 | **Acceptance Criteria** | None | Vague or incomplete | MECE, testable, each has pass/fail condition |
+| 2 | **Edge Cases** | None mentioned | Some listed | Exhaustive: empty, overflow, error, concurrent, stale |
+| 3 | **Data Model** | No data defined | Fields listed but no types/constraints | Full schema: types, constraints, defaults, nullability |
+| 4 | **Cross-References** | No links to other specs | Some references | All dependencies linked, no orphan references |
+| 5 | **Freshness** | References stale/missing files | Minor staleness | All refs valid, recently updated |
+
+**Before scoring:** run `bash tools/spec-freshness.sh` on the spec's directory to populate dimension 5 with evidence.
+
+**Verdict:** 8-10 **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 5-7 **REFINE** → list gaps, fix, rescore (max 2 cycles). 0-4 **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first.
+
+**Output:** New or updated spec in `specs/` once ≥ 8. Scoring table logged inline so the promotion decision is auditable.
 
 ---
 
-## intake <url | scan <topic> | sources <action>>
+## intake — folded into `/intake`
 
-**Purpose:** Absorb content, scan topics, manage the source watchlist. Invokes the `intake` skill.
-
-**Config:** `~/.claude/config/intake-sources.md` — global watchlist.
-
-- **`intake <url>`** — Absorb: extract transcript/content, clean filler, restructure into MECE knowledge doc
-- **`intake scan <topic> [--period <timeframe>]`** — Multi-source search for material movements (default: 7 days)
-- **`intake sources list|add|remove|check`** — Manage watchlist
-
-When invoked, load the full `intake` skill via `Skill("intake")`.
+URL absorption, topic scans, and source watchlist management now live at the top-level `/intake` command (which wraps the `intake` skill). See `commands/intake.md`. This removes the dual-entry ambiguity — `/intake <url>` and `/think intake <url>` used to do the same thing.
 
 ---
 

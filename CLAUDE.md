@@ -4,7 +4,7 @@
 
 gOS (Gary's Operating System) is an AI builder companion framework built on Claude Code. It turns a solo founder into a full company by providing structured commands, memory, agents, and orchestration. This CLAUDE.md is for developing gOS itself — the framework, not the projects it powers.
 
-## Commands (8 verbs + conductor)
+## Commands (8 verbs + conductor + 1 intake + 3 aliases)
 
 | Command      | Question                   | Output                            |
 | ------------ | -------------------------- | --------------------------------- |
@@ -13,11 +13,21 @@ gOS (Gary's Operating System) is an AI builder companion framework built on Clau
 | `/design`    | What are we building?      | Build cards, UI, system           |
 | `/simulate`  | What could happen?         | Scenarios, backtests              |
 | `/build`     | How do we code it?         | Features, fixes, models           |
-| `/review`    | Is it good?                | Verdicts, audits, evals           |
-| `/ship`      | Is it out?                 | Commits, PRs, deploys, fundraise  |
+| `/review`    | Is it good?                | Verdicts, audits, evals, refine   |
+| `/ship`      | Is it out?                 | Commits, pushes, PRs, gos, deploys, docs, fundraise |
 | `/evolve`    | Are we getting better?     | Self-improvement, upgrades        |
+| `/intake`    | What's the source say?     | Absorb URL, scan topic, watchlist |
+| `/status` `/save` `/resume` | (aliases → `/gos *`) | Top-level convenience            |
 
 Every command has built-in convergence loops for multi-step processes.
+
+## Sub-command naming rule
+
+**Sub-commands are noun-phrases naming the artifact produced or the target acted on.** Examples:
+- Canonical: `/design ui`, `/design card`, `/build feature`, `/think spec`, `/ship pr`, `/review gate`
+- Tolerated legacy (verb-form): `/think discover`, `/think research`, `/think decide`, `/review fresh`
+
+When adding a new sub-command: prefer the noun-phrase form. A sub-command that reads like a verb (`/build make`, `/ship deliver`) is usually redundant with the parent verb and should be rejected in review. Atomicity rule: each sub-command must have one intent; pipelines are fine as long as the pipeline *is* the intent.
 
 ## Structure
 

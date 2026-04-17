@@ -1,5 +1,5 @@
 ---
-description: "Design: card (author build card), ui (visualize via Figma/AIDesigner/Stitch MCPs), system (design tokens + components)"
+description: "Design: card, ui, add, audit, sync — build card, prototype, tokens, drift checks, visual audit. TRIGGER when user asks to author a build card, visualize a UI concept, spec a screen, add a component, or check design-system drift — phrases like 'design the X screen', 'author a build card for X', 'wireframe X', 'visualize X', 'build card for X', 'audit the design', 'sync tokens'. SKIP for high-level product thinking (use /think) or for actually implementing the UI in code (use /build)."
 ---
 
 # Design — Build Card + Visual Design → specs/ + Figma + prototypes
@@ -8,15 +8,17 @@ description: "Design: card (author build card), ui (visualize via Figma/AIDesign
 
 > **Scope note:** All `specs/Arx_*` paths, `DESIGN.md`, and `apps/web-prototype/` references below assume an Arx-project workspace. When invoked from another project, Gary should adapt the paths to that project's spec structure — the process (three gates, feel pass, state matrix) is project-agnostic.
 
-**3 sub-commands:**
+**5 sub-commands (legacy `system` split for atomicity):**
 
 | Sub-command | Question | Tools | Output |
 |---|---|---|---|
 | `card` | What are we building? | Specs, fixtures, DESIGN.md | `specs/Arx_4-1-1-X_*.md` + fixture entry |
 | `ui` | What does it look like? | Figma MCP, AIDesigner, Stitch, shadcn | Figma file, HTML prototype, screenshots |
-| `system` | Are tokens consistent? | Style Dictionary, Arx_4-2, DESIGN.md, Figma MCP | Updated design system files |
+| `add` | New token/component? | Arx_4-2, DESIGN.md, Figma MCP | Updated token/component + propagation |
+| `audit` | Is it drifting OR looking wrong? | design-auditor agents, Claude Preview | Drift report, visual/UX findings (absorbs legacy `/review design`) |
+| `sync` | Pull derivatives back in line? | Style Dictionary, Figma MCP | Regenerated DESIGN.md + Figma vars + CSS `:root` |
 
-Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind of design? card, ui, or system?"
+Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind of design? card, ui, add, audit, or sync?"
 
 **Intent confirmation (always).** Before planning, restate scope in one line: "I'll [sub-command] for [target], using [key constraints]. Proceed?" Skip only if Gary's input is already precise (e.g., exact spec ID or screen name).
 
@@ -165,24 +167,42 @@ Use Figma MCP to recreate with design system components. Import components by ke
 
 ---
 
-## system [add|update|audit]
+## Design System (propagation targets)
 
-**Purpose:** Maintain canonical design language — tokens, components, cross-source sync.
-
-**Sub-actions:**
-- `system add` — new token/component to Arx_4-2 → regenerate DESIGN.md
-- `system update` — modify token values, propagate to all files
-- `system audit` — check consistency, report drift
-- `system sync` — regenerate DESIGN.md from Arx_4-2 + Arx_4-3 + build card registries
-
-**Sync targets (propagate to ALL):**
+Changes flow to ALL of:
 1. `specs/Arx_4-2_Design_System.md` — canonical source
 2. `specs/Arx_4-3_Design_Taste.md` — taste framework
 3. `DESIGN.md` — **AUTO-GENERATED**, never hand-edit
 4. Figma variables via MCP
 5. `apps/web-prototype` CSS `:root` variables
 
-**Audit — PEV (see `specs/pev-protocol.md`):**
+The legacy `/design system [add|update|audit]` umbrella is split into 3 atomic sub-commands below. Updating a token value = `/design add` with an updated value (replace-if-exists).
+
+---
+
+## add <token-or-component>
+
+**Purpose:** Add a new token or component to the design system (or update an existing one in place). Single atomic write → propagate → regenerate DESIGN.md.
+
+**Process:**
+
+1. Edit the canonical source: `specs/Arx_4-2_Design_System.md` — add or update the entry.
+2. If the change affects taste (e.g., new surface category, new motion curve), update `specs/Arx_4-3_Design_Taste.md`.
+3. Regenerate `DESIGN.md` from Arx_4-2 + Arx_4-3 (never hand-edit).
+4. Propagate to Figma variables via MCP. Propagate to `apps/web-prototype` CSS `:root`.
+5. Report: what changed, which files updated, which targets still pending.
+
+**When to use:** adding a color, type scale step, spacing token, component variant, motion token, or any named entry in the design language.
+
+---
+
+## audit
+
+**Purpose:** Dual-mode audit — **design-system drift** (token/component consistency across sources) AND **visual/UX** (state matrix, typography, spacing, color temperature, responsive, anti-slop) of a specific screen or prototype. Folds in what used to be `/review design`.
+
+**Input:** optional target — a screen name, a prototype path, or empty (defaults to full design-system drift check).
+
+### System drift — PEV (see `specs/pev-protocol.md`)
 
 Spawn `pev-planner` with task_class=verification, pool hint:
 - `design-auditor` — token drift between Arx_4-2 and DESIGN.md
@@ -190,7 +210,38 @@ Spawn `pev-planner` with task_class=verification, pool hint:
 - `design-auditor` (3rd contract) — build card component refs vs Arx_4-2 component registry
 - Optional: `tool-scout` if new design tool (Figma MCP variable) changed the source of truth
 
-Planner writes roster. Execute in parallel. `pev-validator` consolidates drift reports; any CRITICAL (e.g., hardcoded color in production) blocks with STUCK. Adjudicator synthesizes fix list for Gary.
+Planner writes roster. Execute in parallel. `pev-validator` consolidates drift reports; any CRITICAL (e.g., hardcoded color in production) blocks with STUCK. Adjudicator synthesizes fix list.
+
+### Visual / UX audit (when a target is specified)
+
+1. Open target in Claude Preview or browser.
+2. Check all states: Default, Loading, Empty, Error, Overflow, Hover/Active, Selected/Unselected.
+3. Typography: monospace for numbers, 11-24px scale, contrast ratios.
+4. Spacing: 4px/8px grid, consistent padding, no whitespace rivers.
+5. Color: Stone for structure, Water for data, temperature distribution T0(80%)/T1(15%)/T2(4%)/T3(1%).
+6. Responsive: 390x844 primary, 375x812 secondary, no horizontal scroll.
+7. Anti-slop: no purple gradients, no generic grids, no AI-template aesthetics.
+8. Atomic commits for each fix.
+
+**Convergence loop:** After fixes, re-screenshot and re-audit changed areas. Max 3 audit-fix cycles.
+
+**Output:** issues table (source, issue, severity, fix) → state coverage matrix (if visual) → anti-slop result → verdict (APPROVE/REFINE/REJECT).
+
+---
+
+## sync
+
+**Purpose:** Regenerate downstream artifacts from the canonical source. No new tokens — just bring derivatives back in sync after an upstream edit.
+
+**Process:**
+
+1. Read `specs/Arx_4-2_Design_System.md` + `specs/Arx_4-3_Design_Taste.md` + build card registries.
+2. Regenerate `DESIGN.md` (fully replace — it's auto-generated).
+3. Push Figma variables via MCP. Diff vs current Figma state before writing.
+4. Update `apps/web-prototype` CSS `:root`. Diff vs current before writing.
+5. Report: files rewritten, tokens propagated, targets that failed (with error).
+
+Use after manually editing Arx_4-2 outside of `/design add`, or after a Figma-first token change needs to be pulled back into the source.
 
 ---
 

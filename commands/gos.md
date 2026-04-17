@@ -35,7 +35,7 @@ Parse the first word of `$ARGUMENTS` to route:
 **Memory search (mandatory):**
 1. Read `memory/L1_essential.md` — active state, feedback rules, known gaps
 2. Read `sessions/state.json` — check for incomplete work
-3. If claude-mem available, search for context relevant to the current task
+3. **Search claude-mem (mandatory, not optional):** query for the current task's keywords. If claude-mem MCP is unavailable in this session, write `claude-mem: UNAVAILABLE` to scratchpad and continue. If available and zero hits, write `claude-mem: 0 hits for "<query>"`. If hits, surface the top 1-2 inline as `From memory (verified): <fact> [<source-session>]`. Skipping this step is the most common cause of repeated dead-ends across sessions.
 4. Read `sessions/scratchpad.md` — runtime flags and agent state
 
 **Guards:**
