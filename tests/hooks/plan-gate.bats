@@ -1,118 +1,172 @@
 #!/usr/bin/env bats
-# Tests for plan-gate.sh — blocks edits during /think, /build, /design until plan approved
-# Event: PreToolUse (Edit|Write)
+# Tests for plan-gate.sh + plan-gate-prompt.sh
+# Hard-enforces plan mode for /build, /design, /think, /refine, /simulate,
+# /review (non-dashboard), /ship (non-commit/docs), /evolve upgrade.
 
-HOOK="$BATS_TEST_DIRNAME/../../.claude/hooks/plan-gate.sh"
-PROJECT_DIR="$BATS_TEST_DIRNAME/../.."
+PREHOOK="$BATS_TEST_DIRNAME/../../.claude/hooks/plan-gate-prompt.sh"
+GATE="$BATS_TEST_DIRNAME/../../.claude/hooks/plan-gate.sh"
 
 setup() {
-  export CLAUDE_PROJECT_DIR="$PROJECT_DIR"
-  SCRATCHPAD="$PROJECT_DIR/sessions/scratchpad.md"
-  # Backup real scratchpad
-  [ -f "$SCRATCHPAD" ] && cp "$SCRATCHPAD" "$SCRATCHPAD.bak"
+  TMPDIR=$(mktemp -d)
+  export FAKE_PROJECT="$TMPDIR"
+  export CLAUDE_PROJECT_DIR="$FAKE_PROJECT"
+  mkdir -p "$FAKE_PROJECT/sessions"
 }
 
 teardown() {
-  SCRATCHPAD="$PROJECT_DIR/sessions/scratchpad.md"
-  if [ -f "$SCRATCHPAD.bak" ]; then
-    mv "$SCRATCHPAD.bak" "$SCRATCHPAD"
+  rm -rf "$TMPDIR"
+}
+
+prompt_input() {
+  printf '{"prompt":"%s","session_id":"test"}' "$1"
+}
+
+edit_input() {
+  printf '{"tool_name":"Edit","tool_input":{"file_path":"%s"}}' "$1"
+}
+
+bash_input() {
+  printf '{"tool_name":"Bash","tool_input":{"command":"%s"}}' "$1"
+}
+
+# ─── UserPromptSubmit — opening the gate ────────────────────────────────────
+
+@test "opens gate when prompt is /build feature" {
+  run bash -c "echo '$(prompt_input "/build feature login-screen")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Plan Gate OPENED"* ]]
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+  grep -q "REQUIRED: /build feature" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+@test "opens gate when prompt is /design card" {
+  run bash -c "echo '$(prompt_input "/design card trade-entry")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+@test "opens gate when prompt is /review council" {
+  run bash -c "echo '$(prompt_input "/review council auth-flow")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+@test "does NOT open gate for /review dashboard" {
+  run bash -c "echo '$(prompt_input "/review dashboard")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  if [ -f "$FAKE_PROJECT/sessions/scratchpad.md" ]; then
+    ! grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
   fi
 }
 
-# Helper: write a scratchpad with given mode and optional plan approval
-write_scratchpad() {
-  local mode="$1"
-  local approved="${2:-no}"
-  local scratchpad="$PROJECT_DIR/sessions/scratchpad.md"
-
-  cat > "$scratchpad" << EOF
-# Session Scratchpad
-
-## Current Task
-Test task
-
-## Mode & Sub-command
-$mode
-
-## Working State
-Testing plan gate
-EOF
-
-  if [ "$approved" = "yes" ]; then
-    echo "" >> "$scratchpad"
-    echo "Plan: APPROVED" >> "$scratchpad"
+@test "does NOT open gate for /ship commit" {
+  run bash -c "echo '$(prompt_input "/ship commit")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  if [ -f "$FAKE_PROJECT/sessions/scratchpad.md" ]; then
+    ! grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
   fi
 }
 
-# --- SHOULD GATE: mode active, no approval ---
-
-@test "gates edits in /build mode without plan approval" {
-  write_scratchpad "gOS > /build feature"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
-  # plan-gate currently exits 0 with warning message (advisory)
-  [[ "$output" == *"PLAN GATE"* || "$output" == *"plan"* ]]
-}
-
-@test "gates edits in /think mode without plan approval" {
-  write_scratchpad "gOS > /think research"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
-  [[ "$output" == *"PLAN GATE"* || "$output" == *"plan"* ]]
-}
-
-@test "gates edits in /design mode without plan approval" {
-  write_scratchpad "gOS > /design card"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
-  [[ "$output" == *"PLAN GATE"* || "$output" == *"plan"* ]]
-}
-
-# --- SHOULD ALLOW: plan approved ---
-
-@test "allows edits after plan approval" {
-  write_scratchpad "gOS > /build feature" "yes"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
+@test "does NOT open gate for /save" {
+  run bash -c "echo '$(prompt_input "/save")' | bash '$PREHOOK'"
   [ "$status" -eq 0 ]
-  [[ "$output" != *"PLAN GATE"* ]]
+  if [ -f "$FAKE_PROJECT/sessions/scratchpad.md" ]; then
+    ! grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+  fi
 }
 
-# --- SHOULD ALLOW: non-gated modes ---
-
-@test "allows edits in /ship mode (not gated)" {
-  write_scratchpad "gOS > /ship commit"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
+@test "opens gate for /ship deploy" {
+  run bash -c "echo '$(prompt_input "/ship deploy")' | bash '$PREHOOK'"
   [ "$status" -eq 0 ]
-  [[ "$output" != *"PLAN GATE"* ]]
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
 }
 
-@test "allows edits when no scratchpad mode set" {
-  write_scratchpad "(awaiting routing)"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
+@test "opens gate for /evolve upgrade but NOT /evolve audit" {
+  bash -c "echo '$(prompt_input "/evolve upgrade think")' | bash '$PREHOOK'" >/dev/null
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+
+  rm -f "$FAKE_PROJECT/sessions/scratchpad.md"
+  run bash -c "echo '$(prompt_input "/evolve audit")' | bash '$PREHOOK'"
   [ "$status" -eq 0 ]
+  if [ -f "$FAKE_PROJECT/sessions/scratchpad.md" ]; then
+    ! grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+  fi
 }
 
-# --- DESIGN-SPECIFIC GATES ---
+# ─── UserPromptSubmit — approval + bypass flipping ──────────────────────────
 
-@test "design gate blocks without state matrix" {
-  write_scratchpad "gOS > /design full" "yes"
-  export TOOL_INPUT_FILE_PATH="$PROJECT_DIR/outputs/think/design/test-spec.md"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$PROJECT_DIR/outputs/think/design/test-spec.md\"}}' | TOOL_INPUT_FILE_PATH='$PROJECT_DIR/outputs/think/design/test-spec.md' bash '$HOOK'"
+@test "approval token 'yes' flips STATE to approved" {
+  bash -c "echo '$(prompt_input "/build feature login")' | bash '$PREHOOK'" >/dev/null
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+
+  run bash -c "echo '$(prompt_input "yes")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Plan Gate APPROVED"* ]]
+  grep -qE "STATE: approved-[0-9]+" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+@test "approval token 'go' flips STATE to approved" {
+  bash -c "echo '$(prompt_input "/design card home")' | bash '$PREHOOK'" >/dev/null
+  bash -c "echo '$(prompt_input "go")' | bash '$PREHOOK'" >/dev/null
+  grep -qE "STATE: approved-[0-9]+" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+@test "bypass token 'just do it' flips STATE to bypassed" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '$(prompt_input "just do it")' | bash '$PREHOOK'"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Plan Gate BYPASSED"* ]]
+  grep -qE "STATE: bypassed-[0-9]+" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+@test "longer reply without 'plan approved' does NOT flip state" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  bash -c "echo '$(prompt_input "yes but change the approach to use typescript")' | bash '$PREHOOK'" >/dev/null
+  grep -q "STATE: pending" "$FAKE_PROJECT/sessions/scratchpad.md"
+}
+
+# ─── PreToolUse — blocking behavior ─────────────────────────────────────────
+
+@test "plan-gate BLOCKS Edit when STATE=pending" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '$(edit_input "/some/file.ts")' | bash '$GATE' 2>&1"
   [ "$status" -eq 2 ]
-  [[ "$output" == *"DESIGN GATE"* || "$output" == *"state matrix"* ]]
+  [[ "$output" == *"PLAN GATE: blocked"* ]]
 }
 
-@test "design gate allows with state matrix in scratchpad" {
-  write_scratchpad "gOS > /design full" "yes"
-  echo "" >> "$PROJECT_DIR/sessions/scratchpad.md"
-  echo "## State Matrix" >> "$PROJECT_DIR/sessions/scratchpad.md"
-  echo "## Reference Research" >> "$PROJECT_DIR/sessions/scratchpad.md"
-  echo "| State | Journey |" >> "$PROJECT_DIR/sessions/scratchpad.md"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$PROJECT_DIR/outputs/think/design/test-spec.md\"}}' | TOOL_INPUT_FILE_PATH='$PROJECT_DIR/outputs/think/design/test-spec.md' bash '$HOOK'"
+@test "plan-gate ALLOWS Edit when STATE=approved" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  bash -c "echo '$(prompt_input "yes")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '$(edit_input "/some/file.ts")' | bash '$GATE' 2>&1"
   [ "$status" -eq 0 ]
 }
 
-# --- EDGE CASES ---
+@test "plan-gate ALLOWS Edit when STATE=bypassed" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  bash -c "echo '$(prompt_input "just do it")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '$(edit_input "/some/file.ts")' | bash '$GATE' 2>&1"
+  [ "$status" -eq 0 ]
+}
 
-@test "exits cleanly when no scratchpad exists" {
-  rm -f "$PROJECT_DIR/sessions/scratchpad.md"
-  run bash -c "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/test.md\"}}' | bash '$HOOK'"
+@test "plan-gate ALLOWS Edit when no Plan Gate section present" {
+  run bash -c "echo '$(edit_input "/some/file.ts")' | bash '$GATE' 2>&1"
+  [ "$status" -eq 0 ]
+}
+
+@test "plan-gate BLOCKS Bash git commit when STATE=pending" {
+  bash -c "echo '$(prompt_input "/ship deploy")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '$(bash_input "git commit -m test")' | bash '$GATE' 2>&1"
+  [ "$status" -eq 2 ]
+}
+
+@test "plan-gate IGNORES Bash non-git commands even when pending" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '$(bash_input "ls -la")' | bash '$GATE' 2>&1"
+  [ "$status" -eq 0 ]
+}
+
+@test "plan-gate IGNORES non-Edit, non-Write, non-Bash tools" {
+  bash -c "echo '$(prompt_input "/build feature foo")' | bash '$PREHOOK'" >/dev/null
+  run bash -c "echo '{\"tool_name\":\"Read\",\"tool_input\":{\"file_path\":\"/x\"}}' | bash '$GATE' 2>&1"
   [ "$status" -eq 0 ]
 }

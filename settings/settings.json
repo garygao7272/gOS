@@ -29,10 +29,28 @@
     "pr": ""
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/plan-gate-prompt.sh",
+            "timeout": 5,
+            "statusMessage": "Plan gate (open/approve/bypass)"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/plan-gate.sh",
+            "timeout": 5,
+            "statusMessage": "Plan gate (git)"
+          },
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/delete-guard.sh",
@@ -73,6 +91,12 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/plan-gate.sh",
+            "timeout": 5,
+            "statusMessage": "Plan gate"
+          },
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/scope-guard.sh",
