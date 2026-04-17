@@ -141,18 +141,23 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
 
 If the change doesn't fit gOS scope: STOP and say so. Do not silently fall back to the current repo.
 
-**Process:**
+**Process — one command, three targets (repo + user install + plugin cache):**
 
 1. Resolve gOS repo path: `"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS"`. Verify it's a git repo (`git -C <path> rev-parse --show-toplevel`).
-2. Apply the change in the gOS repo (if it isn't already there). If you're editing from another project, the source of truth is `commands/`, `hooks/`, etc. at the gOS repo root — not the installed copies under `~/.claude/` or `{project}/.claude/`.
+2. Apply the change in the gOS repo if it isn't already there. **Source of truth lives at the gOS repo root** (`commands/`, `agents/`, `hooks/`, `.claude/hooks/`, `tools/`, `output-styles/`) — never edit the installed copies under `~/.claude/` or the plugin cache directly.
 3. In the gOS repo: `git status`, `git diff`, `git log --oneline -5` for commit-message style.
 4. Stage only the relevant files by name. Follow the same safety rules as `commit` (no `-A`, no secrets, no large binaries).
 5. Create a conventional commit: `feat(gos): ...`, `fix(gos): ...`, etc. Attribution stays disabled.
-6. Push: `git push` (with `-u` if new branch).
-7. Sync installed copies if relevant: `cp commands/<x>.md ~/.claude/commands/` (or re-run `./install.sh --global`) so the running session picks up the fix.
-8. Report: `Shipped to gOS. Commit: {sha} — {message}. Synced to ~/.claude/: {yes|no}`.
+6. **Push to GitHub:** `git push` (with `-u` if new branch).
+7. **Sync to all live targets:** `bash tools/sync-gos.sh --quiet`. This single script propagates source → all three runtime locations:
+   - **User install** (`~/.claude/{commands,agents,skills,rules,hooks,output-styles,statusline.sh}`) via `install.sh --global`.
+   - **Plugin cache** (`~/.claude/plugins/cache/gos-marketplace/gos/<latest>/{commands,agents,hooks,rules}`) — this is what powers `/-autocomplete` in Claude Code ≥ 2.1.84. Without this sync, autocomplete keeps showing the GitHub-fetched version, not your local edits.
+   - **Output styles + status line** — primitives that `install.sh` doesn't yet handle natively.
+8. Report: `Shipped to gOS. Commit: {sha} — {message}. Sync: user(N) + styles(N) + statusline(N) + plugin(N).`
 
 **Never** run destructive git ops (`reset --hard`, `push --force`, `clean -fd`) inside the gOS repo from another project's session.
+
+**If `tools/sync-gos.sh` is missing** (e.g., you're working on an older clone), fall back to: `bash install.sh --global && cp tools/gos-statusline.sh ~/.claude/statusline.sh && cp output-styles/*.md ~/.claude/output-styles/` — but the script is the canonical entry point.
 
 ---
 

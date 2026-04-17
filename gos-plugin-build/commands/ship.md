@@ -1,5 +1,5 @@
 ---
-description: "Ship — deliver: commit, pr, deploy, docs, fundraise — or full ship sequence"
+description: "Ship — deliver: commit, push, pr, gos, deploy, docs, fundraise — or full ship sequence"
 ---
 
 # Ship — Delivery Pipeline
@@ -54,11 +54,11 @@ If any agent reports failures → STOP and report before committing. If all clea
    - Write concise message (1-2 sentences, focus on "why" not "what")
    - No Co-Authored-By line (attribution disabled globally)
 
-5. **Push:** Push to remote.
+5. **Push:** Push to remote (see `push` sub-command for the atomic operation).
    - Use `-u` flag if this is a new branch
    - Never force-push without explicit approval
 
-6. **Create PR:** Via `gh pr create`.
+6. **Create PR:** Via `gh pr create` (assumes branch is already pushed).
    - Title: <70 chars
    - Body format:
      ```
@@ -114,18 +114,58 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
 
 ---
 
-## pr
+## push
 
-**Purpose:** Create a pull request only. Assumes commits already exist.
+**Purpose:** Push the current branch to its remote. No commit, no PR, no deploy.
 
 **Process:**
 
-1. Check if current branch tracks a remote branch
-   - If not tracking or behind: push with `-u` flag
-2. Determine the base branch (main, master, or develop)
-3. Run `git diff {base-branch}...HEAD` to see the full diff
-4. Read ALL commits on the branch: `git log {base-branch}..HEAD --oneline`
-   - Analyze every commit, not just the latest
+1. Run `git status` — confirm working tree is clean enough to push (warn if uncommitted changes exist; they won't be pushed but flag the mismatch).
+2. Run `git rev-parse --abbrev-ref HEAD` to get the branch name.
+3. Check upstream tracking: `git rev-parse --abbrev-ref --symbolic-full-name @{upstream}`. If no upstream, push with `-u origin <branch>`. Otherwise plain `git push`.
+4. Never force-push without explicit approval. If push rejected (non-fast-forward), STOP and report — do not auto-resolve.
+5. Report: `Pushed {branch} → {remote}/{branch} (N commits). HEAD: {short-sha}`.
+
+---
+
+## gos
+
+**Purpose:** Commit and push a change to the **gOS repo** from anywhere. Use when you're working in another project (Arx, Advance Wealth, etc.) and want to upstream a framework fix — a hook, command, rule, skill, or claw — without manually cd-ing.
+
+**Scope detection (blocking):** The change must touch one of the following, relative to the gOS repo root:
+- `commands/*.md`, `agents/*.md`, `skills/**`, `rules/**`
+- `hooks/*`, `claws/**`, `evals/**`, `launchd/*.plist`
+- `tools/*.sh`, `settings/settings.json`, `install.sh`, `bootstrap/**`
+- `memory/**` (framework-level only, not project memory)
+- `CLAUDE.md` or `gOS/CLAUDE.md`, `README.md` at repo root
+
+If the change doesn't fit gOS scope: STOP and say so. Do not silently fall back to the current repo.
+
+**Process:**
+
+1. Resolve gOS repo path: `"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS"`. Verify it's a git repo (`git -C <path> rev-parse --show-toplevel`).
+2. Apply the change in the gOS repo (if it isn't already there). If you're editing from another project, the source of truth is `commands/`, `hooks/`, etc. at the gOS repo root — not the installed copies under `~/.claude/` or `{project}/.claude/`.
+3. In the gOS repo: `git status`, `git diff`, `git log --oneline -5` for commit-message style.
+4. Stage only the relevant files by name. Follow the same safety rules as `commit` (no `-A`, no secrets, no large binaries).
+5. Create a conventional commit: `feat(gos): ...`, `fix(gos): ...`, etc. Attribution stays disabled.
+6. Push: `git push` (with `-u` if new branch).
+7. Sync installed copies if relevant: `cp commands/<x>.md ~/.claude/commands/` (or re-run `./install.sh --global`) so the running session picks up the fix.
+8. Report: `Shipped to gOS. Commit: {sha} — {message}. Synced to ~/.claude/: {yes|no}`.
+
+**Never** run destructive git ops (`reset --hard`, `push --force`, `clean -fd`) inside the gOS repo from another project's session.
+
+---
+
+## pr
+
+**Purpose:** Create a pull request only. Assumes the branch is already pushed. If not pushed, STOP and tell the user to run `/ship push` first — this sub-command does not push.
+
+**Process:**
+
+1. Check upstream tracking. If no upstream or remote HEAD is behind local HEAD, STOP: "Branch not pushed. Run `/ship push` first."
+2. Determine the base branch (main, master, or develop).
+3. Run `git diff {base-branch}...HEAD` to see the full diff.
+4. Read ALL commits on the branch: `git log {base-branch}..HEAD --oneline` — analyze every commit, not just the latest.
 5. Draft PR:
    - Title: <70 chars, summarizes the change
    - Body:
@@ -138,8 +178,8 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
 
      Generated with gOS
      ```
-6. Create PR via `gh pr create`
-7. Return PR URL
+6. Create PR via `gh pr create`.
+7. Return PR URL.
 
 ---
 
@@ -203,23 +243,30 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
 
 ---
 
-## fundraise
+## fundraise [--only <artifact>]
 
-**Purpose:** Ship investor-ready materials. Bundles: IC memo + one-pager + financial projections.
+**Purpose:** Ship investor-ready materials. Bundles three artifacts by default: IC memo + one-pager + financial projections.
+
+**Scope flag:** `--only ic` | `--only onepager` | `--only plan` — generate just that artifact. Without the flag, generate all three and cross-check numbers.
+
+**Artifact → skill map:**
+
+| Artifact | Flag value | Skill |
+|---|---|---|
+| IC memo | `ic` | `Skill("private-equity:ic-memo")` |
+| One-pager | `onepager` | `Skill("investment-banking:strip-profile")` |
+| Financial plan | `plan` | `Skill("wealth-management:financial-plan")` |
 
 **Process:**
 
-1. **Gather current state:** Read latest XLSX projections from `other specs/`, read existing investor materials
-2. **Generate/update materials** via Anthropic finance skills:
-   - IC memo: `Skill("private-equity:ic-memo")`
-   - One-pager: `Skill("investment-banking:strip-profile")`
-   - Financial plan: `Skill("wealth-management:financial-plan")`
-3. **QA pass:** Check number consistency across all 3 documents
-4. **Package:** Collect all materials into `outputs/fundraise/` with date stamp
+1. **Gather current state:** Read latest XLSX projections from `other specs/`, read existing investor materials.
+2. **Generate:** if `--only` is set, call just that skill. Otherwise call all three.
+3. **QA pass:** If multiple artifacts were generated, cross-check number consistency. Skip QA on single-artifact runs.
+4. **Package:** Collect outputs into `outputs/fundraise/` with a date stamp.
 
-**Convergence loop:** After generating, cross-check numbers between IC memo, one-pager, and projections XLSX. If mismatches found, fix and re-check. Max 3 consistency passes.
+**Convergence loop (multi-artifact only):** If numbers disagree between IC memo, one-pager, and projections XLSX, fix and re-check. Max 3 consistency passes.
 
-**Output:** Packaged materials in `outputs/fundraise/` → "Fundraise package ready. [N] documents, all numbers consistent."
+**Output:** `outputs/fundraise/` → "Fundraise {artifact|package} ready. {N} documents, numbers {consistent|N/A single-artifact}."
 
 ---
 

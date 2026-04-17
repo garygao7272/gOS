@@ -19,7 +19,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Plan mode enforced.** Before executing, state: simulation type, parameters (assets, period, scenario), data sources. Wait for confirmation.
 
-> **Simplified (v2):** `backtest` folded into `market` (use `market --backtest`). `dux` folded into `scenario` (Dux is the engine).
+> **Sub-commands:** `market` (includes `--backtest` mode), `scenario` (uses Dux engine if available), `flow`. See also the `backtest` and `dux` redirects below for direct invocation details.
 
 **Output pipeline:** MD → optionally HTML → optionally PDF. See Output Pipeline section.
 
@@ -78,44 +78,21 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 ---
 
-## backtest <strategy>
+## backtest — folded into `market`
 
-**Purpose:** Run a trading strategy against historical data.
-
-**Process:**
-
-1. Parse strategy description
-2. **Check for Dux engine** at Dux project path. If available, prefer it. Otherwise simulate with Hyperliquid MCP data.
-3. **Define parameters:** Entry/exit rules, position sizing, universe, timeframe
-4. **Fetch historical data** via `get_candlestick` (up to 50 candles per request — note limitations)
-5. **Run backtest:** Iterate chronologically, apply rules, track P&L/drawdowns
-6. **Calculate metrics:** Total return, annualized, Sharpe, Sortino, max drawdown, win rate, profit factor, avg win/loss, total trades, avg hold time
-
-**Output sections:** Strategy Definition → Performance Summary table → Equity Curve → Trade Log (top 5 winners/losers) → Risk Analysis → Data Limitations → Recommendations
-
-**Output to:** `outputs/think/research/backtest-{slug}.md`
+Invoke as `/simulate market --backtest <strategy>`. Backtest mode extends `market` by iterating historical candles (via `get_candlestick`, max 50 candles per call) and tracking P&L and drawdowns. Reported metrics: total return, annualized, Sharpe, Sortino, max drawdown, win rate, profit factor, avg win/loss, total trades, avg hold time. Output to `outputs/think/research/backtest-{slug}.md`. If Dux engine is available at the Dux project path, prefer it; otherwise simulate directly from Hyperliquid MCP data.
 
 ---
 
-## dux <config>
+## dux — folded into `scenario`
 
-**Purpose:** Full Dux simulation engine. Knowledge graph → branch futures (Graph-of-Thoughts) → LLM agents (Concordia-inspired) → best path (MCTS/Beam Search).
+The Dux simulation engine is the execution backend for `/simulate scenario`. Pipeline: Seed → Ontology → Branching → Agents → Search → Evaluation → Orchestrator. Direct invocation:
 
-**Process:**
+```bash
+cd "/Users/garyg/Documents/Claude Working Folder/Dux" && PYTHONPATH=. python -m backend.main simulate --config "{config}" --output json
+```
 
-1. **Check Dux availability** at project path
-2. **If available, run pipeline:** Seed → Ontology → Branching → Agents → Search → Evaluation → Orchestrator
-
-   ```bash
-   cd "/Users/garyg/Documents/Claude Working Folder/Dux" && PYTHONPATH=. python -m backend.main simulate --config "{config}" --output json
-   ```
-
-3. **If not available:** Explain setup requirements, suggest `/simulate scenario` as lightweight alternative
-4. **Parse and present:** Best path (utility + probability + robustness), top 3 alternatives, critical decision points, key actor behaviors, recommended actions
-
-**Output sections:** Seed Scenario → Knowledge Graph Summary → Branch Tree → Best Path (with decision points) → Alternative Paths table → Agent Behaviors → Recommended Actions
-
-**Output to:** `outputs/think/research/dux-{slug}.md`
+If Dux is unavailable, `/simulate scenario` runs in lightweight mode (no knowledge-graph branching). Present: best path (utility + probability + robustness), top 3 alternatives, critical decision points, recommended actions. Output to `outputs/think/research/dux-{slug}.md`.
 
 ---
 

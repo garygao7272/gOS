@@ -1,14 +1,10 @@
 {
   "version": "4.3",
-  "last_updated": "2026-04-17T21:49:03.212441+08:00",
+  "last_updated": "2026-04-17T21:52:21.793769+08:00",
   "domains": {
     "architecture": {
       "level": 0,
       "history": [
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T12:56:13Z"
-        },
         {
           "signal": "session-end",
           "timestamp": "2026-04-17T12:58:15Z"
@@ -84,6 +80,10 @@
         {
           "signal": "session-end",
           "timestamp": "2026-04-17T13:49:02Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T13:52:21Z"
         }
       ],
       "consecutive_accepts": 0,
