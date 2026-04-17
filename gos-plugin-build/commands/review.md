@@ -17,7 +17,7 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If it matches a p
 
 **Routing for `ultra` vs `council`:** if input is file paths, a diff, or a staged changeset → **ultra** (delegate to native `/ultrareview`). If input is a topic, spec, design, or strategy question → **council** (gOS persona swarm).
 
-**Intent confirmation (always).** Before executing, restate scope in one line: "I'll review [target] as [sub-command], covering [files/scope]. Proceed?" Skip only if Gary said "just do it."
+**Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll review [target] as [sub-command], covering [files/scope]. Proceed?"
 
 **Plan mode enforced.** Before executing any review, state: what's being reviewed, which sub-command, what files/specs are in scope. Wait for confirmation unless Gary said "just do it."
 
