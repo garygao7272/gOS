@@ -30,6 +30,34 @@ If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, co
 
 ---
 
+## Diagnosis protocol (3-question pattern — FP-OS §3.2)
+
+When reviewing something **broken** (activation dropped, performance regressed, spec-vs-code diverged, test flaking, feature underperforming), run this *before* categorising findings by severity. Applies inside `code`, `gate`, `fresh`, and any ad-hoc diagnostic review.
+
+1. **Symptom precisely** — measurable deviation from expected, not a vague concern. ("Activation 42% → 31% over 3w"; not "retention feels off".)
+2. **Mechanism chain** — from symptom backward: for this symptom to appear, what *must* be true? Each step is a hypothesis. Walk back until you reach atomic — a broken dependency, a wrong assumption, a violated invariant.
+3. **Which link is broken?** — per hypothesis, what decisive signal would confirm or falsify it? Gather those first. Don't fix until the broken link is localised.
+
+Skill: `engineering:debug`. **Failure mode:** treating a correlated symptom as the root ("retention down → add features") — chain was never drawn, fix targets a symptom two layers from the cause, cause keeps producing new symptoms. Always draw the chain.
+
+---
+
+## Terminal verdict (mandatory for every review sub-command)
+
+Every review MUST close with exactly one of three outcomes — no ambiguous "looks good" / "mostly fine" allowed. Derived from FP-OS K6 (defer is real).
+
+| Verdict | When | Format |
+|---|---|---|
+| **PASS** | All invariants satisfied AND variants score ≥ threshold | `VERDICT: PASS — <one-line rationale>` |
+| **KILL** | Any invariant violated OR critical falsifier present | `VERDICT: KILL — <violated invariant or falsifier>` |
+| **DEFER** | Signal insufficient to call; specify what would resolve | `VERDICT: DEFER — needs: <decisive signal / evidence / experiment>` |
+
+**Rule:** sub-commands may map their legacy verdicts (APPROVE → PASS, BLOCK → KILL, CONCERN → DEFER-if-signal-insufficient else KILL, PROMOTE → PASS, REFINE → DEFER, REWORK → KILL) but the terminal line must use **PASS / KILL / DEFER**. Legacy labels remain as internal severity tags; the terminal verdict is canonical.
+
+**Why DEFER matters:** Most "concerns" are signal-insufficient, not failures. Naming defer explicitly — with the specific resolver — turns stuck reviews into open-but-legible ones, and prevents rationalising past a real falsifier as a "concern."
+
+---
+
 ## fresh
 
 **Purpose:** Clean-context spec-vs-code verification (INV-G06). Spawns a fresh sonnet agent with **zero implementation context** — only the build contract + diff. Catches drift the implementing session is blind to.

@@ -247,6 +247,19 @@ Use after manually editing Arx_4-2 outside of `/design add`, or after a Figma-fi
 
 ---
 
+## `--innovate` modifier (FP-OS §3.6) — on top of `card` / `ui`
+
+Invoke when the inherited problem space itself is the bottleneck. Base protocol still runs in full (Gates -1/0/3c, litmus, feel pass). Modifier adds two moves:
+
+1. **Invariant challenge.** Classify each invariant in the `INVARIANTS:` block — **physical** (physics, math, regulation, design-system contracts like "no gradients": keep) vs **conventional** (industry habit, competitor pattern, inherited category default: candidate for removal, one per invocation, model the consequences first).
+2. **Cross-domain atom import.** Import one mechanism from an adjacent domain (aviation HUDs, games, poker bankroll UIs, safety systems) that's mundane there, unprecedented here.
+
+**Output:** append `INNOVATION LEDGER` to the card/ui — invariants relaxed (+why), atoms imported (+source domain), recombination rationale. Auditable.
+
+**Skip** if the base protocol already produces an acceptable output — novelty has a complexity cost. **Anti-pattern:** removing a physical invariant by mistake ("no gradients" is physical, not convention). Classify before removing.
+
+---
+
 ## Design Convergence Loop (applies to card and ui)
 
 After producing design output, run a tightening pass:

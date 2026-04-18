@@ -116,6 +116,22 @@ Scale elicitation to goal complexity:
 
 For complex goals, produce a concrete intent document (INTENT, SCOPE, DIMENSIONS, QUALITY BAR).
 
+### Phase 2.5 — Problem-type classification (FP-OS protocol routing)
+
+Before decomposition, type the problem. Different protocols weight different primitives — routing verbs without typing the problem produces workable-but-wrong plans. Pick one:
+
+| Protocol | Problem shape | Default verb route | Dominant primitives |
+|---|---|---|---|
+| **Decision** | "Pick an option / go-no-go / which of X, Y, Z" | `/think decide` → `/review gate` | Invariants + Signals + Rule |
+| **Diagnosis** | "Something is broken / why is X happening" | `/review` (root-cause mode) → `/build fix` | Relations + Signals |
+| **Design** | "Specify a new thing" | `/think discover` → `/design card` → `/design ui` | Atoms + Degrees of freedom |
+| **Build** | "Realise an existing spec" | `/build feature` | Relations + Invariants + Signals + Rule (sequencing) |
+| **Strategy** | "Act under uncertainty with adversaries / reshape the game" | `/think research` → `/think decide` → `/simulate scenario` | All seven + game dynamics |
+
+**Rule:** Name the protocol in the intent document ("This is a Diagnosis problem — root cause unknown, symptom is X"). If multiple protocols fit, pick the narrower one first; broaden only if it fails. A problem typed as Diagnosis that turns out to be Design has wasted one round, not the whole job.
+
+**Innovation modifier:** if the inherited problem space itself is the constraint (existing solutions in this space cannot produce the desired outcome), layer `--innovate` on the chosen verb. See `/design --innovate` and `/build --innovate`.
+
 ### Phase 3 — Decomposition (Show Plan, Get Approval)
 
 Map intent to gOS verbs. Identify dependencies and parallelism. Present phased task graph. Wait for approval.

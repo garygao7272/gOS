@@ -65,6 +65,18 @@ DEFINITION OF DONE:
 
 Gary confirms → write contract to `outputs/build/{slug}/contract.md`. This is the **single source of truth** for the build session. Every later step (tests, code, verify) checks against this contract.
 
+### Build protocol (5-question pre-build gate — FP-OS §3.4)
+
+Answer before writing code. Each shapes the contract or its sequencing; missing answers produce rework, not progress.
+
+1. **Dependency graph** — which atom must exist before which? Critical path zero→first-increment? Where are the parallelisable branches?
+2. **Emergent invariants** — what will only surface under execution? (latency budgets, concurrency limits, integration quirks, failure cascades, safety thresholds). The spec assumed them away; build reveals them.
+3. **Smallest coherent increment** — the minimum slice exercising the *hardest* path end-to-end. Build this first: if it doesn't work, the direction is wrong and you've learned it cheaply.
+4. **Signals of correctness** — unit tests, integration, telemetry, observed behaviour. Set up *before* writing code, not after.
+5. **Sequencing rule under constraint** — what ships first, next, deferred, dropped. Make lexicographic ordering explicit; otherwise sequencing becomes whatever feels urgent this week.
+
+**Q2 is the common miss.** When an emergent invariant appears, loop back to `/design card` or `/think spec` with it — don't patch locally. Linear execution of a spec is the core anti-pattern. Skill: `anthropic-skills:execution-planning` + `tdd-workflow` (run inside this gate).
+
 **Team decision:**
 - Complex features touching 3+ systems → run via PEV (below).
 - Simple features → sequential execution (single session).
@@ -195,6 +207,19 @@ HTML prototypes live at `apps/web-prototype/` and are authored via `/design ui`,
 **Convergence loop:** After model edits, run audit pass checking: formula errors, broken references, circular dependencies, assumption consistency. Fix issues and re-audit. Max 3 audit-fix cycles.
 
 **Rules:** NEVER use openpyxl for writing. Use OfficeCLI for edits + LibreOffice headless for recalc.
+
+---
+
+## `--innovate` modifier (FP-OS §3.6) — on top of `feature`
+
+Invoke only when the standard implementation pattern provably fails to meet an invariant. Base protocol still runs in full (boundary contract, TDD, 80% coverage, compliance matrix, assumption log). Modifier adds two moves:
+
+1. **Invariant challenge.** Classify each boundary-contract invariant — **physical** (language semantics, protocol contracts, security guarantees: keep) vs **conventional** (framework default, "standard" architecture, inherited pattern: removable, one per invocation).
+2. **Cross-domain atom import.** Import one mechanism from an adjacent engineering domain (functional cores from ML, actor models from game engines, signal processing from audio into rate-limiting) that's mundane there, unprecedented here.
+
+**Output:** append `outputs/build/{slug}/innovation-ledger.md` — invariants relaxed (+why), atoms imported (+source), recombination rationale, regression risk introduced.
+
+**Skip** by default — innovation in `/build` carries the highest regression + maintenance cost. **Anti-pattern:** removing a physical invariant by mistake ("all writes go through the repository layer" is physical if it backs audit). Classify before removing; revisit via `/think decide` when in doubt.
 
 ---
 

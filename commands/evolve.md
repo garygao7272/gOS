@@ -18,6 +18,17 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 Six signal types: `accept` (used as-is), `rework` (changes requested), `reject` (discarded), `love` (praised), `repeat` (re-explained), `skip` (skipped prescribed step). Logged to `sessions/evolve_signals.md` as `| Date | Time | Command | Signal | Context |`. Batch-log during `/gos save`.
 
+### Signal weight (FP-OS K5)
+
+Not every signal carries equal force. Before acting on signals in `audit` or `upgrade`, classify:
+
+| Class | Signals | Force | Rule |
+|---|---|---|---|
+| **Decisive** (flips the call alone) | `reject` on load-bearing output · `love` on a specific pattern · `repeat` on the same correction (3+) | One occurrence can trigger an upgrade | Always act. Don't wait for accumulation. |
+| **Suggestive** (accumulates into weight-of-evidence) | `accept`, `rework`, `skip` | Need ≥3 of the same class before acting | Aggregate first. A single `rework` may be noise. |
+
+**Implication for `audit`:** a command with 1 `reject` on a critical path (decisive) should rank above a command with 5 `rework`s on polish (suggestive), even though the raw count favours the second. Score by weight, not volume.
+
 ---
 
 ## audit

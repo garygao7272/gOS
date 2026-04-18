@@ -15,9 +15,10 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 
 ---
 
-## L0 — Identity (always loaded)
+## L0 — Identity + Reasoning Kernel (always loaded)
 
-- [L0_identity.md](L0_identity.md) — Gary + Arx in 100 tokens. Load first, always.
+- [L0_identity.md](L0_identity.md) — Gary + Arx in 100 tokens. WHO. Load first, always.
+- [L0_reasoning_kernel.md](L0_reasoning_kernel.md) — 8 reasoning invariants (K1–K8, from First Principles OS). HOW. Load alongside identity.
 
 ## L1 — Essential Story (always loaded)
 

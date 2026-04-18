@@ -41,6 +41,17 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Input:** 1-2 sentence seed idea
 
+### Design protocol (4-question lens — FP-OS §3.3)
+
+`discover` lives at the Atoms + Degrees-of-freedom layers. Invariants (platform, regulation, business model, trust thresholds) are inputs. Every discover output must answer:
+
+1. **User atom** — not the demographic. The irreducible unit: specific person, specific moment, specific job-to-be-done. Everything composes from this.
+2. **Fixed invariants** — platform constraints, regulatory limits, trust thresholds, business-model requirements. Name every one — unnamed invariants cage the design silently.
+3. **Real degrees of freedom** — of everything "up to you," which are actually free vs phantom (labelled-as-choice but fixed by an upstream constraint)?
+4. **Minimum sufficient composition** — simplest recombination of atoms, respecting all invariants, that delivers the outcome. Add complexity only when the minimum fails.
+
+Skill: `anthropic-skills:design-discovery` (run inside this lens). Failure mode: designing at the *feature* layer instead of the *atom* layer — produces a great checkout flow inside a product no one needs.
+
 ### Execution — PEV (see `specs/pev-protocol.md`)
 
 1. Spawn `pev-planner` with: task = seed idea, task_class = exploration, pool hint:
@@ -68,6 +79,18 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Purpose:** Deep research grounded in evidence.
 
+### Strategy protocol (5-question lens — FP-OS §3.5)
+
+If the question has adversaries, feedback loops, or game-reshaping potential (competitor dynamics, market structure, venue economics), research through this lens. Pure fact-finding skips this.
+
+1. **What's the game?** — players, objectives, available moves. Tactics ≠ strategy.
+2. **Structural invariants** — regulatory, physical, economic, network effects. What would change the *game itself*?
+3. **Asymmetry** — what can we see / do / access that others can't? No asymmetry = execution-speed play only, not strategy.
+4. **Game-changing move** — tactical plays compete within rules; strategic plays change the rules, players, or payoffs. Rank candidates.
+5. **Board response** — for each move, likely counter? How do we stay ahead of the reaction?
+
+Skill: `anthropic-skills:product-strategy` (run inside this lens). Failure mode: playing the current game too well — produces incremental gains where reshaping the game would produce step-function gains.
+
 **Before researching solutions, audit what's already installed.** Check settings.json, SETUP.md, installed MCP servers. Frame recommendations as "build on top of X" not "replace with Y". (Instinct: audit-existing-tools)
 
 ### Execution — PEV (see `specs/pev-protocol.md`)
@@ -92,6 +115,17 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 **Purpose:** Multi-perspective decision analysis.
 
 **Input:** Decision question (e.g., "should copy trading show full P&L transparency?")
+
+### Decision protocol (4-question gate — FP-OS §3.1)
+
+The output MUST answer these four, in order. The PEV pool exists to gather evidence for them — not to replace them.
+
+1. **Invariants** — what must hold, no exceptions? (binary pass/fail, AND-aggregated)
+2. **Variants** — what's weighted? (continuous, trade-offs allowed, ranked)
+3. **Decisive signals** — what would pass this alone (validators) or kill it alone (falsifiers)?
+4. **Suggestive signals** — what's accumulating for (tailwinds) or against (yellow flags)?
+
+**Verdict: PASS / KILL / DEFER (needs: X).** A variant failing ≠ KILL. A variant excelling ≠ PASS. Only invariants + decisive signals move the call; suggestive signals only nudge probability. Skill: `anthropic-skills:decision-prioritization` (run inside this gate, not instead of it).
 
 ### Execution — PEV (see `specs/pev-protocol.md`)
 
@@ -127,6 +161,24 @@ NEVER: [what this spec refuses to cover — and why]
 ```
 
 **First-principles self-check (INV-G01):** Before finalizing, verify every claim traces to a mechanism, not an analogy. If any section leans on "like X" without naming the underlying cause, rewrite from primitives.
+
+**7-primitive skeleton (mandatory section headers — derived from FP-OS Layer 1).** Every spec written via `/think spec` must contain these seven sections in order. Empty/unknown is allowed — write "UNKNOWN — resolver: <what would fill it>". Missing sections fail the quality gate.
+
+| # | Section | What goes here |
+|---|---|---|
+| 1 | **Boundaries** | IN / OUT / NEVER — scope contract (reuses synthesis boundary above) |
+| 2 | **Atoms** | Irreducible units this spec operates on. Each atom traced to a cause, not precedent (INV-G01). |
+| 3 | **Relations** | How atoms connect — mechanisms, causality, flows. "A causes B by mechanism X." |
+| 4 | **Invariants** | Hard constraints (binary, AND-aggregated). Classify each: *physical* (immutable) or *conventional* (industry habit — candidate for relaxation under `--innovate`). |
+| 5 | **Degrees of freedom** | What can actually vary. For each: is this real agency, or phantom (labelled-as-choice but fixed)? |
+| 6 | **Signals** | Observables that reveal state. Tag each: **decisive** (flips the call alone) or **suggestive** (accumulates). Reference FP-OS decision protocol. |
+| 7 | **Rule** | How we combine / select / optimise. Form: "maximise X subject to invariants Y." Must be reproducible by a reader given the primitives above. |
+
+**Criteria taxonomy (required for specs with acceptance criteria).** Split into:
+- **Invariants** — binary pass/fail, AND-aggregated, no partial credit (hard constraints).
+- **Variants** — continuous, weighted, trade-offs allowed (soft constraints).
+
+Mixing the two is the single most common spec failure (per FP-OS decision protocol): treating an invariant as a variant lets you rationalise past a deal-breaker; treating a variant as an invariant kills good options for missing a nice-to-have.
 
 **Purpose:** Write or update a strategy spec from upstream thinking.
 
