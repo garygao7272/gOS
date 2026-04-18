@@ -151,14 +151,17 @@ validate_changes() {
 verify_sync() {
   local drift=0
 
-  # 7a. Repo == GitHub
+  # 7a. Repo vs GitHub — distinguish "ahead only" (unpushed commits, not drift)
+  # from "behind or diverged" (real drift that needs a pull).
   if git -C "$GOS_DIR" rev-parse --abbrev-ref --symbolic-full-name @{upstream} >/dev/null 2>&1; then
-    local local_sha remote_sha
-    local_sha="$(git -C "$GOS_DIR" rev-parse HEAD)"
-    remote_sha="$(git -C "$GOS_DIR" rev-parse '@{upstream}' 2>/dev/null || echo "")"
-    if [[ -n "$remote_sha" && "$local_sha" != "$remote_sha" ]]; then
-      err "  repo: HEAD ($local_sha) != upstream ($remote_sha)"
+    local ahead behind
+    ahead="$(git -C "$GOS_DIR" rev-list --count '@{upstream}..HEAD' 2>/dev/null || echo 0)"
+    behind="$(git -C "$GOS_DIR" rev-list --count 'HEAD..@{upstream}' 2>/dev/null || echo 0)"
+    if [[ "$behind" -gt 0 ]]; then
+      err "  repo: behind upstream by $behind commit(s) — run git pull"
       ((drift++))
+    elif [[ "$ahead" -gt 0 ]]; then
+      log "  ✓ repo ahead of upstream by $ahead commit(s) (unpushed — not drift)"
     else
       log "  ✓ repo matches upstream"
     fi
