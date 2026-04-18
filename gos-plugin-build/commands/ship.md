@@ -136,7 +136,8 @@ If pre-commit hook fails: fix the issue and create a NEW commit. Never `--amend`
 - `commands/*.md`, `agents/*.md`, `skills/**`, `rules/**`
 - `hooks/*`, `claws/**`, `evals/**`, `launchd/*.plist`
 - `tools/*.sh`, `settings/settings.json`, `install.sh`, `bootstrap/**`
-- `memory/**` (framework-level only, not project memory)
+- **Framework memory** (reusable substrate, ships with gOS): `memory/L0_*`, `memory/L1_*`, `memory/MEMORY.md`, `memory/user_*`, `memory/feedback_*`, `memory/procedure_*`
+- **NOT in scope** (per-project state, stays local): `memory/project_*`, `memory/episodes.md`, `memory/evolve_audit_*`, `memory/reflection_*`, `memory/self-model.md`
 - `CLAUDE.md` or `gOS/CLAUDE.md`, `README.md` at repo root
 
 If the change doesn't fit gOS scope: STOP and say so. Do not silently fall back to the current repo.
