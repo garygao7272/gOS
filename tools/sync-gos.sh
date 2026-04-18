@@ -77,7 +77,7 @@ classify_changes() {
     [[ -z "$line" ]] && continue
     local path="${line:3}"
     case "$path" in
-      commands/*|agents/*|hooks/*|.claude/hooks/*|rules/*|skills/*|tools/*|output-styles/*|evals/*|claws/*|bootstrap/*|settings/settings.json|install.sh|CLAUDE.md|README.md|invariants.md|gos-plugin-build/*)
+      commands/*|agents/*|hooks/*|.claude/hooks/*|rules/*|skills/*|tools/*|output-styles/*|evals/*|claws/*|bootstrap/*|docs/*|settings/settings.json|install.sh|CLAUDE.md|README.md|invariants.md|gos-plugin-build/*)
         FRAMEWORK_FILES+=("$path") ;;
       sessions/*|memory/*|.claude/self-model.md)
         SESSION_FILES+=("$path") ;;
