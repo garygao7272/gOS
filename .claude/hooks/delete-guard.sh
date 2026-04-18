@@ -11,6 +11,24 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 [ -n "$CMD" ] || exit 0
 
+# ─── Cleanup-zone allowlist ──────────────────────────────────────────────
+# Allow `rm -rf` of DIRECT subdirectories of designated cleanup zones —
+# these are directories whose purpose IS to be cleaned (regenerable caches,
+# archived sessions, backups). Zones themselves and deeper paths stay blocked.
+#
+# Pattern matched: `rm -rf ~/.claude/<zone>/<name>` OR
+#                  `cd ~/.claude/<zone> && rm -rf <name>`
+# Zones: plugins/cache, projects-archive, backups, cache
+# Name: [a-zA-Z0-9_.-]+  (single path segment, no nested slashes)
+_ZONES='(plugins/cache|projects-archive|backups|cache)'
+_NAME='[a-zA-Z0-9_.-]+'
+_BASE='(~|/Users/[a-zA-Z0-9_.-]+)/\.claude'
+if echo "$CMD" | grep -qE "^[[:space:]]*rm[[:space:]]+-[rf]+[[:space:]]+${_BASE}/${_ZONES}/${_NAME}/?[[:space:]]*$" \
+   || echo "$CMD" | grep -qE "^[[:space:]]*cd[[:space:]]+${_BASE}/${_ZONES}[[:space:]]*&&[[:space:]]*rm[[:space:]]+-[rf]+[[:space:]]+${_NAME}/?[[:space:]]*$"; then
+  # Allowlisted cleanup — single-target rm inside a designated cleanup zone
+  exit 0
+fi
+
 # Patterns that delete files — require confirmation
 BLOCKED=false
 REASON=""

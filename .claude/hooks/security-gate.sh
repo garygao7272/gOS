@@ -12,6 +12,17 @@ source "$SCRIPT_DIR/hook-utils.sh"
 _parse_hook_input
 
 if [ "$HOOK_TOOL_NAME" = "Bash" ]; then
+    # --- Cleanup-zone allowlist (bypasses rm -rf dangerous-command block) ---
+    # Allow single-target rm of direct subdirs of ~/.claude/{plugins/cache,projects-archive,backups,cache}
+    # See delete-guard.sh for the same pattern — they must stay in sync.
+    _ZONES='(plugins/cache|projects-archive|backups|cache)'
+    _NAME='[a-zA-Z0-9_.-]+'
+    _BASE='(~|/Users/[a-zA-Z0-9_.-]+)/\.claude'
+    if echo "$HOOK_COMMAND" | grep -qE "^[[:space:]]*rm[[:space:]]+-[rf]+[[:space:]]+${_BASE}/${_ZONES}/${_NAME}/?[[:space:]]*$" \
+       || echo "$HOOK_COMMAND" | grep -qE "^[[:space:]]*cd[[:space:]]+${_BASE}/${_ZONES}[[:space:]]*&&[[:space:]]*rm[[:space:]]+-[rf]+[[:space:]]+${_NAME}/?[[:space:]]*$"; then
+        exit 0  # allowlisted cleanup
+    fi
+
     # --- Dangerous command blocklist ---
     if echo "$HOOK_COMMAND" | grep -qE '(rm\s+-rf\s+[/~]|git\s+push\s+--force|git\s+reset\s+--hard|git\s+clean\s+-fd)'; then
         echo "BLOCKED: Dangerous command: $HOOK_COMMAND" >&2; exit 2

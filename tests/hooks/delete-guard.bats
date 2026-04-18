@@ -83,3 +83,38 @@ make_input() {
   status=$?
   [ "$status" -eq 0 ]
 }
+
+# --- Cleanup-zone allowlist ---
+
+@test "allows rm -rf of plugin cache subdir (~/.claude/plugins/cache/<name>)" {
+  result=$(make_input "rm -rf /Users/garyg/.claude/plugins/cache/thedotmack" | bash "$HOOK" 2>&1)
+  status=$?
+  [ "$status" -eq 0 ]
+}
+
+@test "allows rm -rf of projects-archive subdir" {
+  result=$(make_input "rm -rf /Users/garyg/.claude/projects-archive/-Users-garyg-old-project" | bash "$HOOK" 2>&1)
+  status=$?
+  [ "$status" -eq 0 ]
+}
+
+@test "allows cd+rm pattern inside cleanup zone" {
+  result=$(make_input "cd /Users/garyg/.claude/plugins/cache && rm -rf thedotmack" | bash "$HOOK" 2>&1)
+  status=$?
+  [ "$status" -eq 0 ]
+}
+
+@test "BLOCKS rm of cleanup zone itself (not a subdir)" {
+  result=$(make_input "rm -rf /Users/garyg/.claude/plugins/cache" | bash "$HOOK" 2>&1) || status=$?
+  [ "$status" -eq 2 ]
+}
+
+@test "BLOCKS rm of nested path inside cleanup zone (two levels deep)" {
+  result=$(make_input "rm -rf /Users/garyg/.claude/plugins/cache/foo/bar" | bash "$HOOK" 2>&1) || status=$?
+  [ "$status" -eq 2 ]
+}
+
+@test "BLOCKS rm of non-allowlisted .claude/ path" {
+  result=$(make_input "rm -rf /Users/garyg/.claude/hooks/delete-guard.sh" | bash "$HOOK" 2>&1) || status=$?
+  [ "$status" -eq 2 ]
+}
