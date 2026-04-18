@@ -1,78 +1,144 @@
 ---
-description: "Refine — prebuild convergence loop: iteratively tighten specs, designs, and simulations before /build. Each cycle: think → design → simulate → review. TRIGGER when user wants to iterate until something is tight — phrases like 'refine X', 'iterate on X', 'tighten this', 'close the gaps', 'keep going until it's right'. SKIP for one-shot improvements (use /review code or direct edits) or topics with no pre-existing specs (run /think discover first)."
+description: "Refine — iterative convergence loop: tighten a target until quality bar met, cycle cap hit, or stuck. Three modes: /refine (self-iterate), /refine fresh (outside-eyes each cycle), /refine council (6-archetype council each cycle). TRIGGER when user wants to iterate — phrases like 'refine X', 'iterate on X', 'tighten this', 'keep going until converged'. SKIP for one-shot improvements (use /review or direct edits) or topics with no pre-existing draft (run /think discover first)."
 ---
 
-# /refine — Prebuild Convergence Loop
+# /refine — Convergence Loop
 
-**Purpose:** Iteratively tighten specs, designs, and simulations before `/build`. Each cycle runs think → design → simulate → review; review feeds gaps back into the next cycle. Exits at convergence, stuck, good-enough, or max iterations. Canonical entry — there is no `/gos refine` or `/review refine`.
+**Purpose:** Iteratively tighten a target until a declared quality bar is met. Canonical entry — there is no `/gos refine` or `/review refine`.
 
-**Usage:** `/refine <topic> [max-iterations]`
-**Default:** 5 iterations. Hard ceiling 7 (diminishing returns beyond).
-**Example:** `/refine copy-trading-radar 3`
+**Three modes, three cost tiers, one contract.**
 
-**Rubric:** `evals/rubrics/refine.md` — 5 dimensions (gap resolution, cycle rigor, convergence, depth progression, build-readiness) weighted to /10.
+| Mode | Per-cycle critic | When |
+|---|---|---|
+| `/refine <target>` | Main context self-critiques against the 5-dim rubric | Cheap. Tighten prose, close known gaps. |
+| `/refine fresh <target>` | Fresh-context agent critiques (naive reader each cycle) | Medium. Too close to it; need outside eyes. |
+| `/refine council <target>` | 6-archetype council + synthesizer | Expensive. High-stakes doc where multi-lens matters. |
 
-## When to use
+Pick the cheapest mode that clears the quality bar. Escalate (self → fresh → council) only if the cheaper mode stalls.
 
-Before any non-trivial `/build feature` that touches UI, flows, or specs. Skip for fixes, refactors, and single-file features.
+---
 
-## Depth Ladder
+## Shared contract (all three modes)
 
-| Cycle | Think | Design | Simulate | Review |
-|-------|-------|--------|----------|--------|
-| 1 | Spec completeness | Layout gaps, missing states | Happy path | Gap count + severity |
-| 2 | Edge cases, error paths | Empty/error/loading states | Bull/bear/edge | Persona walkthrough |
-| 3 | Attack vectors, abuse | Accessibility, deception | Tail risk, black swan | Multi-persona council |
-| 4+ | Consistency, precision | Micro-interactions, motion | Stress at scale | Diminishing returns check |
+### Plan gate (mandatory, before any cycle)
 
-## Plan Gate (mandatory)
+Present to Gary and WAIT:
 
-Before starting the loop, present to Gary and WAIT:
-
-> **PLAN:** [1-line restatement of what will be refined]
-> **SCOPE:** [which specs/designs/simulations are in scope]
-> **ITERATIONS:** [target count + convergence criteria]
-> **MEMORY:** [L1 check — prior refines on this topic, known gaps]
-> **RISK:** [biggest risk — e.g., "scope too broad, may not converge in N"]
-> **CONFIDENCE:** [high/medium/low — 1-line reason]
+> **PLAN:** [target file + what "tight" looks like]
+> **MODE:** [self / fresh / council]
+> **QUALITY BAR:** [default: 5-dim rubric ≥ 8/10 · override with `--bar="custom criteria"`]
+> **CYCLE CAP:** [default 3, max 5]
+> **MEMORY:** [L1 check — prior refine runs on this topic]
+> **RISK:** [biggest risk — e.g., "scope too broad" / "mode too heavy for draft quality"]
+> **CONFIDENCE:** [high / medium / low]
 >
-> **Confirm?** [y / modify / abort]
+> **Confirm?** [yes / modify / abort]
 
-After confirmation:
-1. Write approved plan to `sessions/scratchpad.md` under `## Plan History`.
-2. Initialize tracking file `outputs/think/refine/{topic}-refine-log.md`.
-3. Begin Cycle 0 scan to seed the gap list.
+Write approved plan to `outputs/refine/{slug}/plan.md` + `sessions/scratchpad.md` under `## Plan History`.
 
-## Execution — the loop
+### 5-dimension rubric (default quality bar)
 
-Each cycle runs 4 phases in sequence. Input to phase N = output of phase N−1. Depth per cycle follows the ladder above.
+Each cycle scores the current draft (0-2 per dim, total /10). Same rubric as `/think spec` promotion gate — reused, not duplicated.
 
-| Phase | Input | Focus | Agents | Writes to |
-|-------|-------|-------|--------|-----------|
-| **THINK** | Gap list from previous review (or Cycle 0 scan) | Top 3-5 gaps by severity | 2-3 parallel researchers (sonnet) | Updated specs + refine log |
-| **DESIGN** | Updated specs from THINK | Visual/interaction gaps | 1 design auditor (sonnet) | Design decisions in refine log |
-| **SIMULATE** | Specs + designs | Stress scenarios (happy → edge → adversarial → scale) | Bull-case + bear-case (sonnet, parallel) | Scenario results in refine log |
-| **REVIEW** | All outputs above | NEW gaps not in previous list | Review adjudicator (opus) | Numbered gap list with severity |
+| # | Dimension | 0 | 1 | 2 |
+|---|---|---|---|---|
+| 1 | **Acceptance criteria** | None | Vague / incomplete | MECE, testable, pass/fail per item |
+| 2 | **Edge cases** | None | Some listed | Exhaustive (empty, overflow, error, concurrent, stale) |
+| 3 | **Data model / structure** | Absent | Fields listed, no types | Full schema (types, constraints, defaults, nullability) |
+| 4 | **Cross-references** | None / broken | Some | All valid, no orphans |
+| 5 | **Freshness / grounding** | Stale / unsourced | Minor gaps | All refs current, claims sourced |
 
-**Gap severity:** 🔴 CRITICAL (blocks build) · 🟠 HIGH (degrades UX) · 🟡 MEDIUM (polish) · 🟢 LOW (cosmetic).
+**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria. Score pass/fail against custom criteria.
 
-## Convergence rules
+### Stop criteria (checked after every cycle)
 
 | Condition | Action |
-|-----------|--------|
-| `new_critical == 0 AND new_high <= 2` | **CONVERGED** — exit loop |
-| Same gaps recurring 2+ cycles | **STUCK** — flag to Gary, suggest manual decision |
-| All remaining gaps MEDIUM/LOW | **GOOD ENOUGH** — exit, note polish items |
-| Max iterations reached | **CAP HIT** — exit, report remaining gaps |
+|---|---|
+| Quality bar met AND no regression vs previous cycle | **CONVERGED** — exit loop |
+| Same gaps recurring 2+ cycles | **STUCK** — flag to Gary, suggest upstream fix or mode escalation |
+| All remaining gaps MEDIUM/LOW AND cycle ≥ 2 | **GOOD ENOUGH** — exit, note polish items |
+| Cycle cap hit | **CAP HIT** — exit, report remaining gaps |
 
-## Synthesis (post-loop)
+**Gap severity:** 🔴 CRITICAL (blocks promotion) · 🟠 HIGH (degrades quality) · 🟡 MEDIUM (polish) · 🟢 LOW (cosmetic).
 
-1. Compile: cycles completed, exit reason, gaps found/resolved/remaining.
-2. Write summary to `outputs/think/refine/{topic}-refine-summary.md`.
-3. Present: "Refine complete. {N} cycles, {reason}. {resolved} gaps resolved, {remaining} remain. Ready for `/build`?"
+### Artifact trail
+
+```
+outputs/refine/{target-slug}/
+├── plan.md           — approved plan from plan gate
+├── cycle-1/
+│   ├── critique.md   — mode-specific output (self-critique / fresh-agent / council synthesis)
+│   ├── revision.md   — revised draft
+│   ├── score.md      — rubric score + delta vs baseline
+│   └── verdict.md    — continue / stop + reason
+├── cycle-N/ ...
+└── synthesis.md      — final state + cycle-by-cycle score trend
+```
+
+---
+
+## `/refine <target>` — self-iterate (default)
+
+**Per-cycle loop (≤ 15 min):**
+1. Read current draft.
+2. Score against rubric (or `--bar` override).
+3. List top 3-5 gaps by severity.
+4. Revise directly, tackling highest severity first.
+5. Write revision + score-delta to `cycle-{N}/`.
+6. Check stop criteria.
+
+**Agent:** main context only. No sub-agents. Cheapest mode.
+
+**When to pick:** you know the draft's weaknesses, need discipline to close them.
+
+---
+
+## `/refine fresh <target>`
+
+**Per-cycle loop (~ 5-10 min per cycle):**
+1. Spawn a fresh-context general-purpose agent. Input: current draft + quality bar. **No conversation history.**
+2. Fresh agent produces `critique.md` — gaps, unclear claims, missing edge cases.
+3. Main context reads critique, revises draft, writes revision + score-delta.
+4. Check stop criteria.
+
+**Agent:** 1 fresh sub-agent per cycle (general-purpose, fresh context each cycle).
+
+**When to pick:** you've been staring at the draft too long; need a naive first-time reader. Prevents the "author defending their draft" trap.
+
+---
+
+## `/refine council <target>`
+
+**Per-cycle loop (~ 15-25 min per cycle):**
+1. Spawn the 6-archetype Arx council (3 S2 + 3 S7) in fresh context per `commands/review.md` council protocol.
+2. Council verdicts → synthesizer → `critique.md` (synthesis) for this cycle.
+3. Main context revises draft against synthesis.
+4. Write revision + score-delta + convergence check (did council concerns drop cycle-over-cycle? track BLOCK / CONCERN / APPROVE counts).
+5. Check stop criteria. **Additional council-specific stop:** ≥ 4 of 6 archetypes APPROVE AND quality bar met.
+
+**Agent:** 6 archetype agents + 1 synthesizer per cycle. Expensive.
+
+**When to pick:** high-stakes document (strategic spec, cross-journey logic, trust-critical flow) where single-lens critique would miss behavioral or mechanical issues.
+
+---
+
+## Synthesis (post-loop, all modes)
+
+After exit condition fires:
+
+1. Write `synthesis.md`:
+   - Cycles completed + exit reason
+   - Cycle-by-cycle score trend (or BLOCK/CONCERN/APPROVE trend for council)
+   - Gaps resolved, gaps remaining
+   - Final draft path
+2. Present: "Refine complete. {N} cycles, {reason}. Score {start → end}. {remaining} gaps remain. Promote to specs/ / hand off to /build / another cycle?"
+
+---
 
 ## Anti-patterns
 
+- Don't start **council** mode on a draft that can't clear **self** mode first — council will BLOCK on basics, wasting the expensive lane. Escalate, don't skip.
+- Don't exceed 5 cycles. If stuck at cycle 5, the problem is upstream — redo `/think discover` or `/think spec`.
+- Don't refine across multiple artifacts in one run — one target at a time.
+- Don't skip the plan gate for **council** — 6 agents in parallel is not a blind decision.
 - Don't refine and build simultaneously — refine is prebuild.
-- Don't refine topics without pre-existing specs — run `/think discover` first.
-- Don't set max iterations > 7 — diminishing returns.
