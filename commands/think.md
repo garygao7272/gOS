@@ -233,9 +233,10 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 
 1. Read `specs/Arx_0-0_Artifact_Architecture.md` for naming/altitude rules
 2. Read `specs/INDEX.md` for inventory
-3. If updating: read existing spec. If creating: determine artifact ID + altitude.
-4. Write following altitude convention. Cascade rule: changes flow downward only.
-5. Single source of truth: link, don't duplicate.
+3. If updating: read existing spec. If creating: determine artifact ID + altitude, then **bootstrap the file from [`templates/spec-skeleton.md`](../templates/spec-skeleton.md)** — copy the template as the initial file so the `doc-type:` frontmatter, positioning sentence placeholder, and all 8 mandatory H2s are present before writing content. This activates the `artifact-discipline.bats` gates immediately and prevents the property-card-instead-of-positioning drift (Arx forensics, 2026-04-19).
+4. Fill the skeleton section-by-section. Every placeholder `<...>` must be replaced; empty sections use "UNKNOWN — resolver: &lt;what would fill it&gt;" rather than deletion.
+5. Write following altitude convention. Cascade rule: changes flow downward only.
+6. Single source of truth: link, don't duplicate.
 
 **Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 7 dimensions (each 0–2, total /14) **split into invariants and variants per FP-OS §3.1**. Shared with `/refine` — any change lands in both places.
 
@@ -261,6 +262,25 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 **Verdict:** 11–14 AND every invariant (1, 4, 5, 6, 7) ≥1 → **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 7–10 OR any invariant at 0 → **REFINE** → list gaps (any invariant-zero is a MUST-FIX), rescore (max 2 cycles). 0–6 → **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Invariants are AND-aggregated** — a spec with one invariant at 0 cannot promote even if every variant scores 2.
 
 **Output:** New or updated spec in `specs/` once ≥11 AND all invariant dims ≥1. Scoring table logged inline so the promotion decision is auditable, with invariant/variant split visible.
+
+### Execution — PEV (spec-structural pool)
+
+Specs are the highest-leverage artifact in gOS — a single spec cascades into build-cards, code, and production. Until this section was added (2026-04-19), `/think spec` ran solo while `discover`, `research`, and `decide` all had multi-lens PEV. That was the biggest architectural gap surfaced by the three-thread spec-quality research (see [outputs/think/research/spec-quality-improvement.md](../outputs/think/research/spec-quality-improvement.md)). PEV is now the default for any spec that affects commitments.
+
+**When to invoke PEV:** product-spec, design-spec, decision-record, and strategy doc-types — any spec that downstream work commits to. **Skip PEV** for internal research memos, scratch notes, and specs under 150 lines where the skeleton check alone catches the common drift.
+
+1. Spawn `pev-planner` with: task = spec topic, task_class = synthesis, pool hint:
+   - **Meta:** `first-principles` (verify every atom traces to a cause, not precedent — INV-G01), `contrarian` (stress-test the rule under adversarial conditions)
+   - **Structural:** `architect` (check altitude, cascade direction, cross-references), `doc-type-auditor` (verify §6.1 positioning, §6.8 ordering, 8-primitive skeleton integrity, invariants/variants split in AC)
+   - **Upstream:** `upstream-synthesizer` (map research/decide outputs into Atoms + Invariants + Signals — kills the prose re-interpretation failure mode from the research memo)
+   - **Memory:** `episode-recaller` (check `specs/INDEX.md` and prior spec commits for orphans, duplicates, conflicts)
+2. Planner writes `roster.json`. Present to Gary. Wait for approval.
+3. Execute roster in parallel. Each agent writes to `artifacts/{agent}.md` + appends to `blackboard.md`. `doc-type-auditor` can VETO — a spec that fails §6.1 / §6.8 / 8-primitive / AC-split cannot proceed to promotion regardless of other verdicts.
+4. `pev-validator` (fresh context) scores convergence → `verdict.md`.
+5. Decide:
+   - **CONVERGED** → `adjudicator` synthesizes final spec (using the skeleton from step 3 of Process above) → run inline quality gate → PROMOTE if ≥11 AND all invariant dims ≥1.
+   - **ITERATE** → planner refines contracts for the unresolved dimension → round N+1 (max 3).
+   - **STUCK** → escalate with what was tried + options for Gary.
 
 ---
 
