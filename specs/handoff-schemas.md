@@ -33,12 +33,31 @@ Written when Gary approves a /think output (spec, research, decision).
   "output": "path/to/artifact.md",
   "doc_type": "research-memo|decision-record|discovery|product-spec|design-spec|strategy",
   "summary": "One-line summary of what was decided/discovered",
+  "primitives": {
+    "invariants_declared": ["<hard constraint 1>", "<hard constraint 2>"],
+    "decisive_signals": ["<falsifier that would flip the call>"],
+    "rule_form": "maximise <objective> subject to <invariants>",
+    "boundary": {
+      "in": "<what this output covers>",
+      "out": "<adjacent handled elsewhere>",
+      "never": "<what it refuses and why>"
+    }
+  },
   "approved": true,
   "approved_at": "ISO-8601 timestamp"
 }
 ```
 
-`doc_type` is required. Must match the artifact's frontmatter doc-type. `validate-doc-type.sh` verifies this before the handoff is written.
+**`doc_type`** is required. Must match the artifact's frontmatter doc-type. `validate-doc-type.sh` verifies this before the handoff is written.
+
+**`primitives`** is required for sub-commands that produce a decision or spec (`decide`, `spec`); optional for `research` and `discover`. Downstream verbs (/design, /build) read the typed primitive payload instead of re-parsing the prose — this kills the "prose re-interpretation" failure mode where /design reads the same spec differently than /think wrote it.
+
+- **`invariants_declared`** — array of hard constraints the downstream work must preserve. /design and /build refuse to violate these without a re-approval.
+- **`decisive_signals`** — array of named falsifiers. If any fires during downstream work, pause and re-open the decision instead of proceeding.
+- **`rule_form`** — the FP-OS §I rule in `maximise X subject to Y` form. Downstream selection among alternatives MUST use this same rule.
+- **`boundary`** — IN / OUT / NEVER contract. /design cannot expand scope without a re-approval cycle.
+
+Sub-commands that don't require primitives write `"primitives": null` — explicit, not omitted, so the schema field is always present.
 
 ### design.json — Output of /design
 

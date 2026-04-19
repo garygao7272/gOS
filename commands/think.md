@@ -47,7 +47,7 @@ bash tools/validate-doc-type.sh <path-to-artifact> <expected-doc-type>
 # exit 0 → write handoff; exit 2 → refuse and surface the gap to Gary
 ```
 
-Then write `sessions/handoffs/think.json`:
+Then write `sessions/handoffs/think.json` with the typed primitive payload (schema: [specs/handoff-schemas.md](../specs/handoff-schemas.md)):
 
 ```json
 {
@@ -56,12 +56,22 @@ Then write `sessions/handoffs/think.json`:
   "output": "<path-to-artifact>",
   "doc_type": "<discovery|research-memo|decision-record|product-spec|design-spec|strategy>",
   "summary": "<one-line>",
+  "primitives": {
+    "invariants_declared": ["<extracted from artifact's Invariants section or AC table>"],
+    "decisive_signals": ["<extracted from artifact's Signals table rows tagged 'decisive'>"],
+    "rule_form": "<extracted from artifact's Selection Rule H2 or Rule primitive>",
+    "boundary": {
+      "in": "<extracted from Boundaries IN row>",
+      "out": "<extracted from Boundaries OUT row>",
+      "never": "<extracted from Boundaries NEVER row>"
+    }
+  },
   "approved": true,
   "approved_at": "<ISO-8601>"
 }
 ```
 
-This unlocks `/design` via the phase gate. If validate-doc-type.sh fails, the handoff is refused — fix the artifact's frontmatter or ordering before re-approving. See `specs/handoff-schemas.md`.
+`primitives` is required for `decide` and `spec`; set to `null` explicitly for `research` and `discover` where no decision is being committed. /design and /build read these typed primitives rather than re-parsing the prose — this prevents downstream drift where the implementation doesn't match what /think committed. If validate-doc-type.sh fails, the handoff is refused — fix the artifact's frontmatter or ordering before re-approving.
 
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
 
@@ -175,7 +185,17 @@ The output MUST answer these four, in order. The PEV pool exists to gather evide
    - **ITERATE** → planner refines contracts for unresolved dimension → round N+1 (max 3).
    - **STUCK** → escalate with options for Gary.
 
-**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, options, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per §4)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, **Options table (mandatory — real/phantom tagged per FP-OS §3.3 Q3)**, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per §4)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+
+**Options table schema (mandatory for every `/think decide` artifact):**
+
+| Option | Agency | Blocking constraint (if phantom) | Upstream resolver |
+|--------|--------|----------------------------------|-------------------|
+
+- **Agency = real** — this option is actually available; a decisive signal either way moves the call. List in the decision set.
+- **Agency = phantom** — this option is labelled-as-choice but fixed by an upstream constraint (regulation, platform policy, contract, physics). Name the blocking constraint in column 3 and the upstream resolver (the command / decision / artifact that could relax it) in column 4. A phantom option is not in the decision set — it's a candidate for a separate upstream `/think decide` or strategy spec.
+
+**Why the tag matters.** Presenting phantoms alongside real options lets the decision run against an illusory freedom. The verdict picks a "winner" that cannot execute ("works on paper, won't execute"). Phantom classification either removes the option from the decision set or escalates it to the upstream constraint. FP-OS §3.3 Q3 is the source.
 
 **Signals table schema (mandatory for every `/think decide` artifact):**
 

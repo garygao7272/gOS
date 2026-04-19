@@ -28,6 +28,7 @@ Present to Gary and WAIT:
 
 > **PLAN:** [target file + what "tight" looks like]
 > **MODE:** [self / fresh / council]
+> **SCOPE (IN/OUT/NEVER):** [what this refine cycle touches · what it leaves untouched · what it refuses to touch and why]
 > **QUALITY BAR:** [default: 8-dim rubric ≥ 13/16 with every invariant dim ≥1 · override with `--bar="custom criteria"`]
 > **CYCLE CAP:** [default 3, max 5]
 > **MEMORY:** [L1 check — prior refine runs on this topic]
@@ -35,6 +36,8 @@ Present to Gary and WAIT:
 > **CONFIDENCE:** [high / medium / low]
 >
 > **Confirm?** [yes / modify / abort]
+
+**Why SCOPE is required.** Refine cycles without a declared boundary accumulate drift cycle-over-cycle — each cycle's critique surfaces adjacent concerns, the revision absorbs them, scope quietly doubles. IN/OUT/NEVER contract locks the target at plan gate so cycle N+1 can't broaden what cycle N agreed to. NEVER carries reason: `NEVER: expand rubric (reason: rubric is a separate /refine target at rules/common/output-discipline.md)`.
 
 Write approved plan to `outputs/refine/{slug}/plan.md` + `sessions/scratchpad.md` under `## Plan History`.
 
