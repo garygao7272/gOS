@@ -10,12 +10,25 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 **Output routing:**
 
-| Sub-command | Output To | Then |
-|-------------|-----------|------|
-| `discover` | `outputs/think/discover/{topic}.md` | "Promote to `specs/Arx_3-X`?" |
-| `research` | `outputs/think/research/{topic}.md` | "Promote to `specs/Arx_2-X`?" |
-| `decide` | `outputs/think/decide/{topic}.md` | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
-| `spec` | **Direct to `specs/`** | No staging |
+| Sub-command | Output To | Doc-type | First three H2s (§6.8 order) | Then |
+|-------------|-----------|----------|------------------------------|------|
+| `discover` | `outputs/think/discover/{topic}.md` | `discovery` | Problem → Concept → Composition (Why → What → How) | "Promote to `specs/Arx_3-X`?" |
+| `research` | `outputs/think/research/{topic}.md` | `research-memo` | Findings/Verdict → Why it matters → How we found it (What → Why → How) | "Promote to `specs/Arx_2-X`?" |
+| `decide` | `outputs/think/decide/{topic}.md` | `decision-record` | Context → Decision → Rationale → Consequences (Why → What → How → Consequences) | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
+| `spec` | **Direct to `specs/`** | `product-spec` (or `design-spec` / `strategy` per altitude) | Boundaries → Atoms → Relations (8-primitive skeleton below) | No staging |
+
+**Frontmatter contract (every sub-command, every output).** The adjudicator writes `synthesis.md` with YAML frontmatter that declares:
+
+```yaml
+---
+doc-type: <from table above>
+audience: <primary reader — one phrase>
+reader-output: <what the reader produces after reading — one phrase>
+generated: <ISO date>
+---
+```
+
+The first three H2s after the positioning sentence must match the §6.8 ordering keywords for that doc-type. The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies this on every output ≥100 lines.
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [topic], covering [scope]. Proceed?"
 
@@ -27,11 +40,28 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 **Scratchpad checkpoints:** On entry, after plan approval, after each agent completes, after synthesis, on dead end, after compaction.
 
-**Handoff (mandatory on approval):** When Gary approves the /think output, write `sessions/handoffs/think.json`:
-```json
-{"phase":"think","sub":"<sub-command>","output":"<path-to-artifact>","summary":"<one-line>","approved":true,"approved_at":"<ISO-8601>"}
+**Handoff (mandatory on approval):** When Gary approves the /think output, **first validate doc-type articulation**:
+
+```bash
+bash tools/validate-doc-type.sh <path-to-artifact> <expected-doc-type>
+# exit 0 → write handoff; exit 2 → refuse and surface the gap to Gary
 ```
-This unlocks `/design` via the phase gate. See `specs/handoff-schemas.md`.
+
+Then write `sessions/handoffs/think.json`:
+
+```json
+{
+  "phase": "think",
+  "sub": "<sub-command>",
+  "output": "<path-to-artifact>",
+  "doc_type": "<discovery|research-memo|decision-record|product-spec|design-spec|strategy>",
+  "summary": "<one-line>",
+  "approved": true,
+  "approved_at": "<ISO-8601>"
+}
+```
+
+This unlocks `/design` via the phase gate. If validate-doc-type.sh fails, the handoff is refused — fix the artifact's frontmatter or ordering before re-approving. See `specs/handoff-schemas.md`.
 
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
 
@@ -145,7 +175,17 @@ The output MUST answer these four, in order. The PEV pool exists to gather evide
    - **ITERATE** → planner refines contracts for unresolved dimension → round N+1 (max 3).
    - **STUCK** → escalate with options for Gary.
 
-**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, options, per-agent positions, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, options, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per §4)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+
+**Signals table schema (mandatory for every `/think decide` artifact):**
+
+| Signal | Direction (for / against) | Class (decisive / suggestive) | Source / Evidence |
+|--------|---------------------------|-------------------------------|-------------------|
+
+- **Decisive signals** flip the verdict alone. Once one fires (in either direction), stop gathering — more suggestive signals are noise per FP-OS K5.
+- **Suggestive signals** only accumulate. One suggestive signal is not a decision — don't dress it up as one.
+
+The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies persisted decision-record artifacts contain the keyword `decisive` or `suggestive` at least once in a signals context.
 
 ---
 
@@ -197,22 +237,30 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 4. Write following altitude convention. Cascade rule: changes flow downward only.
 5. Single source of truth: link, don't duplicate.
 
-**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 6 dimensions (each 0–2, total /12). Shared with `/refine` — any change lands in both places.
+**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 7 dimensions (each 0–2, total /14) **split into invariants and variants per FP-OS §3.1**. Shared with `/refine` — any change lands in both places.
 
-| # | Dimension | 0 | 1 | 2 |
+**Invariants (binary-like, floor ≥1, AND-aggregated).** Any invariant at 0 → REWORK regardless of total.
+
+| # | Invariant dim | 0 (FAIL) | 1 | 2 |
 |---|-----------|---|---|---|
 | 1 | **Acceptance Criteria** | None | Vague or incomplete | MECE, testable, each has pass/fail condition |
+| 4 | **Cross-References** | Broken / orphaned / missing | Some valid, some missing | All dependencies linked, no orphan references |
+| 5 | **Freshness** | Stale refs or unsourced claims | Minor staleness | All refs valid, recently updated |
+| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
+| 7 | **Doc-type articulation** | No `doc-type:` frontmatter declared, OR declared but first three H2s don't match §6.8 ordering for that type | `doc-type:` declared but drill-down reorders the why/what/how sequence for the declared type | `doc-type:` + `audience:` + `reader-output:` frontmatter present; first three H2s match §6.8 order keywords for the declared type; reader sees why/what/how in the correct sequence for the document's primary question |
+
+**Variants (continuous, weighted, trade-offs allowed).**
+
+| # | Variant dim | 0 | 1 | 2 |
+|---|-----------|---|---|---|
 | 2 | **Edge Cases** | None mentioned | Some listed | Exhaustive: empty, overflow, error, concurrent, stale |
 | 3 | **Data Model** | No data defined | Fields listed but no types/constraints | Full schema: types, constraints, defaults, nullability |
-| 4 | **Cross-References** | No links to other specs | Some references | All dependencies linked, no orphan references |
-| 5 | **Freshness** | References stale/missing files | Minor staleness | All refs valid, recently updated |
-| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
 
 **Before scoring:** run `bash tools/spec-freshness.sh` on the spec's directory to populate dimension 5 with evidence.
 
-**Verdict:** 10–12 **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 6–9 **REFINE** → list gaps, fix, rescore (max 2 cycles). 0–5 **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Dimension 6 must be ≥1 for PROMOTE, regardless of total** — a spec that fails reader friction cannot promote, even if it scores high on coverage.
+**Verdict:** 11–14 AND every invariant (1, 4, 5, 6, 7) ≥1 → **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 7–10 OR any invariant at 0 → **REFINE** → list gaps (any invariant-zero is a MUST-FIX), rescore (max 2 cycles). 0–6 → **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Invariants are AND-aggregated** — a spec with one invariant at 0 cannot promote even if every variant scores 2.
 
-**Output:** New or updated spec in `specs/` once ≥10 AND dim 6 ≥1. Scoring table logged inline so the promotion decision is auditable.
+**Output:** New or updated spec in `specs/` once ≥11 AND all invariant dims ≥1. Scoring table logged inline so the promotion decision is auditable, with invariant/variant split visible.
 
 ---
 

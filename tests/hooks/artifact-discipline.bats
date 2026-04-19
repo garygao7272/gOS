@@ -39,18 +39,48 @@ _check_opens_with_positioning() {
   return 1
 }
 
-# Check §6.8 — doc-type frontmatter present on artifacts >300 lines,
-# and first three H2s match expected ordering for that type.
+# Auto-infer doc-type from file path when frontmatter is missing.
+# Path heuristics reflect the standard output locations declared in each command's
+# doc-type contract (commands/think.md, commands/simulate.md, commands/review.md).
+_infer_doc_type_from_path() {
+  local file="$1"
+  case "$file" in
+    */outputs/think/research/*)        echo "research-memo" ;;
+    */outputs/think/decide/*)          echo "decision-record" ;;
+    */outputs/think/discover/*)        echo "discovery" ;;
+    */outputs/think/design/*)          echo "design-spec" ;;
+    */outputs/briefings/market-sim-*)  echo "research-memo" ;;
+    */outputs/refine/*/synthesis*)     echo "research-memo" ;;
+    */outputs/review/ultra/*)          echo "research-memo" ;;
+    */outputs/gos-jobs/*/synthesis*)   echo "decision-record" ;;
+    */specs/*_3-*)                     echo "discovery" ;;
+    */specs/*_4-1*)                    echo "build-card" ;;
+    */specs/*_4-2*)                    echo "design-spec" ;;
+    */specs/*_9-*)                     echo "decision-record" ;;
+    */specs/*)                         echo "product-spec" ;;
+    *)                                 echo "" ;;
+  esac
+}
+
+# Check §6.8 — doc-type frontmatter present on artifacts ≥100 lines,
+# and first three H2s match expected ordering for that type. When frontmatter
+# is missing, fall back to path-based doc-type inference so default outputs
+# get gated even when the author forgot the frontmatter block.
 _check_doc_type_ordering() {
   local file="$1"
   local total
   total=$(wc -l < "$file" | tr -d ' ')
-  [[ "$total" -le 300 ]] && return 0  # short files exempt
+  [[ "$total" -lt 100 ]] && return 0  # short files exempt (threshold tightened from 300 to 100)
 
   # Extract doc-type from frontmatter (between first two --- lines)
   local doc_type
   doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file" || true)
-  [[ -z "$doc_type" ]] && return 1  # >300 lines and no doc-type = fail
+
+  # If frontmatter absent, try to infer from the file path
+  if [[ -z "$doc_type" ]]; then
+    doc_type=$(_infer_doc_type_from_path "$file")
+    [[ -z "$doc_type" ]] && return 1  # ≥100 lines, no frontmatter, no inferable path = fail
+  fi
 
   # Extract first three H2 headings
   local h2s
@@ -363,7 +393,7 @@ EOF
 
 # ─── §6.8 doc-type ordering ───────────────────────────────────────────────
 
-@test "§6.8 exempts short files (≤300 lines) from doc-type frontmatter" {
+@test "§6.8 exempts short files (<100 lines) from doc-type frontmatter" {
   cat > "$FIXTURES/short.md" <<'EOF'
 # Short Doc
 
@@ -376,15 +406,95 @@ EOF
   _check_doc_type_ordering "$FIXTURES/short.md"
 }
 
-@test "§6.8 FAILS when long file lacks doc-type frontmatter" {
+@test "§6.8 FAILS when long file lacks doc-type frontmatter AND path cannot infer" {
   {
     echo "# Long Doc"
     echo
     echo "*A ranked list of improvements to ship.*"
     echo
-    for i in $(seq 1 350); do echo "line $i"; done
+    for i in $(seq 1 120); do echo "line $i"; done
   } > "$FIXTURES/long-no-type.md"
   run _check_doc_type_ordering "$FIXTURES/long-no-type.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§6.8 auto-infers research-memo from outputs/think/research/ path" {
+  # Create a simulated outputs/think/research file without frontmatter; linter
+  # should infer research-memo from the path and enforce finding-first H2.
+  local inferred_dir="$FIXTURES/outputs/think/research"
+  mkdir -p "$inferred_dir"
+  {
+    echo "# Inferred Research"
+    echo
+    echo "*A ranked picks memo produced by /think research.*"
+    echo
+    echo "## Verdict"
+    echo "Finding first — auto-inferred type should require this H2 order."
+    echo
+    echo "## Why it matters"
+    echo "Cause."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$inferred_dir/inferred-ok.md"
+  _check_doc_type_ordering "$inferred_dir/inferred-ok.md"
+}
+
+@test "§6.8 auto-inferred research-memo FAILS when H2s open with background" {
+  local inferred_dir="$FIXTURES/outputs/think/research"
+  mkdir -p "$inferred_dir"
+  {
+    echo "# Inferred Research Bad"
+    echo
+    echo "*A memo that buries the finding.*"
+    echo
+    echo "## Background"
+    echo "Setup before the payload — wrong for research-memo."
+    echo
+    echo "## Context"
+    echo "More setup."
+    echo
+    echo "## Details"
+    echo "Still no finding."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$inferred_dir/inferred-bad.md"
+  run _check_doc_type_ordering "$inferred_dir/inferred-bad.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§6.8 auto-infers decision-record from outputs/think/decide/ path" {
+  local inferred_dir="$FIXTURES/outputs/think/decide"
+  mkdir -p "$inferred_dir"
+  {
+    echo "# Inferred Decision"
+    echo
+    echo "*A pipeline design decision.*"
+    echo
+    echo "## Context"
+    echo "Why this call now."
+    echo
+    echo "## Decision"
+    echo "What we committed to."
+    echo
+    echo "## Consequences"
+    echo "Downstream."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$inferred_dir/decision-inferred.md"
+  _check_doc_type_ordering "$inferred_dir/decision-inferred.md"
+}
+
+@test "§6.8 100-line threshold: 150-line file with no frontmatter and generic path fails" {
+  # Path is under $FIXTURES (no matching heuristic), so no inference. 150 lines
+  # exceeds the new 100-line threshold — must fail.
+  {
+    echo "# Generic Doc"
+    echo
+    echo "*A doc in an unmapped location.*"
+    echo
+    for i in $(seq 1 150); do echo "line $i"; done
+  } > "$FIXTURES/generic-150.md"
+  run _check_doc_type_ordering "$FIXTURES/generic-150.md"
   [ "$status" -ne 0 ]
 }
 
@@ -598,4 +708,234 @@ Common padding openers to avoid:
 Each announces a summary instead of summarizing.
 EOF
   _check_padding_phrase_frequency "$FIXTURES/lists-antipatterns.md"
+}
+
+# ─── §4 Signal calibration — decisive vs suggestive tagging ───────────────
+# FP-OS §4 requires every cited signal tagged decisive or suggestive. This
+# fires on decision-record artifacts (the doc-type whose reason to exist is
+# taking a call on the basis of signals). Research memos, product specs, etc.
+# are exempt — they surface findings, not decisions.
+_check_signal_calibration() {
+  local file="$1"
+  local total
+  total=$(wc -l < "$file" | tr -d ' ')
+  [[ "$total" -lt 100 ]] && return 0  # short files exempt
+
+  # Only fire on decision-records (declared or inferred)
+  local doc_type
+  doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file" || true)
+  if [[ -z "$doc_type" ]]; then
+    doc_type=$(_infer_doc_type_from_path "$file")
+  fi
+  case "$doc_type" in
+    decision-record|decision_record) ;;
+    *) return 0 ;;  # not a decision doc — not subject to §4 enforcement here
+  esac
+
+  # Require the keyword "decisive" OR "suggestive" at least once outside
+  # frontmatter and outside code blocks. Checks that the author tagged signals,
+  # not just that the words appear anywhere.
+  local body
+  body=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{fm=0; next} !fm{print}' "$file")
+  if ! echo "$body" | grep -qiE '\b(decisive|suggestive)\b'; then
+    return 1
+  fi
+  return 0
+}
+
+# ─── §I Rule-form — decision records must name their aggregation rule ──────
+# FP-OS §I Layer 1 primitive 7: every well-formed decision output carries a
+# rule-form "maximise X subject to Y" (or equivalent aggregation). This fires
+# on decision-records: the H2 list must include a rule-shaped heading.
+_check_rule_form() {
+  local file="$1"
+  local total
+  total=$(wc -l < "$file" | tr -d ' ')
+  [[ "$total" -lt 100 ]] && return 0  # short files exempt
+
+  local doc_type
+  doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file" || true)
+  if [[ -z "$doc_type" ]]; then
+    doc_type=$(_infer_doc_type_from_path "$file")
+  fi
+  case "$doc_type" in
+    decision-record|decision_record) ;;
+    *) return 0 ;;
+  esac
+
+  # Require an H2 with rule-form keyword (rule / selection / aggregation / objective)
+  if ! grep -qiE '^## .*(rule|selection|aggregation|objective|criterion)' "$file"; then
+    return 1
+  fi
+  return 0
+}
+
+@test "§4 signal calibration: decision-record WITHOUT decisive/suggestive tagging FAILS" {
+  local d="$FIXTURES/outputs/think/decide"
+  mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "audience: Gary"
+    echo "reader-output: picked option"
+    echo "---"
+    echo
+    echo "# Untagged Decision"
+    echo
+    echo "*A commitment made without calibrated signals.*"
+    echo
+    echo "## Context"
+    echo "Background."
+    echo
+    echo "## Decision"
+    echo "Chose option B."
+    echo
+    echo "## Rationale"
+    echo "Three signals pointed one way, two pointed the other."
+    echo
+    echo "## Selection Rule"
+    echo "Picked by majority."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$d/untagged.md"
+  run _check_signal_calibration "$d/untagged.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§4 signal calibration: decision-record WITH decisive/suggestive tagging PASSES" {
+  local d="$FIXTURES/outputs/think/decide"
+  mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "audience: Gary"
+    echo "reader-output: picked option"
+    echo "---"
+    echo
+    echo "# Tagged Decision"
+    echo
+    echo "*A commitment with calibrated signals.*"
+    echo
+    echo "## Context"
+    echo "Background."
+    echo
+    echo "## Decision"
+    echo "Chose option B."
+    echo
+    echo "## Rationale"
+    echo "One decisive signal (regulatory block on option A) flipped the call; three suggestive signals accumulated for option B."
+    echo
+    echo "## Selection Rule"
+    echo "Decisive signal fired → BLOCK option A; select remaining option with highest suggestive score."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$d/tagged.md"
+  _check_signal_calibration "$d/tagged.md"
+}
+
+@test "§4 signal calibration: research-memo is EXEMPT (no decision)" {
+  local d="$FIXTURES/outputs/think/research"
+  mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: research-memo"
+    echo "audience: Gary"
+    echo "reader-output: ranked picks"
+    echo "---"
+    echo
+    echo "# Research Memo"
+    echo
+    echo "*Ranked findings.*"
+    echo
+    echo "## Findings"
+    echo "No signal tagging required."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$d/research-exempt.md"
+  _check_signal_calibration "$d/research-exempt.md"
+}
+
+@test "§I rule-form: decision-record WITHOUT rule H2 FAILS" {
+  local d="$FIXTURES/outputs/think/decide"
+  mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "audience: Gary"
+    echo "reader-output: picked option"
+    echo "---"
+    echo
+    echo "# No Rule Decision"
+    echo
+    echo "*A decision missing the rule-form.*"
+    echo
+    echo "## Context"
+    echo "Background."
+    echo
+    echo "## Decision"
+    echo "Chose B."
+    echo
+    echo "## Consequences"
+    echo "Downstream."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$d/no-rule.md"
+  run _check_rule_form "$d/no-rule.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§I rule-form: decision-record WITH ## Selection Rule H2 PASSES" {
+  local d="$FIXTURES/outputs/think/decide"
+  mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "audience: Gary"
+    echo "reader-output: picked option"
+    echo "---"
+    echo
+    echo "# Rule-formed Decision"
+    echo
+    echo "*A decision with named selection rule.*"
+    echo
+    echo "## Context"
+    echo "Background."
+    echo
+    echo "## Decision"
+    echo "Chose B."
+    echo
+    echo "## Selection Rule"
+    echo "Maximise expected return subject to regulatory-invariant hold AND drawdown < 20%."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$d/rule-form-ok.md"
+  _check_rule_form "$d/rule-form-ok.md"
+}
+
+@test "§I rule-form: ## Aggregation Rule also satisfies the check" {
+  local d="$FIXTURES/outputs/gos-jobs/job-42"
+  mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "audience: Gary"
+    echo "reader-output: council verdict"
+    echo "---"
+    echo
+    echo "# Council Synthesis"
+    echo
+    echo "*Multi-lane verdict synthesis.*"
+    echo
+    echo "## Context"
+    echo "Review target."
+    echo
+    echo "## Verdict"
+    echo "BLOCK."
+    echo
+    echo "## Aggregation Rule"
+    echo "Overall = BLOCK iff any lane raises a decisive falsifier; CONCERN iff ≥4 lanes raise matching suggestive signal; else PASS."
+    echo
+    for i in $(seq 1 110); do echo "line $i"; done
+  } > "$d/synthesis-rule.md"
+  _check_rule_form "$d/synthesis-rule.md"
 }

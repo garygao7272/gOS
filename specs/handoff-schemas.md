@@ -2,6 +2,16 @@
 
 Each gOS command outputs a typed JSON artifact that the next command in the phase chain reads. Artifacts live in `sessions/handoffs/`.
 
+**Doc-type gate (§6.8 of `rules/common/output-discipline.md`).** Before a command writes its handoff JSON, it MUST validate the upstream artifact's frontmatter and H2 ordering by calling:
+
+```bash
+bash tools/validate-doc-type.sh <artifact-path> <expected-doc-type>
+# exit 0 → write handoff
+# exit 2 → refuse handoff, surface the failure to Gary, loop back to /refine or direct edit
+```
+
+This prevents downstream verbs (/design, /build) from consuming mis-shaped upstream output — the thing Gary named as "outputs aren't great product specs articulating why/what/how." Missing frontmatter, wrong doc-type, missing `audience:` / `reader-output:` fields, or H2 drift all fail the gate.
+
 ## Phase Chain
 
 ```
@@ -21,11 +31,14 @@ Written when Gary approves a /think output (spec, research, decision).
   "phase": "think",
   "sub": "research|decide|spec|discover",
   "output": "path/to/artifact.md",
+  "doc_type": "research-memo|decision-record|discovery|product-spec|design-spec|strategy",
   "summary": "One-line summary of what was decided/discovered",
   "approved": true,
   "approved_at": "ISO-8601 timestamp"
 }
 ```
+
+`doc_type` is required. Must match the artifact's frontmatter doc-type. `validate-doc-type.sh` verifies this before the handoff is written.
 
 ### design.json — Output of /design
 
@@ -60,13 +73,27 @@ Written after /build completes. Not a gate input — /review doesn't require it.
 
 ## Writing Handoffs
 
-Commands write their handoff after Gary approves the output:
+Commands write their handoff after Gary approves the output AND the doc-type gate passes:
 
 ```bash
 # In command logic (think, design, build):
+EXPECTED_TYPE="<doc-type per sub-command>"  # see per-command doc-type contract
+if ! bash tools/validate-doc-type.sh "<path>" "$EXPECTED_TYPE"; then
+  echo "Handoff refused — fix frontmatter or H2 ordering, then re-approve." >&2
+  exit 2
+fi
+
 mkdir -p sessions/handoffs
 cat > sessions/handoffs/<phase>.json << EOF
-{ "phase": "<phase>", "sub": "<sub>", "output": "<path>", "summary": "<summary>", "approved": true, "approved_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)" }
+{
+  "phase": "<phase>",
+  "sub": "<sub>",
+  "output": "<path>",
+  "doc_type": "$EXPECTED_TYPE",
+  "summary": "<summary>",
+  "approved": true,
+  "approved_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
 EOF
 ```
 
