@@ -24,5 +24,11 @@ Archive/
 .claude/commands/
 .claude/_archived-commands-*/
 
-# Bats test fixtures — generated during test runs, not checked in
-tests/fixtures/
+# Bats test fixtures — generated during test runs, not checked in.
+# Exclude the contents of fixtures/ but allow the directory to exist, then
+# re-include specific source-of-truth subdirs.
+tests/fixtures/*
+# Exception: ai-smell-phrases is a source-of-truth phrase list consumed by
+# bats linter helpers AND cited in rules/common/output-discipline-voice.md.
+# Hand-edited, checked in.
+!tests/fixtures/ai-smell-phrases/

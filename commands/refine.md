@@ -8,6 +8,8 @@ description: "Refine — iterative convergence loop: tighten a target until qual
 
 **Output discipline.** Every revision this command writes (files under `outputs/refine/{slug}/cycle-N/`) must comply with the artifact-discipline rules in [output-discipline.md](../rules/common/output-discipline.md) and the voice rules in [output-discipline-voice.md](../rules/common/output-discipline-voice.md). The 8-dimension rubric below scores structural compliance via dim 6 (Structural compression) and voice compliance via dim 8 (Voice discipline). A cycle that regresses either dimension fails convergence — see Stop criteria.
 
+**Companion-load bootstrap (mandatory for voice / visuals dimensions).** The main rule file carries summaries; the full catalogs live in companions. Any agent scoring dim 8 (Voice discipline) must read [output-discipline-voice.md](../rules/common/output-discipline-voice.md) before grading — otherwise the twelve-pattern catalog and per-pattern rationale stay invisible and the critic under-catches AI smell. Any agent evaluating visual-aid choices (part of dim 6) must read [output-discipline-visuals.md](../rules/common/output-discipline-visuals.md). For `/refine fresh` and `/refine council`, the prompt template explicitly instructs the spawned agent to load both companions when the rubric dimension is in scope.
+
 **Three modes, three cost tiers, one contract.**
 
 | Mode | Per-cycle critic | When |

@@ -51,6 +51,8 @@ generated: <ISO date>
 
 The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies frontmatter + ordering.
 
+**Companion-load bootstrap (mandatory for voice / visuals critique).** When spawning a critic agent (council lane, persona, contrarian, design-auditor), the spawn prompt must explicitly instruct the agent to read [output-discipline-voice.md](../rules/common/output-discipline-voice.md) before flagging voice drift and [output-discipline-visuals.md](../rules/common/output-discipline-visuals.md) before flagging visual anti-patterns. Without the companion, the critic sees only the twelve-pattern summary and under-catches specific anti-patterns like pivot-cluster or table-of-tables that require the per-row rationale to cite correctly.
+
 ---
 
 ## Diagnosis protocol (3-question pattern — FP-OS §3.2)

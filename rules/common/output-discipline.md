@@ -222,7 +222,11 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 
 | Rule surface | Test / gate | What it checks |
 |---|---|---|
-| Mechanism-first · Outline · SUMMARY · NEXT MOVE · em-dash density (responses) | [`response-discipline.bats`](../../tests/hooks/response-discipline.bats) | Response prose gates |
+| Mechanism-first · Outline · SUMMARY · NEXT MOVE (responses) | [`response-discipline.bats`](../../tests/hooks/response-discipline.bats) `_check_mechanism_first` · `_check_outline_when_required` · `_check_summary_on_action` · `_check_next_move_format` | Response prose gates |
+| DEFER format (responses) | `response-discipline.bats` `_check_defer_format` | `DEFER — needs: <resolver>` required; bare `DEFER` rejected |
+| Multi-option three-H2 shape (responses) | `response-discipline.bats` `_check_multi_option_shape` | Responses with ≥3 lettered options + decision directive must carry deliverable + decision H2s |
+| Pivot cluster (hedge-density anti-pattern) | `response-discipline.bats` `_check_pivot_cluster` | `however / on the other hand / that said / nevertheless / nonetheless` density > 1 per 5 prose lines on long content |
+| Em-dash density (responses) | `response-discipline.bats` `_check_em_dash_density_response` | Voice warn cap: density > 1 per 25 words fails |
 | Positioning opener (artifacts) | [`artifact-discipline.bats`](../../tests/hooks/artifact-discipline.bats) `_check_opens_with_positioning` | Italic or ≥40-char prose opener with positioning keyword |
 | Meta-content cap | `_check_meta_content_cap` | ≤ 5% main-body lines in meta sections |
 | No version markers in main body | `_check_no_main_body_version_markers` | `(NEW in vX.Y)` / `(was vX.Y)` markers restricted to Appendix |
@@ -238,15 +242,11 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 
 **LLM self-judgment (by design — judgment over mechanization):**
 
-- DEFER format (§3) — `DEFER — needs: <resolver>` shape isn't linted; reviewer catches
 - Non-AC invariants/variants mix (§2 in prose contexts beyond Acceptance Criteria) — the AC case is mechanical; other cases are judgment
-- Multi-option three-H2 shape (§6) — structure of advisory close not linted
 - Describe-before-index prose rule (§7.3) — index-code-in-prose flagged by reviewer, not regex
 - Prose-table weave (§7.7) — rhythm is judgment
 - Action-anchor minimum lines (§7.8) — final-section operability is judgment
-- Ten of twelve voice anti-patterns (§8) — em-dash density and padding-opener frequency are mechanical; the other ten patterns are judgment
+- Eight of twelve voice anti-patterns (§8) — em-dash density, padding-opener frequency, and pivot-cluster are mechanical; the remaining eight patterns (symmetric triples, "not X but Y," over-qualification, self-congratulatory close, meta-about-meta, faux-specific vagueness, symmetric section intros, bulleted-over-prose) are judgment
 - Visuals (§7.9) — reach-for rule and tool selection are 100% judgment by design
-
-**Tracked for mechanical promotion (candidates for the next enforcement cycle):** DEFER-format pattern check (§3), multi-option three-H2 shape (§6), pivot-cluster and summary-announcement phrase detection (§8). Promote when `/evolve audit` surfaces recurring drift.
 
 **Meta-check:** `tests/hooks/artifact-discipline.bats` includes `_check_enforcement_table_matches_bats` which diffs the Enforcement table above against the actual `_check_*` helpers in both bats files. A table that claims a gate not present in bats, or a bats helper missing from the table, fails the meta-check. This keeps the Enforcement table honest.

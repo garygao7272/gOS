@@ -261,3 +261,228 @@ EOF
   run _check_em_dash_density_response "$FIXTURES/em-abuse.md"
   [ "$status" -ne 0 ]
 }
+
+# §3 DEFER format: when "DEFER" appears as a verdict word, must be followed
+# by "needs:" with a named resolver. Bare DEFER is paralysis-dressed-as-
+# deliberation per the rule. Heuristic: search for "DEFER" outside code blocks
+# and markdown table cells; for each match, confirm "needs:" follows within
+# the same line (or next non-blank line if continuation).
+_check_defer_format() {
+  local file="$1"
+  # Strip code blocks (triple-backtick fenced) and table rows
+  local prose
+  prose=$(awk '/^```/{in_cb=!in_cb; next} !in_cb && !/^\|/ {print}' "$file")
+  # Find DEFER verdicts — standalone word, not substring (e.g., "DEFERRED", "DEFERENCE" OK)
+  # Match: VERDICT: DEFER, verdict: DEFER, * DEFER, DEFER —, DEFER:
+  local defer_lines
+  defer_lines=$(echo "$prose" | grep -nE '(^|[^A-Za-z])DEFER($|[^A-Za-z])' || true)
+  [[ -z "$defer_lines" ]] && return 0  # no DEFER verdicts — pass
+
+  # For each DEFER line, require "needs:" within same line
+  local failed=0
+  while IFS= read -r line; do
+    # Extract content (after line-number prefix if grep -n)
+    local content="${line#*:}"
+    if ! echo "$content" | grep -qiE 'needs:[[:space:]]*[^[:space:]]'; then
+      failed=1
+      break
+    fi
+  done <<< "$defer_lines"
+  [[ "$failed" -eq 0 ]]
+}
+
+# §6 Multi-option advisory close: if response carries ≥3 lettered options
+# (A./B./C.) AND a decision directive ("Reply with", "reply A/B/C"), it must
+# also present the three-H2 structure: a "deliverable" H2, an optional
+# "why" subset-rationale H2, and a "decision you need to make" H2.
+_check_multi_option_shape() {
+  local file="$1"
+  # Detect lettered-options pattern: three `- **X.**` or `**X.**` bullets
+  local option_count
+  option_count=$(grep -cE '^(- )?\*\*[A-Z]\.\*\*' "$file" || true)
+  [[ "$option_count" -lt 3 ]] && return 0  # not multi-option shape
+
+  # Detect decision directive
+  if ! grep -qiE '(reply with|reply `[A-Z]`|reply [A-Z]/[A-Z]|decision you need)' "$file"; then
+    return 0  # lettered bullets not in a decision context — pass
+  fi
+
+  # Must carry three signals: deliverable H2, decision H2, at least one
+  # "ranked" / "picks" / "options" indicator in the deliverable context
+  local has_deliverable_h2 has_decision_h2
+  has_deliverable_h2=$(grep -ciE '^## (the deliverable|the ranked|ranked picks)' "$file" || true)
+  has_decision_h2=$(grep -ciE '^## (the decision|decision you need|make the decision)' "$file" || true)
+
+  [[ "$has_deliverable_h2" -ge 1 && "$has_decision_h2" -ge 1 ]]
+}
+
+# §8 Pivot cluster: flag when pivot/hedge words appear at high density.
+# Phrase list lives in tests/fixtures/ai-smell-phrases/pivot-cluster.txt —
+# single source of truth consumed by this helper AND cited by
+# rules/common/output-discipline-voice.md (row 8). Exclude code blocks + tables.
+# Short responses (<20 prose lines) are exempt — insufficient mass to judge
+# cluster vs single-use. Threshold: >1 pivot per 5 prose lines on longer content.
+_check_pivot_cluster() {
+  local file="$1"
+  local phrase_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/pivot-cluster.txt"
+  [[ -f "$phrase_file" ]] || return 1
+  local prose
+  prose=$(awk '/^```/{in_cb=!in_cb; next} !in_cb && !/^\|/ {print}' "$file")
+  local lines
+  lines=$(echo "$prose" | grep -cvE '^[[:space:]]*$' || true)
+  [[ "$lines" -lt 20 ]] && return 0
+  # Build alternation from phrase file (skip comments and blanks)
+  local alt
+  alt=$(grep -vE '^(#|[[:space:]]*$)' "$phrase_file" | tr '\n' '|' | sed 's/|$//')
+  [[ -z "$alt" ]] && return 0
+  local pivots
+  pivots=$(echo "$prose" | grep -ciE "\b(${alt})\b" || true)
+  local threshold=$(( lines / 5 ))
+  [[ "$pivots" -le "$threshold" ]]
+}
+
+@test "§3 DEFER format: response with bare DEFER verdict FAILS" {
+  cat > "$FIXTURES/defer-bare.md" <<'EOF'
+**Covers:** findings · decision.
+
+VERDICT: DEFER
+
+We don't have enough signal yet.
+EOF
+  run _check_defer_format "$FIXTURES/defer-bare.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§3 DEFER format: response with DEFER — needs: <resolver> PASSES" {
+  cat > "$FIXTURES/defer-named.md" <<'EOF'
+**Covers:** findings · decision.
+
+VERDICT: DEFER — needs: 7-day backtest on the new signal against Q1 regime.
+
+Gather before deciding.
+EOF
+  run _check_defer_format "$FIXTURES/defer-named.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§3 DEFER format: response with no DEFER verdict is EXEMPT" {
+  cat > "$FIXTURES/no-defer.md" <<'EOF'
+**Covers:** shipped.
+
+VERDICT: PASS — all tests green.
+EOF
+  run _check_defer_format "$FIXTURES/no-defer.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§6 multi-option shape: response with A/B/C options but no three-H2 FAILS" {
+  cat > "$FIXTURES/options-flat.md" <<'EOF'
+Three ways to go.
+
+- **A.** Ship all picks.
+- **B.** Ship the recommended subset.
+- **C.** Free-form.
+
+Reply with `A`, `B`, or `C`.
+EOF
+  run _check_multi_option_shape "$FIXTURES/options-flat.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§6 multi-option shape: response with three-H2 structure PASSES" {
+  cat > "$FIXTURES/options-full.md" <<'EOF'
+Three ranked picks below.
+
+## The deliverable — 3 ranked picks
+
+| # | Pick | Leverage |
+|---|---|---|
+| 1 | Fix A | High |
+| 2 | Fix B | Medium |
+| 3 | Fix C | Low |
+
+## The decision you need to make
+
+- **A.** Ship all three.
+- **B.** Ship pick 1 only.
+- **C.** Free-form.
+
+Reply with `A`, `B`, or `C`.
+EOF
+  run _check_multi_option_shape "$FIXTURES/options-full.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§6 multi-option shape: response without lettered options is EXEMPT" {
+  cat > "$FIXTURES/not-multi.md" <<'EOF'
+Single recommendation: ship it.
+EOF
+  run _check_multi_option_shape "$FIXTURES/not-multi.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§8 pivot cluster: long response with heavy hedging density FAILS" {
+  cat > "$FIXTURES/pivot-heavy.md" <<'EOF'
+The signal is strong.
+However, the sample is small.
+On the other hand, the backtest covers three regimes.
+That said, there's regime-change risk.
+However, the recent window is stable.
+Nevertheless, we should wait.
+However, we could also move now.
+However, caution wins.
+Nevertheless, the trend is up.
+On the other hand, capital is limited.
+That said, we have dry powder.
+However, discipline matters more.
+Nevertheless, opportunity is fleeting.
+However, we'll wait one more day.
+On the other hand, tomorrow may be worse.
+That said, patience compounds.
+However, hesitation costs.
+Nevertheless, we hold.
+On the other hand, this could be the bottom.
+That said, we don't know.
+However, the plan says wait.
+Nevertheless, we wait.
+EOF
+  run _check_pivot_cluster "$FIXTURES/pivot-heavy.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§8 pivot cluster: short response with occasional pivot is EXEMPT" {
+  cat > "$FIXTURES/pivot-normal.md" <<'EOF'
+The signal is strong in momentum regimes. However, it weakens during chop.
+We prefer to run it during trending windows only, which the regime-detector
+flags 60% of sessions.
+EOF
+  run _check_pivot_cluster "$FIXTURES/pivot-normal.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§8 pivot cluster: long response with reasonable pivot density PASSES" {
+  cat > "$FIXTURES/pivot-reasonable.md" <<'EOF'
+We shipped the spec-quality campaign today. Seven picks landed across two
+phases: first the content edits to the three rule files, then the bats
+helpers for the claimed invariants.
+
+The council converged on three fractures. However, only two were decisive:
+self-consistency (rule files violated their own opener rule) and enforcement
+honesty (the table misrepresented coverage). The third was polish.
+
+We chose option A from the ranked picks. That locked in all seven fixes
+as a /refine campaign, executed cycle by cycle. Each cycle is a separate
+commit with bats green before moving to the next one.
+
+The first cycle covered picks one through three — structural edits only,
+no new helpers. The second cycle added the three helpers you see below.
+The third cycle will add the meta-check that keeps the enforcement table
+honest going forward.
+
+Verification ran green at every checkpoint. The test count is now
+forty-three artifact plus twenty-nine response, for seventy-two total.
+Ship is pending, the commits are local, pushing after the campaign lands.
+EOF
+  run _check_pivot_cluster "$FIXTURES/pivot-reasonable.md"
+  [ "$status" -eq 0 ]
+}

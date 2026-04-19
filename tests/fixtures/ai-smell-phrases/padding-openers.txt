@@ -1,0 +1,13 @@
+# AI-smell padding openers — single source of truth.
+# One phrase per line. Lines starting with '#' are comments.
+# Consumed by tests/hooks/artifact-discipline.bats _check_padding_phrase_frequency.
+# Referenced by rules/common/output-discipline-voice.md (rows 2 and 6 of the catalog).
+#
+# Adding a new phrase here propagates to the mechanical check automatically.
+# No need to edit bats — the helper reads this file at runtime.
+It's worth noting that
+Let's dive into
+In essence,
+Ultimately,
+At its core,
+To recap

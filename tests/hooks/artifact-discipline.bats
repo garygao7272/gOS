@@ -596,13 +596,18 @@ _check_em_dash_density() {
 # contexts). Warn if any single phrase ≥ 3 times.
 _check_padding_phrase_frequency() {
   local file="$1"
+  # Single source of truth — phrases live in tests/fixtures/ai-smell-phrases/
+  local phrase_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/padding-openers.txt"
+  [[ -f "$phrase_file" ]] || return 1  # SoT missing is itself a failure
   local max_count=0
-  for phrase in "It's worth noting that" "Let's dive into" "In essence," "Ultimately," "At its core," "To recap"; do
-    # Exclude table rows (starting with |) and list items that quote the phrase
+  while IFS= read -r phrase; do
+    # Skip comments and blank lines
+    [[ -z "$phrase" || "$phrase" =~ ^# ]] && continue
+    # Exclude table rows and list items that quote the phrase
     local count
     count=$(grep -v '^|' "$file" | grep -v '^- \*\*"' | grep -cE "\b${phrase}" || true)
     [[ "$count" -gt "$max_count" ]] && max_count="$count"
-  done
+  done < "$phrase_file"
   [[ "$max_count" -lt 3 ]]
 }
 
@@ -1130,4 +1135,96 @@ _check_ac_invariants_variants_split() {
   } > "$d/commands.md"
   run _check_ac_invariants_variants_split "$d/commands.md"
   [ "$status" -eq 0 ]
+}
+
+# Meta-check — Enforcement table in output-discipline.md must match the
+# _check_* helpers that actually exist in both bats files. A table row that
+# cites a helper not present in bats, or a bats helper absent from the table,
+# fails this meta-check. Keeps the rule file honest about what's enforced.
+_check_enforcement_table_matches_bats() {
+  local rule_file="$1"
+  local bats1="$2"
+  local bats2="$3"
+  [[ -f "$rule_file" ]] || return 1
+  [[ -f "$bats1" ]] || return 1
+  [[ -f "$bats2" ]] || return 1
+
+  # Extract helper names cited in the Enforcement table (lines with `_check_*`)
+  local claimed
+  claimed=$(grep -oE '_check_[a-z_]+' "$rule_file" | sort -u)
+
+  # Extract helper definitions from both bats files
+  local defined
+  defined=$( { grep -oE '^_check_[a-z_]+' "$bats1"; grep -oE '^_check_[a-z_]+' "$bats2"; } | sort -u)
+
+  # Helpers cited but not defined anywhere in bats → false positive
+  local claimed_but_missing
+  claimed_but_missing=$(comm -23 <(echo "$claimed") <(echo "$defined") | grep -v '^$' || true)
+  if [[ -n "$claimed_but_missing" ]]; then
+    echo "Enforcement table cites helpers that don't exist in bats:"
+    echo "$claimed_but_missing"
+    return 1
+  fi
+
+  # Helpers defined in bats but not cited in Enforcement table → false negative.
+  # No exceptions — every helper must be explicitly cited. If a helper is an
+  # internal implementation detail not worth citing, rename it without the
+  # `_check_` prefix (e.g., `_strip_code_blocks`).
+  local defined_but_missing
+  defined_but_missing=$(comm -13 <(echo "$claimed") <(echo "$defined") || true)
+  if [[ -n "$defined_but_missing" ]]; then
+    echo "bats defines helpers not cited in Enforcement table:"
+    echo "$defined_but_missing"
+    return 1
+  fi
+
+  return 0
+}
+
+@test "meta-check: Enforcement table and bats helpers match" {
+  _check_enforcement_table_matches_bats \
+    "$BATS_TEST_DIRNAME/../../rules/common/output-discipline.md" \
+    "$BATS_TEST_DIRNAME/artifact-discipline.bats" \
+    "$BATS_TEST_DIRNAME/response-discipline.bats"
+}
+
+@test "meta-check: FAILS when Enforcement table claims a nonexistent helper" {
+  # Synthetic rule file that claims a helper not present in bats
+  local d="$FIXTURES/meta-bogus"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Rule"
+    echo
+    echo "## Enforcement"
+    echo
+    echo "| Rule | Gate |"
+    echo "|---|---|"
+    echo "| Fake rule | \`_check_totally_fake_helper\` |"
+  } > "$d/rule.md"
+  # Minimal bats files without the claimed helper
+  echo "_check_real_one() { return 0; }" > "$d/a.bats"
+  echo "_check_real_two() { return 0; }" > "$d/b.bats"
+  run _check_enforcement_table_matches_bats "$d/rule.md" "$d/a.bats" "$d/b.bats"
+  [ "$status" -ne 0 ]
+}
+
+@test "meta-check: FAILS when bats defines a helper missing from Enforcement" {
+  local d="$FIXTURES/meta-missing"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Rule"
+    echo
+    echo "## Enforcement"
+    echo
+    echo "| Rule | Gate |"
+    echo "|---|---|"
+    echo "| Some rule | \`_check_known_one\` |"
+  } > "$d/rule.md"
+  {
+    echo "_check_known_one() { return 0; }"
+    echo "_check_orphan_helper() { return 0; }"
+  } > "$d/a.bats"
+  echo "_check_other() { return 0; }" > "$d/b.bats"
+  run _check_enforcement_table_matches_bats "$d/rule.md" "$d/a.bats" "$d/b.bats"
+  [ "$status" -ne 0 ]
 }

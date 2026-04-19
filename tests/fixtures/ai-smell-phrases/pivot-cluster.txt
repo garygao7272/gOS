@@ -1,0 +1,12 @@
+# AI-smell pivot-cluster words — single source of truth.
+# One phrase per line. Lines starting with '#' are comments.
+# Consumed by tests/hooks/response-discipline.bats _check_pivot_cluster.
+# Referenced by rules/common/output-discipline-voice.md (row 8 — pivot cluster).
+#
+# The check fires when density exceeds 1 pivot per 5 prose lines on long content
+# (≥20 prose lines). Short responses are exempt — insufficient mass to judge.
+however
+on the other hand
+that said
+nevertheless
+nonetheless

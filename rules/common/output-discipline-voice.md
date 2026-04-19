@@ -43,7 +43,13 @@ Voice is harder to mechanize than structure, so these caps warn rather than bloc
 |---|---|---|
 | Em-dash density | > 1 per 25 words across the whole document | Calibrated against the lean First Principles OS reference (1 per 44 words — intentional stylistic compression). Genuine em-dash sandwich abuse runs at 1 per 15 words or worse. Threshold set to 25 so reference-style prose passes and abuse fails clearly |
 | Padding-opener frequency | Any single phrase from the padding-opener or summary-announcement rows above appearing ≥ 3 times outside quoted lists | Once is voice; three times is tic |
+| Pivot cluster | More than 1 pivot word per 5 prose lines on long content (≥20 lines); short responses exempt | "However / on the other hand / that said / nevertheless / nonetheless" density — no-chosen-side tell |
 | Consecutive bulleted sections | ≥ 3 consecutive sections that are bullet-only, no prose | Prose-table weave requires narrative between structure |
+
+**Phrase-list source of truth.** The mechanical phrase checks consume two fixture files — edit these to add or remove phrases, bats picks up the change automatically:
+
+- Padding openers and summary-announcement phrases: [`tests/fixtures/ai-smell-phrases/padding-openers.txt`](../../tests/fixtures/ai-smell-phrases/padding-openers.txt)
+- Pivot-cluster words: [`tests/fixtures/ai-smell-phrases/pivot-cluster.txt`](../../tests/fixtures/ai-smell-phrases/pivot-cluster.txt)
 
 ## What doesn't count as smell
 
