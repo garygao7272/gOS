@@ -234,3 +234,143 @@ EOF
   _check_metadata_consistent "$ref"
   _check_meta_content_cap "$ref"
 }
+
+# ─── §7 Voice and AI smell — warn-level checks ────────────────────────────
+# These tests fire on warn-level violations. Voice is harder to mechanize
+# than structure, so thresholds are lenient; bats failure here = strong
+# signal of AI smell, not just imperfect prose.
+
+# §7.3: em-dash density warn threshold.
+# Calibration: Gary's lean FP-OS reference uses 1 em-dash per ~44 words
+# (intentional stylistic compression, not smell). Genuine em-dash sandwich
+# abuse runs 1 per <15 words. Threshold set to 25 words per em-dash:
+# reference-style passes comfortably, real abuse fails clearly.
+_check_em_dash_density() {
+  local file="$1"
+  local em words density_denom
+  em=$(grep -o '—' "$file" | wc -l | tr -d ' ')
+  words=$(wc -w < "$file" | tr -d ' ')
+  [[ "$em" -eq 0 ]] && return 0  # no em-dashes is fine
+  density_denom=$(( words / em ))
+  # Warn threshold: < 25 words per em-dash = too dense (sandwich abuse)
+  [[ "$density_denom" -ge 25 ]]
+}
+
+# §7.3: padding-phrase frequency (count in prose, exclude lines that are
+# quoted anti-pattern lists — detected as table rows or heading-list
+# contexts). Warn if any single phrase ≥ 3 times.
+_check_padding_phrase_frequency() {
+  local file="$1"
+  local max_count=0
+  for phrase in "It's worth noting that" "Let's dive into" "In essence," "Ultimately," "At its core," "To recap"; do
+    # Exclude table rows (starting with |) and list items that quote the phrase
+    local count
+    count=$(grep -v '^|' "$file" | grep -v '^- \*\*"' | grep -cE "\b${phrase}" || true)
+    [[ "$count" -gt "$max_count" ]] && max_count="$count"
+  done
+  [[ "$max_count" -lt 3 ]]
+}
+
+@test "§7 em-dash density: reference artifact (lean FP-OS) passes" {
+  local ref="/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/first_principles_operating_system_lean.md"
+  if [ ! -f "$ref" ]; then
+    skip "reference file not present"
+  fi
+  _check_em_dash_density "$ref"
+}
+
+@test "§7 em-dash density: FAILS on fixture with em-dash sandwich at every sentence" {
+  cat > "$FIXTURES/em-dash-sandwich.md" <<'EOF'
+# Bad Artifact
+
+*The answer — and this matters — is a system — designed for humans — but run by machines — that still — somehow — reads.*
+
+The first step — and we'll get to this — is to name the problem — clearly — before — anything else.
+
+The second step — which is equally important — involves — and this is crucial — thinking through — all of it — carefully.
+
+The third step — which — let's be honest — is the hardest — is to write — without — these — patterns.
+EOF
+  run _check_em_dash_density "$FIXTURES/em-dash-sandwich.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§7 padding phrases: clean artifact passes frequency check" {
+  cat > "$FIXTURES/clean-voice.md" <<'EOF'
+# Clean Spec
+
+*A spec that commits.*
+
+## Problem
+
+Users hit friction at step three.
+
+## Decision
+
+Collapse step three into step two.
+
+## Consequences
+
+- Onboarding time drops twenty percent.
+- Analytics event for step three breaks.
+- Support tickets referencing step three need recategorizing.
+EOF
+  _check_padding_phrase_frequency "$FIXTURES/clean-voice.md"
+}
+
+@test "§7 padding phrases: FAILS on fixture with repeated padding openers" {
+  cat > "$FIXTURES/padding-heavy.md" <<'EOF'
+# Padded Spec
+
+*A spec that hedges.*
+
+## Section One
+
+In essence, the core idea is simple.
+
+## Section Two
+
+Ultimately, we want to get to the root of it.
+
+## Section Three
+
+At its core, this is about clarity.
+
+## Section Four
+
+In essence, all three sections converge on the same point.
+
+## Section Five
+
+Ultimately, the point is that we must commit.
+
+## Section Six
+
+In essence, committing is what this document is about.
+EOF
+  run _check_padding_phrase_frequency "$FIXTURES/padding-heavy.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§7 padding phrases: exemption — anti-pattern list doesn't count" {
+  # A document that LISTS the anti-patterns (like this very rule) should pass.
+  cat > "$FIXTURES/lists-antipatterns.md" <<'EOF'
+# Anti-pattern Guide
+
+*Names the tells.*
+
+## The tells
+
+Common padding openers to avoid:
+
+- **"It's worth noting that"** — padding that announces.
+- **"In essence,"** — summary-announce.
+- **"Ultimately,"** — summary-announce.
+- **"At its core,"** — summary-announce.
+
+## Why they're bad
+
+Each announces a summary instead of summarizing.
+EOF
+  _check_padding_phrase_frequency "$FIXTURES/lists-antipatterns.md"
+}

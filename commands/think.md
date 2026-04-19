@@ -162,7 +162,7 @@ NEVER: [what this spec refuses to cover — and why]
 
 **First-principles self-check (INV-G01):** Before finalizing, verify every claim traces to a mechanism, not an analogy. If any section leans on "like X" without naming the underlying cause, rewrite from primitives.
 
-**7-primitive skeleton (mandatory section headers — derived from FP-OS Layer 1).** Every spec written via `/think spec` must contain these seven sections in order. Empty/unknown is allowed — write "UNKNOWN — resolver: <what would fill it>". Missing sections fail the quality gate.
+**Seven FP-OS primitives plus one Consequences section — eight mandatory sections.** Every spec written via `/think spec` must contain these eight sections in order. Empty or unknown is allowed — write "UNKNOWN — resolver: <what would fill it>". Missing sections fail the quality gate. Sections 1–7 are the FP-OS Layer 1 primitives; section 8 is a documentation primitive specific to specs, drawn from the Architecture Decision Record and Shape Up traditions.
 
 | # | Section | What goes here |
 |---|---|---|
@@ -173,6 +173,9 @@ NEVER: [what this spec refuses to cover — and why]
 | 5 | **Degrees of freedom** | What can actually vary. For each: is this real agency, or phantom (labelled-as-choice but fixed)? |
 | 6 | **Signals** | Observables that reveal state. Tag each: **decisive** (flips the call alone) or **suggestive** (accumulates). Reference FP-OS decision protocol. |
 | 7 | **Rule** | How we combine / select / optimise. Form: "maximise X subject to invariants Y." Must be reproducible by a reader given the primitives above. |
+| 8 | **Consequences** | If we commit to this rule, what becomes true downstream, what becomes harder, and what is foreclosed until revisited? Three bullets minimum, each naming a concrete downstream effect. |
+
+**Why Consequences is required.** A decision without named consequences is a wish. Readers who don't see consequences either derive them privately (most won't) or act without them (and get surprised). Nygard's Architecture Decision Record template and Basecamp's Shape Up pitch both require this section for the same reason — the link between decision and reality has to be on the page, not implicit.
 
 **Criteria taxonomy (required for specs with acceptance criteria).** Split into:
 - **Invariants** — binary pass/fail, AND-aggregated, no partial credit (hard constraints).
