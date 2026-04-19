@@ -38,22 +38,32 @@ Present to Gary and WAIT:
 
 Write approved plan to `outputs/refine/{slug}/plan.md` + `sessions/scratchpad.md` under `## Plan History`.
 
-### 6-dimension rubric (default quality bar)
+### 7-dimension rubric (default quality bar — split invariants vs variants)
 
-Each cycle scores the current draft (0–2 per dim, total /12). Same rubric as `/think spec` promotion gate — reused, not duplicated. Dimensions 1–5 reward content coverage; dimension 6 rewards compression and reader ease, so the rubric can no longer be gamed by pure accretion.
+Each cycle scores the current draft (0–2 per dim, total /14). Same rubric as `/think spec` promotion gate — reused, not duplicated. **Dimensions are split into INVARIANTS and VARIANTS per FP-OS §3.1 and `rules/common/output-discipline.md` §2**, so a draft that scores high on variants cannot paper over a missed invariant.
 
-| # | Dimension | 0 | 1 | 2 |
+**Invariants (binary-like, floor ≥1, AND-aggregated).** Each invariant dim MUST score ≥1; any invariant at 0 → REWORK regardless of total.
+
+| # | Invariant dim | 0 (FAIL) | 1 | 2 |
 |---|---|---|---|---|
-| 1 | **Acceptance criteria** | None | Vague / incomplete | MECE, testable, pass/fail per item |
+| 1 | **Acceptance criteria** | None stated | Vague / incomplete | MECE, testable, pass/fail per item |
+| 4 | **Cross-references** | Broken / orphaned / missing | Some valid, some missing | All valid, no orphans |
+| 5 | **Freshness / grounding** | Stale refs or unsourced claims | Minor gaps | All refs current, claims sourced |
+| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
+| 7 | **Doc-type articulation** | No `doc-type:` frontmatter declared, OR declared but first three H2s don't match §6.8 ordering for that type | `doc-type:` declared but drill-down reorders the why/what/how sequence for the declared type | `doc-type:` + `audience:` + `reader-output:` frontmatter present; first three H2s match §6.8 order keywords for the declared type; reader sees why/what/how in the correct sequence for the document's primary question |
+
+**Variants (continuous, weighted, trade-offs allowed).** Accumulate toward the total; no individual floor.
+
+| # | Variant dim | 0 | 1 | 2 |
+|---|---|---|---|---|
 | 2 | **Edge cases** | None | Some listed | Exhaustive (empty, overflow, error, concurrent, stale) |
 | 3 | **Data model / structure** | Absent | Fields listed, no types | Full schema (types, constraints, defaults, nullability) |
-| 4 | **Cross-references** | None / broken | Some | All valid, no orphans |
-| 5 | **Freshness / grounding** | Stale / unsourced | Minor gaps | All refs current, claims sourced |
-| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
 
-**Quality bar:** ≥10/12 AND dimension 6 ≥1. A cycle that regresses dimension 6 vs the prior cycle fails convergence — forcing compression before advance.
+**Quality bar:** ≥11/14 AND every invariant dim (1, 4, 5, 6, 7) ≥1. A cycle that regresses any invariant dim fails convergence — invariants are AND-aggregated; a draft with one invariant at 0 cannot promote even if it scores 2 on every variant.
 
-**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria. Score pass/fail against custom criteria. Override does NOT exempt dimension 6 — reader friction always applies to artifacts.
+**Why the split is load-bearing.** Mixing invariants and variants in one additive table is the most common FP-OS §3.1 failure: a weighted-sum lets reviewers rationalise past a deal-breaker ("low on dim 1, high on everything else — ship it") or kill a good option for missing a nice-to-have. Separating them forces the invariant check to bite before the variant score is even computed.
+
+**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria — but the author must still name which custom criteria are invariants (must all pass) vs variants (scored). Override does NOT exempt invariants 6 + 7 — reader friction AND doc-type articulation always apply to artifacts.
 
 ### Stop criteria (checked after every cycle)
 
@@ -112,18 +122,29 @@ outputs/refine/{target-slug}/
 
 ---
 
-## `/refine council <target>`
+## `/refine council <target> [--mode=arx-behavioral|spec-structural]`
+
+**Mode default:** `arx-behavioral` (backward-compatible — the 6-archetype Arx trader council). Pass `--mode=spec-structural` when refining a spec artifact — the Arx trader pool is the wrong lens for structural drift (positioning, doc-type ordering, invariants/variants split, consequence tracing).
+
+**Roster by mode:**
+
+| Mode | Roster | When to use |
+|---|---|---|
+| `arx-behavioral` (default) | 6 Arx archetypes (3 S2 + 3 S7) + synthesizer per `commands/review.md` council protocol | Product UX, cross-journey logic, trust-critical flow, behavioral drift |
+| `spec-structural` | `first-principles`, `contrarian`, `architect`, `doc-type-auditor`, `signal-calibrator`, `consequence-tracer` + synthesizer | Strategy / product / design specs where the failure mode is structural (missing §6.1 opener, §6.8 order wrong, AC not split, Consequences absent, atoms not traced to cause) |
 
 **Per-cycle loop (~ 15-25 min per cycle):**
-1. Spawn the 6-archetype Arx council (3 S2 + 3 S7) in fresh context per `commands/review.md` council protocol.
+1. Spawn the mode's 6-agent roster in fresh context. For `spec-structural`, `doc-type-auditor` holds a VETO on §6.1 / §6.8 / 8-primitive / AC-split failures.
 2. Council verdicts → synthesizer → `critique.md` (synthesis) for this cycle.
 3. Main context revises draft against synthesis.
 4. Write revision + score-delta + convergence check (did council concerns drop cycle-over-cycle? track BLOCK / CONCERN / APPROVE counts).
-5. Check stop criteria. **Additional council-specific stop:** ≥ 4 of 6 archetypes APPROVE AND quality bar met.
+5. Check stop criteria. **Additional council-specific stop:** ≥ 4 of 6 archetypes APPROVE AND quality bar met. For `spec-structural`, `doc-type-auditor` must APPROVE regardless of the 4/6 majority — a VETO blocks promotion.
 
 **Agent:** 6 archetype agents + 1 synthesizer per cycle. Expensive.
 
-**When to pick:** high-stakes document (strategic spec, cross-journey logic, trust-critical flow) where single-lens critique would miss behavioral or mechanical issues.
+**When to pick `arx-behavioral`:** high-stakes document where behavioral plausibility is the bar (product UX, copy-trading mechanics, onboarding flow).
+
+**When to pick `spec-structural`:** strategy spec, product spec, design spec, or decision record where structural integrity (§6 discipline + 8 primitives) is the bar. Pick this mode when the Arx behavioral lens would produce feedback about trader mechanics instead of doc structure.
 
 ---
 
@@ -131,12 +152,13 @@ outputs/refine/{target-slug}/
 
 After exit condition fires:
 
-1. Write `synthesis.md`:
-   - Cycles completed + exit reason
-   - Cycle-by-cycle score trend (or BLOCK/CONCERN/APPROVE trend for council)
-   - Gaps resolved, gaps remaining
-   - Final draft path
-2. Present: "Refine complete. {N} cycles, {reason}. Score {start → end}. {remaining} gaps remain. Promote to specs/ / hand off to /build / another cycle?"
+1. Write `synthesis.md` with these mandatory H2s (in order):
+   - **`## Context`** — what was refined and why this cycle ran
+   - **`## Outcome`** — cycles completed + exit reason + score trend (start → end)
+   - **`## Selection Rule`** — the aggregation rule used to pick CONVERGED vs STUCK vs GOOD ENOUGH, in FP-OS §I form **"maximise X subject to invariants Y"** (e.g., *"Select CONVERGED when total ≥ 11/14 AND every invariant dim ≥ 1 AND no regression in dims 6, 7 cycle-over-cycle"*). Without this rule, the synthesis presents a verdict without the aggregation — reader sees the call but not how it was made.
+   - **`## Gaps remaining`** — resolved vs remaining, with severity
+   - **`## Next action`** — promote / another cycle / hand off / abandon
+2. Present: "Refine complete. {N} cycles, {reason}. Score {start → end}. Selection rule: {one line}. {remaining} gaps remain. Promote to specs/ / hand off to /build / another cycle?"
 
 ---
 

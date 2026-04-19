@@ -30,6 +30,27 @@ If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, co
 
 **Artifact discipline.** Every prose artifact this command writes to disk (findings tables, council synthesis, dashboard reports, under `outputs/review/` or `outputs/gos-jobs/*/synthesis.md`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline and §7 Voice and AI smell. In-chat verdict tables are exempt from §6 (they aren't persisted files); they still follow §7 voice rules.
 
+**Doc-type contract (§6.8).** Persisted review artifacts declare frontmatter:
+
+| Output | Doc-type | First three H2s (§6.8 order) |
+|--------|----------|------------------------------|
+| `outputs/gos-jobs/*/synthesis.md` (council) | `decision-record` | Context (Why the review ran) → Verdict (What we decided: PASS/KILL/DEFER) → Rationale + Disagreements (How we got here) → Consequences (downstream effects of the verdict) |
+| `outputs/review/ultra/*.md` | `research-memo` | Findings (What) → Why it matters (severity reasoning) → How to fix (ordered remediations) |
+| `outputs/review/*/dashboard.md` | `research-memo` | Review Status (What) → Why gaps exist (Why) → How to clear (ordered actions) |
+
+Frontmatter block (mandatory on persisted artifacts ≥100 lines):
+
+```yaml
+---
+doc-type: <decision-record | research-memo>
+audience: Gary Gao (reviewer)
+reader-output: <verdict + next action / ranked fix list / clearance list>
+generated: <ISO date>
+---
+```
+
+The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies frontmatter + ordering.
+
 ---
 
 ## Diagnosis protocol (3-question pattern — FP-OS §3.2)
@@ -138,7 +159,18 @@ Agent(
 
 **Convergence loop:** After auto-fixes, re-run Pass 1. If new issues introduced by fixes, fix those too. Max 3 fix-verify cycles.
 
-**Output:** Findings table (severity, file:line, issue, fix) → Auto-fixed items → Batched questions → Verdict (APPROVE/WARNING/BLOCK)
+**Output:** Findings table → Auto-fixed items → Batched questions → Verdict (APPROVE/WARNING/BLOCK).
+
+**Findings table schema (mandatory columns):**
+
+| Severity | File:Line | Issue | Signal Class | Fix |
+|----------|-----------|-------|--------------|-----|
+
+**Signal Class** tags each finding per FP-OS §4 and `rules/common/output-discipline.md` §4:
+- **decisive** — this finding alone flips the verdict (falsifier). One decisive signal = BLOCK regardless of count.
+- **suggestive** — accumulates; no single finding flips the call, but N suggestive findings compose into CONCERN.
+
+**Why the tag matters.** Without it, every finding reads equal-weight and reviews accumulate CONCERN without localising the single falsifier. A review with 10 suggestive findings and 0 decisive is a warning; 0 suggestive and 1 decisive is a block — the tag is what makes the difference legible.
 
 ---
 
@@ -162,21 +194,29 @@ Spec quality scoring runs inline inside `/think spec` before promoting to `specs
 
 ## gate
 
-**Purpose:** Pre-ship quality gate. Binary PASS/FAIL. Any failure blocks `/ship`.
+**Purpose:** Pre-ship quality gate. Binary PASS/FAIL. Any failure blocks `/ship`. Checklist is split into **INVARIANTS** (AND-aggregated — every one must pass) and **VARIANTS** (scored — partial acceptable with explicit justification) per FP-OS §3.1 and `rules/common/output-discipline.md` §2. Mixing the two in one flat list lets a weighted-sum rationalise past a deal-breaker — the split prevents that.
 
-**Checklist:**
+**Invariants (AND-aggregated — failing any single row BLOCKS ship):**
 
-| # | Check | Command |
-|---|-------|---------|
-| 1 | Tests pass | `npm test` |
-| 2 | Coverage >= 80% | `npm test -- --coverage` |
-| 3 | No lint errors | `npx eslint . --ext .ts,.tsx` |
-| 4 | No type errors | `npx tsc --noEmit --pretty` |
-| 5 | No security warnings | `npm audit --production` |
-| 6 | Docs updated | Check changed files vs docs |
-| 7 | Review dashboard CLEARED | All reviews fresh |
+| # | Invariant | Command | Falsifier |
+|---|-------|---------|-----------|
+| 1 | Tests pass | `npm test` | Any failing test |
+| 2 | Coverage ≥ 80% | `npm test -- --coverage` | Any file or overall < 80% |
+| 3 | No lint errors | `npx eslint . --ext .ts,.tsx` | Any error-level rule violation |
+| 4 | No type errors | `npx tsc --noEmit --pretty` | Any type error |
+| 5 | No CRITICAL security findings | `npm audit --production` | Any critical or high finding |
+| 6 | Review dashboard CLEARED | `/review dashboard` | Any STALE review or unresolved CRITICAL |
 
-**Output:** Check results table → Verdict (PASS/FAIL) → What must be fixed if FAIL
+**Variants (scored — may pass with a named justification):**
+
+| # | Variant | Signal | Score |
+|---|-------|---------|-------|
+| 7 | Docs updated | Changed code vs changed docs ratio | 0 / 1 / 2 (0 = no docs for new public API; 2 = full) |
+| 8 | Bundle size delta | Production bundle vs baseline | 0 / 1 / 2 (0 = >10% regression without cause; 2 = no change or improvement) |
+
+**Verdict rule:** PASS requires all 6 invariants green AND variant total ≥ 2 out of 4. FAIL lists every red invariant first, variants second, so the fix order is unambiguous.
+
+**Output:** Invariant-pass table (6 rows binary) → Variant-score table (2 rows) → Verdict (PASS / FAIL) → If FAIL: ordered fix list, invariants before variants.
 
 ---
 
@@ -214,15 +254,22 @@ Plus: `arx-council-synthesizer` — reconciles all 7 lanes, surfaces disagreemen
 5. Spawn `arx-council-synthesizer` with all 7 outputs. Produces `outputs/gos-jobs/{job-id}/synthesis.md`.
 6. Gary sees: synthesis + raw per-archetype verdicts + ultra findings + disagreement map.
 
-**Verdict escalation rules (enforced by synthesizer):**
-- Any S2 agent BLOCK on a **mechanical issue** (latency, API, order primitives) → overall BLOCK.
-- Any S7 agent BLOCK on a **behavioral-trap issue** (default 7d ROI sort, follower-count ranking) → overall BLOCK.
-- **Any ultra CRITICAL finding on code (security, correctness, data loss) → overall BLOCK.**
-- ≥4 of 7 lanes raise the same concern → elevate to overall CONCERN minimum.
+**Verdict escalation rules — the Aggregation Rule (FP-OS §I rule-form, mandatory `## Aggregation Rule` H2 in synthesis):**
+
+The synthesizer MUST state the aggregation rule explicitly in the synthesis, in §I form **"overall verdict = <verdict> iff <condition>"**. Default rules (may be overridden per target with a named justification):
+
+- **BLOCK (decisive falsifiers, any one fires):**
+  - Any S2 agent BLOCK on a mechanical issue (latency, API, order primitives) → overall BLOCK.
+  - Any S7 agent BLOCK on a behavioral-trap issue (default 7d ROI sort, follower-count ranking) → overall BLOCK.
+  - Any ultra CRITICAL finding on code (security, correctness, data loss) → overall BLOCK.
+- **CONCERN (suggestive accumulation):**
+  - ≥4 of 7 lanes raise the same concern → elevate to overall CONCERN minimum.
+- **PASS (all invariants satisfied, variants accumulate):**
+  - No decisive falsifier fires AND ≤3 lanes raise matching concern AND all lane verdicts computable (no lane returned insufficient evidence).
 
 **Max one re-run per cycle.** If Gary rejects the synthesis, fix the `Arx_2-1-S*` profiles, don't re-run the council with the same profiles.
 
-**Output:** Verdict table → disagreement map → top 3 kill-shots → code-quality section → recommendation → `outputs/gos-jobs/{job-id}/synthesis.md`.
+**Output:** Context H2 → Verdict table → Aggregation Rule H2 (the rule-form statement) → Disagreement map → top 3 kill-shots → code-quality section → Consequences H2 → recommendation → `outputs/gos-jobs/{job-id}/synthesis.md`.
 
 ### Legacy multi-specialist council (non-Arx projects, or Arx infrastructure-only reviews)
 

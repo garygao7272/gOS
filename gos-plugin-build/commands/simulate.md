@@ -19,6 +19,27 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Output discipline.** Every prose artifact this command produces (simulation narratives, scenario reports, flow walkthroughs under `outputs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and §7 Voice and AI smell (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency). Data tables, charts, and CSV/JSON outputs are exempt — §6 and §7 apply only to the prose sections that frame them.
 
+**Doc-type contract (§6.8).** Every prose output declares frontmatter:
+
+| Sub-command | Doc-type | First three H2s (§6.8 order) |
+|-------------|----------|------------------------------|
+| `market` | `research-memo` | Regime Assessment (What/Finding) → Why it matters (Why) → How (scenarios + opportunities) |
+| `scenario` | `research-memo` | Projected Outcomes (What/Finding) → Why it matters (precedents + second-order) → How (decision matrix + assumptions) |
+| `flow` | `research-memo` | Optimal Path (What/Finding) → Why friction exists (drop-off causes) → How to fix (optimized path + recommendations) |
+
+Frontmatter block (mandatory):
+
+```yaml
+---
+doc-type: research-memo
+audience: Gary Gao (Arx operator)
+reader-output: <ranked trades / decision matrix / optimized flow>
+generated: <ISO date>
+---
+```
+
+The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies frontmatter + ordering on every output ≥100 lines.
+
 **Plan mode enforced.** Before executing, state: simulation type, parameters (assets, period, scenario), data sources. Wait for confirmation.
 
 > **Sub-commands:** `market` (includes `--backtest` mode), `scenario` (uses Dux engine if available), `flow`. See also the `backtest` and `dux` redirects below for direct invocation details.
@@ -74,7 +95,16 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 4. `pev-validator` checks: factual disagreements across agents, unsourced claims, time-staleness. Disputed facts → ITERATE with `fact-checker`.
 5. **CONVERGED** → `adjudicator` writes: Projected Outcomes (best 20th / expected 50th / worst 80th / black-swan 95th percentile + probabilities + Arx impact), Decision Matrix (actions × timeframe × likelihood), Key Assumptions that must hold.
 
-**Output sections:** Current State → Historical Precedents → Projected Outcomes table → Second-Order Effects → Decision Matrix → Key Assumptions
+**Output sections:** Current State → Historical Precedents → Projected Outcomes table → Second-Order Effects → **Decision Matrix (with signal_class column)** → **Selection Rule (§I rule-form)** → Key Assumptions.
+
+**Decision Matrix schema (mandatory columns — per FP-OS §4):**
+
+| Action | Timeframe | Likelihood | Signal Class | Notes |
+|--------|-----------|------------|--------------|-------|
+
+- **Signal Class** tags each row as `decisive` (one firing alone flips which action to take) or `suggestive` (accumulates with others). Without this column, the Decision Matrix is a menu without a selection mechanism.
+
+**Selection Rule section (mandatory H2 — `## Selection Rule` or `## Rule`):** Name the rule-form per FP-OS §I Layer 1 primitive 7, in the form **"maximise X subject to invariants Y"**. Example: *"Select the action that maximises expected return (variant) subject to no decisive downside signal firing (invariant) AND portfolio drawdown < 20% (invariant)."* Without the rule, the reader sees the matrix but not how to pick from it — which is the default failure mode of forecasting outputs.
 
 **Output to:** `outputs/think/research/{slug}.md`
 
