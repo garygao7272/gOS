@@ -36,9 +36,9 @@ Present to Gary and WAIT:
 
 Write approved plan to `outputs/refine/{slug}/plan.md` + `sessions/scratchpad.md` under `## Plan History`.
 
-### 5-dimension rubric (default quality bar)
+### 6-dimension rubric (default quality bar)
 
-Each cycle scores the current draft (0-2 per dim, total /10). Same rubric as `/think spec` promotion gate — reused, not duplicated.
+Each cycle scores the current draft (0–2 per dim, total /12). Same rubric as `/think spec` promotion gate — reused, not duplicated. Dimensions 1–5 reward content coverage; dimension 6 rewards compression and reader ease, so the rubric can no longer be gamed by pure accretion.
 
 | # | Dimension | 0 | 1 | 2 |
 |---|---|---|---|---|
@@ -47,8 +47,11 @@ Each cycle scores the current draft (0-2 per dim, total /10). Same rubric as `/t
 | 3 | **Data model / structure** | Absent | Fields listed, no types | Full schema (types, constraints, defaults, nullability) |
 | 4 | **Cross-references** | None / broken | Some | All valid, no orphans |
 | 5 | **Freshness / grounding** | Stale / unsourced | Minor gaps | All refs current, claims sourced |
+| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
 
-**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria. Score pass/fail against custom criteria.
+**Quality bar:** ≥10/12 AND dimension 6 ≥1. A cycle that regresses dimension 6 vs the prior cycle fails convergence — forcing compression before advance.
+
+**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria. Score pass/fail against custom criteria. Override does NOT exempt dimension 6 — reader friction always applies to artifacts.
 
 ### Stop criteria (checked after every cycle)
 

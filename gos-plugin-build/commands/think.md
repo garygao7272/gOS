@@ -192,7 +192,7 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 4. Write following altitude convention. Cascade rule: changes flow downward only.
 5. Single source of truth: link, don't duplicate.
 
-**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 5 dimensions (each 0-2, total /10):
+**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 6 dimensions (each 0–2, total /12). Shared with `/refine` — any change lands in both places.
 
 | # | Dimension | 0 | 1 | 2 |
 |---|-----------|---|---|---|
@@ -201,12 +201,13 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 | 3 | **Data Model** | No data defined | Fields listed but no types/constraints | Full schema: types, constraints, defaults, nullability |
 | 4 | **Cross-References** | No links to other specs | Some references | All dependencies linked, no orphan references |
 | 5 | **Freshness** | References stale/missing files | Minor staleness | All refs valid, recently updated |
+| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
 
 **Before scoring:** run `bash tools/spec-freshness.sh` on the spec's directory to populate dimension 5 with evidence.
 
-**Verdict:** 8-10 **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 5-7 **REFINE** → list gaps, fix, rescore (max 2 cycles). 0-4 **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first.
+**Verdict:** 10–12 **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 6–9 **REFINE** → list gaps, fix, rescore (max 2 cycles). 0–5 **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Dimension 6 must be ≥1 for PROMOTE, regardless of total** — a spec that fails reader friction cannot promote, even if it scores high on coverage.
 
-**Output:** New or updated spec in `specs/` once ≥ 8. Scoring table logged inline so the promotion decision is auditable.
+**Output:** New or updated spec in `specs/` once ≥10 AND dim 6 ≥1. Scoring table logged inline so the promotion decision is auditable.
 
 ---
 
