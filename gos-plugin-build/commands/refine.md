@@ -6,13 +6,13 @@ description: "Refine — iterative convergence loop: tighten a target until qual
 
 **Purpose:** Iteratively tighten a target until a declared quality bar is met. Canonical entry — there is no `/gos refine` or `/review refine`.
 
-**Output discipline.** Every revision this command writes (files under `outputs/refine/{slug}/cycle-N/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline and §7 Voice and AI smell. The 6-dimension rubric below scores these mechanically via dimension 6 (Reader friction / compression). Cycle that regresses dimension 6 fails convergence — see Stop criteria.
+**Output discipline.** Every revision this command writes (files under `outputs/refine/{slug}/cycle-N/`) must comply with the artifact-discipline rules in [output-discipline.md](../rules/common/output-discipline.md) and the voice rules in [output-discipline-voice.md](../rules/common/output-discipline-voice.md). The 8-dimension rubric below scores structural compliance via dim 6 (Structural compression) and voice compliance via dim 8 (Voice discipline). A cycle that regresses either dimension fails convergence — see Stop criteria.
 
 **Three modes, three cost tiers, one contract.**
 
 | Mode | Per-cycle critic | When |
 |---|---|---|
-| `/refine <target>` | Main context self-critiques against the 5-dim rubric | Cheap. Tighten prose, close known gaps. |
+| `/refine <target>` | Main context self-critiques against the 8-dim rubric | Cheap. Tighten prose, close known gaps. |
 | `/refine fresh <target>` | Fresh-context agent critiques (naive reader each cycle) | Medium. Too close to it; need outside eyes. |
 | `/refine council <target>` | 6-archetype council + synthesizer | Expensive. High-stakes doc where multi-lens matters. |
 
@@ -28,7 +28,8 @@ Present to Gary and WAIT:
 
 > **PLAN:** [target file + what "tight" looks like]
 > **MODE:** [self / fresh / council]
-> **QUALITY BAR:** [default: 5-dim rubric ≥ 8/10 · override with `--bar="custom criteria"`]
+> **SCOPE (IN/OUT/NEVER):** [what this refine cycle touches · what it leaves untouched · what it refuses to touch and why]
+> **QUALITY BAR:** [default: 8-dim rubric ≥ 13/16 with every invariant dim ≥1 · override with `--bar="custom criteria"`]
 > **CYCLE CAP:** [default 3, max 5]
 > **MEMORY:** [L1 check — prior refine runs on this topic]
 > **RISK:** [biggest risk — e.g., "scope too broad" / "mode too heavy for draft quality"]
@@ -36,11 +37,13 @@ Present to Gary and WAIT:
 >
 > **Confirm?** [yes / modify / abort]
 
+**Why SCOPE is required.** Refine cycles without a declared boundary accumulate drift cycle-over-cycle — each cycle's critique surfaces adjacent concerns, the revision absorbs them, scope quietly doubles. IN/OUT/NEVER contract locks the target at plan gate so cycle N+1 can't broaden what cycle N agreed to. NEVER carries reason: `NEVER: expand rubric (reason: rubric is a separate /refine target at rules/common/output-discipline.md)`.
+
 Write approved plan to `outputs/refine/{slug}/plan.md` + `sessions/scratchpad.md` under `## Plan History`.
 
-### 7-dimension rubric (default quality bar — split invariants vs variants)
+### 8-dimension rubric (default quality bar — split invariants vs variants)
 
-Each cycle scores the current draft (0–2 per dim, total /14). Same rubric as `/think spec` promotion gate — reused, not duplicated. **Dimensions are split into INVARIANTS and VARIANTS per FP-OS §3.1 and `rules/common/output-discipline.md` §2**, so a draft that scores high on variants cannot paper over a missed invariant.
+Each cycle scores the current draft (0–2 per dim, total /16). Same rubric as `/think spec` promotion gate — reused, not duplicated. **Dimensions are split into INVARIANTS and VARIANTS per the FP-OS decision protocol and the invariants-vs-variants rule in [output-discipline.md](../rules/common/output-discipline.md)**, so a draft that scores high on variants cannot paper over a missed invariant.
 
 **Invariants (binary-like, floor ≥1, AND-aggregated).** Each invariant dim MUST score ≥1; any invariant at 0 → REWORK regardless of total.
 
@@ -49,8 +52,9 @@ Each cycle scores the current draft (0–2 per dim, total /14). Same rubric as `
 | 1 | **Acceptance criteria** | None stated | Vague / incomplete | MECE, testable, pass/fail per item |
 | 4 | **Cross-references** | Broken / orphaned / missing | Some valid, some missing | All valid, no orphans |
 | 5 | **Freshness / grounding** | Stale refs or unsourced claims | Minor gaps | All refs current, claims sourced |
-| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
-| 7 | **Doc-type articulation** | No `doc-type:` frontmatter declared, OR declared but first three H2s don't match §6.8 ordering for that type | `doc-type:` declared but drill-down reorders the why/what/how sequence for the declared type | `doc-type:` + `audience:` + `reader-output:` frontmatter present; first three H2s match §6.8 order keywords for the declared type; reader sees why/what/how in the correct sequence for the document's primary question |
+| 6 | **Structural compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent, no action anchor | Some friction; opening and outline present but meta-content ≥5% or main body carries version markers | Opens with positioning sentence + outline (`**Covers:** ...`); meta-content ≤5%; no main-body version markers; metadata consistent; closes with a named action anchor. Matches the artifact discipline rules in [output-discipline.md](../rules/common/output-discipline.md). |
+| 7 | **Doc-type articulation** | No `doc-type:` frontmatter declared, OR declared but first three H2s don't match the doc-type ordering | `doc-type:` declared but drill-down reorders the why/what/how sequence for the declared type | `doc-type:` + `audience:` + `reader-output:` frontmatter present; first three H2s match the order keywords for the declared type; reader sees why/what/how in the correct sequence for the document's primary question |
+| 8 | **Voice discipline** | Three or more AI-smell patterns present (em-dash sandwich, padding openers, summary-announcement openers, faux-specific vagueness, meta-about-meta, symmetric triples at every abstraction level); section sigils (`§\d`) present in spec prose | Some voice drift; one AI-smell pattern present but not habitual; no section sigils | Prose reads as Gary's register: em-dash density ≤ 1 per 25 words; no padding openers repeated; no section sigils; compression over announcement. Matches the voice rules in [output-discipline-voice.md](../rules/common/output-discipline-voice.md). |
 
 **Variants (continuous, weighted, trade-offs allowed).** Accumulate toward the total; no individual floor.
 
@@ -59,11 +63,13 @@ Each cycle scores the current draft (0–2 per dim, total /14). Same rubric as `
 | 2 | **Edge cases** | None | Some listed | Exhaustive (empty, overflow, error, concurrent, stale) |
 | 3 | **Data model / structure** | Absent | Fields listed, no types | Full schema (types, constraints, defaults, nullability) |
 
-**Quality bar:** ≥11/14 AND every invariant dim (1, 4, 5, 6, 7) ≥1. A cycle that regresses any invariant dim fails convergence — invariants are AND-aggregated; a draft with one invariant at 0 cannot promote even if it scores 2 on every variant.
+**Quality bar:** ≥13/16 AND every invariant dim (1, 4, 5, 6, 7, 8) ≥1. A cycle that regresses any invariant dim fails convergence — invariants are AND-aggregated; a draft with one invariant at 0 cannot promote even if it scores 2 on every variant.
 
-**Why the split is load-bearing.** Mixing invariants and variants in one additive table is the most common FP-OS §3.1 failure: a weighted-sum lets reviewers rationalise past a deal-breaker ("low on dim 1, high on everything else — ship it") or kill a good option for missing a nice-to-have. Separating them forces the invariant check to bite before the variant score is even computed.
+**Why the split is load-bearing.** Mixing invariants and variants in one additive table is the most common decision failure in the FP-OS protocol: a weighted-sum lets reviewers rationalise past a deal-breaker ("low on dim 1, high on everything else — ship it") or kill a good option for missing a nice-to-have. Separating them forces the invariant check to bite before the variant score is even computed.
 
-**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria — but the author must still name which custom criteria are invariants (must all pass) vs variants (scored). Override does NOT exempt invariants 6 + 7 — reader friction AND doc-type articulation always apply to artifacts.
+**Why dim 8 (voice) is separate from dim 6 (structural).** The 2026-04-19 spec-quality research found that structural rules had one scoring dim while voice rules had none. A spec could nail structure and still read as AI slop — scoring high enough to promote. Splitting voice into its own invariant closes that hole.
+
+**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria — but the author must still name which custom criteria are invariants (must all pass) vs variants (scored). Override does NOT exempt invariants 6, 7, 8 — structural compression, doc-type articulation, and voice discipline always apply to artifacts.
 
 ### Stop criteria (checked after every cycle)
 
@@ -155,7 +161,7 @@ After exit condition fires:
 1. Write `synthesis.md` with these mandatory H2s (in order):
    - **`## Context`** — what was refined and why this cycle ran
    - **`## Outcome`** — cycles completed + exit reason + score trend (start → end)
-   - **`## Selection Rule`** — the aggregation rule used to pick CONVERGED vs STUCK vs GOOD ENOUGH, in FP-OS §I form **"maximise X subject to invariants Y"** (e.g., *"Select CONVERGED when total ≥ 11/14 AND every invariant dim ≥ 1 AND no regression in dims 6, 7 cycle-over-cycle"*). Without this rule, the synthesis presents a verdict without the aggregation — reader sees the call but not how it was made.
+   - **`## Selection Rule`** — the aggregation rule used to pick CONVERGED vs STUCK vs GOOD ENOUGH, in the FP-OS rule form **"maximise X subject to invariants Y"** (e.g., *"Select CONVERGED when total ≥ 13/16 AND every invariant dim ≥ 1 AND no regression in dims 6, 7, 8 cycle-over-cycle"*). Without this rule, the synthesis presents a verdict without the aggregation — reader sees the call but not how it was made.
    - **`## Gaps remaining`** — resolved vs remaining, with severity
    - **`## Next action`** — promote / another cycle / hand off / abandon
 2. Present: "Refine complete. {N} cycles, {reason}. Score {start → end}. Selection rule: {one line}. {remaining} gaps remain. Promote to specs/ / hand off to /build / another cycle?"

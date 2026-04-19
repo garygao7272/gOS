@@ -163,14 +163,20 @@ Agent(
 
 **Findings table schema (mandatory columns):**
 
-| Severity | File:Line | Issue | Signal Class | Fix |
-|----------|-----------|-------|--------------|-----|
+| Severity | File:Line | Issue | Signal Class | Mechanism chain | Fix |
+|----------|-----------|-------|--------------|-----------------|-----|
 
-**Signal Class** tags each finding per FP-OS §4 and `rules/common/output-discipline.md` §4:
+**Signal Class** tags each finding per FP-OS §4 and the output-discipline rule's signal-calibration section:
 - **decisive** — this finding alone flips the verdict (falsifier). One decisive signal = BLOCK regardless of count.
 - **suggestive** — accumulates; no single finding flips the call, but N suggestive findings compose into CONCERN.
 
-**Why the tag matters.** Without it, every finding reads equal-weight and reviews accumulate CONCERN without localising the single falsifier. A review with 10 suggestive findings and 0 decisive is a warning; 0 suggestive and 1 decisive is a block — the tag is what makes the difference legible.
+**Mechanism chain** traces the finding from symptom back to root cause per the FP-OS Diagnosis protocol (§3.2). Format: `symptom ← intermediate ← root-cause-atom`. Examples:
+- `null deref in user.ts:42 ← unchecked return from getProfile() ← API contract drift not caught by types`
+- `test flake in auth.spec ← race condition in session init ← mock clock not reset between suites`
+
+Findings at CRITICAL/HIGH severity MUST have a mechanism chain reaching an atomic root cause (broken dependency / violated invariant / wrong assumption). MEDIUM/LOW severity MAY use a two-link chain; single-link findings are demoted to suggestive unless the symptom *is* the atom (e.g., a typo).
+
+**Why both tags matter.** Without Signal Class, every finding reads equal-weight and reviews accumulate CONCERN without localising the single falsifier. Without Mechanism chain, fixes target symptoms two layers from the cause — the cause keeps producing new symptoms. Together they turn a flat findings list into a localised kill-shot with a named fix target.
 
 ---
 
@@ -245,10 +251,16 @@ Spec quality scoring runs inline inside `/think spec` before promoting to `specs
 Plus: `arx-council-synthesizer` — reconciles all 7 lanes, surfaces disagreements, writes synthesis. Has no standing opinion.
 
 **Flow:**
-1. Extract self-contained target brief (must not require Arx-internal context to read).
+1. Extract self-contained target brief (must not require Arx-internal context to read). **Brief MUST include a Boundaries section** with IN / OUT / NEVER so each lane scores against the same scope — without it, lanes diverge on what the target actually is and the synthesizer sees scope-disagreement masquerading as lens-disagreement:
+   ```
+   ## Boundaries
+   **IN:** <what the target does / claims / covers>
+   **OUT:** <adjacent concerns handled elsewhere — name where>
+   **NEVER:** <what the target explicitly refuses to do, and why>
+   ```
 2. Gary approves brief.
 3. Spawn 7 lanes in parallel.
-   - Lanes 1–6: archetype profile section (`Arx_2-1-S2_*` or `Arx_2-1-S7_*`) + target brief + verdict template. NO other context.
+   - Lanes 1–6: archetype profile section (`Arx_2-1-S2_*` or `Arx_2-1-S7_*`) + target brief (boundaries included) + verdict template. NO other context.
    - Lane 7: `/ultrareview` on target code/diff. If prose-only, ultra returns `N/A — prose target`; synthesizer treats as non-signal.
 4. Collect outputs → `outputs/gos-jobs/{job-id}/council/{archetype}.md` + `ultra.md`.
 5. Spawn `arx-council-synthesizer` with all 7 outputs. Produces `outputs/gos-jobs/{job-id}/synthesis.md`.
@@ -310,7 +322,7 @@ Any persona name can be invoked directly: `/review s2-jake`, `/review trader-ux`
 
 1. **Load Persona** — adopt the specialist's expertise, vocabulary, and focus from the council table above
 2. **Research** — launch a background research agent for current best practices relevant to the persona's lens
-3. **Evaluate** — review through persona's lens. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, fix, location (file:line or spec:section)
+3. **Evaluate** — review through persona's lens. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, location (file:line or spec:section), **signal class** (decisive / suggestive — per FP-OS §4), **mechanism chain** (symptom ← intermediate ← root-cause-atom — per FP-OS §3.2), fix. CRITICAL/HIGH severity MUST reach an atomic root cause in the chain; single-link findings demote to suggestive.
 4. **Verdict** — APPROVE / CONCERN / BLOCK. Always include: Steel Man ("strongest argument FOR"), Kill Shot ("single biggest risk"), Recommendation
 5. **Output** — code fixes → `apps/`, spec corrections → `specs/`, decisions → `specs/Arx_9-1_Decision_Log.md`
 

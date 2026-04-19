@@ -47,7 +47,7 @@ bash tools/validate-doc-type.sh <path-to-artifact> <expected-doc-type>
 # exit 0 → write handoff; exit 2 → refuse and surface the gap to Gary
 ```
 
-Then write `sessions/handoffs/think.json`:
+Then write `sessions/handoffs/think.json` with the typed primitive payload (schema: [specs/handoff-schemas.md](../specs/handoff-schemas.md)):
 
 ```json
 {
@@ -56,12 +56,22 @@ Then write `sessions/handoffs/think.json`:
   "output": "<path-to-artifact>",
   "doc_type": "<discovery|research-memo|decision-record|product-spec|design-spec|strategy>",
   "summary": "<one-line>",
+  "primitives": {
+    "invariants_declared": ["<extracted from artifact's Invariants section or AC table>"],
+    "decisive_signals": ["<extracted from artifact's Signals table rows tagged 'decisive'>"],
+    "rule_form": "<extracted from artifact's Selection Rule H2 or Rule primitive>",
+    "boundary": {
+      "in": "<extracted from Boundaries IN row>",
+      "out": "<extracted from Boundaries OUT row>",
+      "never": "<extracted from Boundaries NEVER row>"
+    }
+  },
   "approved": true,
   "approved_at": "<ISO-8601>"
 }
 ```
 
-This unlocks `/design` via the phase gate. If validate-doc-type.sh fails, the handoff is refused — fix the artifact's frontmatter or ordering before re-approving. See `specs/handoff-schemas.md`.
+`primitives` is required for `decide` and `spec`; set to `null` explicitly for `research` and `discover` where no decision is being committed. /design and /build read these typed primitives rather than re-parsing the prose — this prevents downstream drift where the implementation doesn't match what /think committed. If validate-doc-type.sh fails, the handoff is refused — fix the artifact's frontmatter or ordering before re-approving.
 
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
 
@@ -175,7 +185,17 @@ The output MUST answer these four, in order. The PEV pool exists to gather evide
    - **ITERATE** → planner refines contracts for unresolved dimension → round N+1 (max 3).
    - **STUCK** → escalate with options for Gary.
 
-**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, options, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per §4)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, **Options table (mandatory — real/phantom tagged per FP-OS §3.3 Q3)**, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per §4)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+
+**Options table schema (mandatory for every `/think decide` artifact):**
+
+| Option | Agency | Blocking constraint (if phantom) | Upstream resolver |
+|--------|--------|----------------------------------|-------------------|
+
+- **Agency = real** — this option is actually available; a decisive signal either way moves the call. List in the decision set.
+- **Agency = phantom** — this option is labelled-as-choice but fixed by an upstream constraint (regulation, platform policy, contract, physics). Name the blocking constraint in column 3 and the upstream resolver (the command / decision / artifact that could relax it) in column 4. A phantom option is not in the decision set — it's a candidate for a separate upstream `/think decide` or strategy spec.
+
+**Why the tag matters.** Presenting phantoms alongside real options lets the decision run against an illusory freedom. The verdict picks a "winner" that cannot execute ("works on paper, won't execute"). Phantom classification either removes the option from the decision set or escalates it to the upstream constraint. FP-OS §3.3 Q3 is the source.
 
 **Signals table schema (mandatory for every `/think decide` artifact):**
 
@@ -238,7 +258,7 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 5. Write following altitude convention. Cascade rule: changes flow downward only.
 6. Single source of truth: link, don't duplicate.
 
-**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 7 dimensions (each 0–2, total /14) **split into invariants and variants per FP-OS §3.1**. Shared with `/refine` — any change lands in both places.
+**Quality gate (inline — no longer a separate `/review spec` command):** Before promoting to `specs/`, score the spec on 8 dimensions (each 0–2, total /16) **split into invariants and variants per the FP-OS decision protocol**. Shared with `/refine` — any change lands in both places.
 
 **Invariants (binary-like, floor ≥1, AND-aggregated).** Any invariant at 0 → REWORK regardless of total.
 
@@ -247,8 +267,9 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 | 1 | **Acceptance Criteria** | None | Vague or incomplete | MECE, testable, each has pass/fail condition |
 | 4 | **Cross-References** | Broken / orphaned / missing | Some valid, some missing | All dependencies linked, no orphan references |
 | 5 | **Freshness** | Stale refs or unsourced claims | Minor staleness | All refs valid, recently updated |
-| 6 | **Reader friction / compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent | Some friction; opening and outline present but concept density uneven or main body carries version markers | Fresh reader produces accurate summary in 30 seconds; opens with positioning + outline; meta-content ≤5%; no main-body version markers; metadata consistent; closes with action anchor. Matches `rules/common/output-discipline.md` §6. |
-| 7 | **Doc-type articulation** | No `doc-type:` frontmatter declared, OR declared but first three H2s don't match §6.8 ordering for that type | `doc-type:` declared but drill-down reorders the why/what/how sequence for the declared type | `doc-type:` + `audience:` + `reader-output:` frontmatter present; first three H2s match §6.8 order keywords for the declared type; reader sees why/what/how in the correct sequence for the document's primary question |
+| 6 | **Structural compression** | Topic-first opener, no outline, meta-content crowds substance, version markers in main body, metadata inconsistent, no action anchor | Some friction; opening and outline present but meta-content ≥5% or main body carries version markers | Opens with positioning sentence + outline (`**Covers:** ...`); meta-content ≤5%; no main-body version markers; metadata consistent; closes with a named action anchor (not a glossary, not a changelog). Matches the artifact discipline rules in [output-discipline.md](../rules/common/output-discipline.md). |
+| 7 | **Doc-type articulation** | No `doc-type:` frontmatter declared, OR declared but first three H2s don't match the doc-type ordering | `doc-type:` declared but drill-down reorders the why/what/how sequence for the declared type | `doc-type:` + `audience:` + `reader-output:` frontmatter present; first three H2s match the order keywords for the declared type; reader sees why/what/how in the correct sequence for the document's primary question |
+| 8 | **Voice discipline** | Three or more AI-smell patterns present (em-dash sandwich, padding openers, summary-announcement openers, faux-specific vagueness, meta-about-meta, symmetric triples at every abstraction level); no section-sigil leakage. Also fails if `§\d` patterns appear in spec prose. | Some voice drift; one AI-smell pattern present but not habitual; section sigils absent | Prose reads as Gary's register: em-dash density ≤ 1 per 25 words; no padding openers repeated; no section sigils; compression over announcement. Matches the voice and AI-smell rules in [output-discipline-voice.md](../rules/common/output-discipline-voice.md). |
 
 **Variants (continuous, weighted, trade-offs allowed).**
 
@@ -259,9 +280,11 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 
 **Before scoring:** run `bash tools/spec-freshness.sh` on the spec's directory to populate dimension 5 with evidence.
 
-**Verdict:** 11–14 AND every invariant (1, 4, 5, 6, 7) ≥1 → **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 7–10 OR any invariant at 0 → **REFINE** → list gaps (any invariant-zero is a MUST-FIX), rescore (max 2 cycles). 0–6 → **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Invariants are AND-aggregated** — a spec with one invariant at 0 cannot promote even if every variant scores 2.
+**Verdict:** 13–16 AND every invariant (1, 4, 5, 6, 7, 8) ≥1 → **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 9–12 OR any invariant at 0 → **REFINE** → list gaps (any invariant-zero is a MUST-FIX), rescore (max 2 cycles). 0–8 → **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Invariants are AND-aggregated** — a spec with one invariant at 0 cannot promote even if every variant scores 2.
 
-**Output:** New or updated spec in `specs/` once ≥11 AND all invariant dims ≥1. Scoring table logged inline so the promotion decision is auditable, with invariant/variant split visible.
+**Why dim 8 (voice) is separate from dim 6 (structural).** Prior rubric lumped voice into "Reader friction / compression" — structural rules got most of the signal, voice drift stayed invisible in the score. Splitting them makes a spec that nails structure but reads like AI slop ineligible for PROMOTE. The split was triggered by the 2026-04-19 spec-quality research: structural rules had one scoring dim; voice rules had zero.
+
+**Output:** New or updated spec in `specs/` once ≥13 AND all invariant dims ≥1. Scoring table logged inline so the promotion decision is auditable, with invariant/variant split visible.
 
 ### Execution — PEV (spec-structural pool)
 
