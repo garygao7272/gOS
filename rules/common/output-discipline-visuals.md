@@ -1,6 +1,12 @@
 # Output Discipline — Visual and structural aids (companion)
 
-> Extracted from [output-discipline.md](./output-discipline.md) to keep the main rule file lean. The main rule file summarizes; this file holds the full catalog of visual tools, the reach-for rule, Mermaid guidance, and anti-patterns. Load this file when deciding how to visualize a section or when authoring a spec that would benefit from diagrams.
+> **What this is.** Companion reference to [output-discipline.md](./output-discipline.md) — the full catalog of sixteen visual and structural aids with when-to-use / when-to-avoid guidance, the reach-for rule, Mermaid support, and anti-patterns.
+>
+> **Audience.** Spec authors deciding how to visualize a section; reviewers auditing over-visualization or prose-wall regression.
+>
+> **Reader output.** A concrete visual-or-prose decision for the section at hand, OR a cited anti-pattern ("table of tables," "emoji decoration," "flowchart where prose would flow") with a fix.
+>
+> **Why now.** Reading fatigue is the silent killer of long artifacts; dense prose that a small visual would carry reads as a wall, and over-diagrammed sections read as inventory. This companion is the catalog; the main rule carries only the reach-for heuristic.
 
 **Covers:** the catalog · reach-for rule · Mermaid support · anti-patterns.
 

@@ -1,6 +1,12 @@
 # Output Discipline — Voice and AI smell (companion)
 
-> Extracted from [output-discipline.md](./output-discipline.md) to keep the main rule file lean. The main rule file summarizes; this file holds the full anti-pattern catalog and enforcement detail. Load this file when auditing voice drift or wiring a new voice-related lint.
+> **What this is.** Companion reference to [output-discipline.md](./output-discipline.md) — the full catalog of twelve AI-smell anti-patterns with rationale, quantitative warn caps, and exemption rules.
+>
+> **Audience.** Agents auditing voice drift on a finished artifact; engineers wiring a new voice-related lint; any critic agent scoring the voice dimension of a `/refine` cycle.
+>
+> **Reader output.** A voice-scored verdict on the target prose (pass / warn / fail) with named tell(s) cited, OR a new bats helper mapped to a specific anti-pattern row.
+>
+> **Why now.** Voice drift decays silently — once an LLM-style tell lands in one artifact, it propagates. The main rule file summarizes the twelve patterns; this companion holds the detail a critic needs to cite them.
 
 **Covers:** twelve anti-patterns · underlying pattern · quantitative caps · what doesn't count · exemptions.
 
