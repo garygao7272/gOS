@@ -2,14 +2,14 @@
 
 > `commands/gos.md` Phase 2.5 routes problems to protocols and verbs. This doc adds the skill binding that *executes* each protocol inside its verb.
 
-| Protocol (FP-OS §) | gOS Verb(s) | Canonical Skill | Runs at |
+| Protocol | gOS Verb(s) | Canonical Skill | Runs at |
 |---|---|---|---|
-| **Decision** (§3.1) | `/think decide`, `/review gate` | `anthropic-skills:decision-prioritization` | 4-question gate inside `/think decide` |
-| **Diagnosis** (§3.2) | `/review` (root-cause), `/build fix` | `engineering:debug` | 3-question pattern inside `/review` |
-| **Design** (§3.3) | `/think discover`, `/design card` | `anthropic-skills:design-discovery` | 4-question lens inside `/think discover` |
-| **Build** (§3.4) | `/build feature`, `/design ui` | `anthropic-skills:execution-planning` + `tdd-workflow` | 5-question pre-build inside `/build feature` |
-| **Strategy** (§3.5) | `/think research`, `/simulate scenario` | `anthropic-skills:product-strategy` | 5-question lens inside `/think research` |
-| **Innovation modifier** (§3.6) | `--innovate` on `/design`, `/build` | `anthropic-skills:brainstorming-ideation` | 2 moves layered on base protocol |
+| **Decision** (decision protocol) | `/think decide`, `/review gate` | `anthropic-skills:decision-prioritization` | 4-question gate inside `/think decide` |
+| **Diagnosis** (diagnosis protocol) | `/review` (root-cause), `/build fix` | `engineering:debug` | 3-question pattern inside `/review` |
+| **Design** (design protocol) | `/think discover`, `/design card` | `anthropic-skills:design-discovery` | 4-question lens inside `/think discover` |
+| **Build** (build protocol) | `/build feature`, `/design ui` | `anthropic-skills:execution-planning` + `tdd-workflow` | 5-question pre-build inside `/build feature` |
+| **Strategy** (strategy protocol) | `/think research`, `/simulate scenario` | `anthropic-skills:product-strategy` | 5-question lens inside `/think research` |
+| **Innovation modifier** (innovation modifier) | `--innovate` on `/design`, `/build` | `anthropic-skills:brainstorming-ideation` | 2 moves layered on base protocol |
 | **Runtime** (decompose→reinvent) | all verbs | `first-principles-decomposition` + `synthesis-distillation` | Phase 1 / Phase 2 of every verb |
 
 ## Rules

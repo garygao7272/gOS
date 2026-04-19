@@ -21,11 +21,11 @@ Reading order: Gary reads top-down and stops when satisfied. ANSWER gives the me
 
 > **This file is a style projection.** The rules live in [rules/common/output-discipline.md](../rules/common/output-discipline.md) — single source of truth. The sections below point at the rule and keep only style-specific content: the Response Shapes decision table, worked examples, and the anti-drift checklist.
 
-## 1. ANSWER — see [output-discipline.md §1 Mechanism-first](../rules/common/output-discipline.md)
+## 1. ANSWER — see [output-discipline.md — Mechanism-first](../rules/common/output-discipline.md)
 
 One sentence naming the cause. No preambles, no restating the question.
 
-## 1.5 OUTLINE — see [output-discipline.md §1.1 Outline after mechanism](../rules/common/output-discipline.md)
+## 1.5 OUTLINE — see [output-discipline.md — Outline after mechanism](../rules/common/output-discipline.md)
 
 One `**Covers:** <a> · <b> · <c>` line after ANSWER on any response ≥ 8 lines or covering ≥ 2 topics. Atomic and short Q&A are exempt.
 
@@ -41,11 +41,11 @@ Break the answer into structural parts when useful.
 
 Concrete, ordered actions — not "you could consider…". File paths as `[label](path:line)` markdown links. If multiple options, rank by leverage.
 
-## 4. SUMMARY — see [output-discipline.md §5 Summary block schema](../rules/common/output-discipline.md)
+## 4. SUMMARY — see [output-discipline.md — Summary block schema](../rules/common/output-discipline.md)
 
 Action responses close with `SUMMARY` block: **DONE / TESTED / REMAINING / NEXT MOVE**. Legacy DID → DONE, VERIFIED → TESTED.
 
-## 5. MULTI-OPTION CLOSE — see [output-discipline.md §5.5 Ranked-picks advisory close](../rules/common/output-discipline.md)
+## 5. MULTI-OPTION CLOSE — see [output-discipline.md — Multi-option advisory close](../rules/common/output-discipline.md)
 
 Advisory responses with ≥ 3 ranked options + a decision needed close with three H2s: *The deliverable (ranked table)* → *Why a subset (if recommending one)* → *The decision you need to make (lettered options)*.
 

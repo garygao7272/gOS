@@ -2,7 +2,7 @@
 
 Each gOS command outputs a typed JSON artifact that the next command in the phase chain reads. Artifacts live in `sessions/handoffs/`.
 
-**Doc-type gate (§6.8 of `rules/common/output-discipline.md`).** Before a command writes its handoff JSON, it MUST validate the upstream artifact's frontmatter and H2 ordering by calling:
+**Doc-type gate (doc-type ordering rule in `rules/common/output-discipline.md`).** Before a command writes its handoff JSON, it MUST validate the upstream artifact's frontmatter and H2 ordering by calling:
 
 ```bash
 bash tools/validate-doc-type.sh <artifact-path> <expected-doc-type>
@@ -54,7 +54,7 @@ Written when Gary approves a /think output (spec, research, decision).
 
 - **`invariants_declared`** — array of hard constraints the downstream work must preserve. /design and /build refuse to violate these without a re-approval.
 - **`decisive_signals`** — array of named falsifiers. If any fires during downstream work, pause and re-open the decision instead of proceeding.
-- **`rule_form`** — the FP-OS §I rule in `maximise X subject to Y` form. Downstream selection among alternatives MUST use this same rule.
+- **`rule_form`** — the FP-OS rule-form primitive rule in `maximise X subject to Y` form. Downstream selection among alternatives MUST use this same rule.
 - **`boundary`** — IN / OUT / NEVER contract. /design cannot expand scope without a re-approval cycle.
 
 Sub-commands that don't require primitives write `"primitives": null` — explicit, not omitted, so the schema field is always present.

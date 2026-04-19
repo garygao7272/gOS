@@ -41,7 +41,7 @@ When on a team:
 
 ```
 # Design review finding
-SendMessage(to="engineer", message="Design issue: {element} uses {wrong-token}. Should be {correct-token} per DESIGN.md §{section}")
+SendMessage(to="engineer", message="Design issue: {element} uses {wrong-token}. Should be {correct-token} per DESIGN.md section name")
 
 # When providing design spec
 SendMessage(to="engineer", message="Design spec for {screen}: {layout, tokens, feel token, interaction notes}")

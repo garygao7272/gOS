@@ -139,10 +139,10 @@ outputs/refine/{target-slug}/
 | Mode | Roster | When to use |
 |---|---|---|
 | `arx-behavioral` (default) | 6 Arx archetypes (3 S2 + 3 S7) + synthesizer per `commands/review.md` council protocol | Product UX, cross-journey logic, trust-critical flow, behavioral drift |
-| `spec-structural` | `first-principles`, `contrarian`, `architect`, `doc-type-auditor`, `signal-calibrator`, `consequence-tracer` + synthesizer | Strategy / product / design specs where the failure mode is structural (missing §6.1 opener, §6.8 order wrong, AC not split, Consequences absent, atoms not traced to cause) |
+| `spec-structural` | `first-principles`, `contrarian`, `architect`, `doc-type-auditor`, `signal-calibrator`, `consequence-tracer` + synthesizer | Strategy / product / design specs where the failure mode is structural (missing positioning opener rule, doc-type ordering wrong, AC not split, Consequences absent, atoms not traced to cause) |
 
 **Per-cycle loop (~ 15-25 min per cycle):**
-1. Spawn the mode's 6-agent roster in fresh context. For `spec-structural`, `doc-type-auditor` holds a VETO on §6.1 / §6.8 / 8-primitive / AC-split failures.
+1. Spawn the mode's 6-agent roster in fresh context. For `spec-structural`, `doc-type-auditor` holds a VETO on positioning opener or doc-type ordering / 8-primitive / AC-split failures.
 2. Council verdicts → synthesizer → `critique.md` (synthesis) for this cycle.
 3. Main context revises draft against synthesis.
 4. Write revision + score-delta + convergence check (did council concerns drop cycle-over-cycle? track BLOCK / CONCERN / APPROVE counts).
@@ -152,7 +152,7 @@ outputs/refine/{target-slug}/
 
 **When to pick `arx-behavioral`:** high-stakes document where behavioral plausibility is the bar (product UX, copy-trading mechanics, onboarding flow).
 
-**When to pick `spec-structural`:** strategy spec, product spec, design spec, or decision record where structural integrity (§6 discipline + 8 primitives) is the bar. Pick this mode when the Arx behavioral lens would produce feedback about trader mechanics instead of doc structure.
+**When to pick `spec-structural`:** strategy spec, product spec, design spec, or decision record where structural integrity (artifact discipline + 8 primitives) is the bar. Pick this mode when the Arx behavioral lens would produce feedback about trader mechanics instead of doc structure.
 
 ---
 

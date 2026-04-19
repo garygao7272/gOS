@@ -1208,6 +1208,163 @@ _check_enforcement_table_matches_bats() {
   [ "$status" -ne 0 ]
 }
 
+# §8 Self-congratulatory close — artifact ends with a phrase that restates /
+# summarizes / congratulates instead of handing off to the reader. Check the
+# last 15 non-blank, non-code-block lines.
+_check_self_congratulatory_close() {
+  local file="$1"
+  local phrase_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/self-congratulatory-close.txt"
+  [[ -f "$phrase_file" ]] || return 1
+  # Last 15 non-blank, non-code-block, non-table lines
+  local tail_window
+  tail_window=$(awk '/^```/{in_cb=!in_cb; next} !in_cb && !/^\|/ && NF{print}' "$file" | tail -15)
+  local alt
+  alt=$(grep -vE '^(#|[[:space:]]*$)' "$phrase_file" | tr '\n' '|' | sed 's/|$//')
+  [[ -z "$alt" ]] && return 0
+  if echo "$tail_window" | grep -qiE "(${alt})"; then
+    return 1
+  fi
+  return 0
+}
+
+# §8 Meta-about-meta — artifact opens by describing its own purpose /
+# structure rather than engaging the subject. Check the first 20 non-blank,
+# non-frontmatter lines after the H1.
+_check_meta_about_meta() {
+  local file="$1"
+  local phrase_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/meta-about-meta.txt"
+  [[ -f "$phrase_file" ]] || return 1
+  # Head window: skip frontmatter + H1, take first 20 content lines
+  local head_window
+  head_window=$(awk 'BEGIN{fm=0; past_h1=0} NR==1 && /^---$/{fm=1; next} fm && /^---$/{fm=0; next} fm{next} /^# /{past_h1=1; next} past_h1 && NF{print; n++; if (n>=20) exit}' "$file")
+  local alt
+  alt=$(grep -vE '^(#|[[:space:]]*$)' "$phrase_file" | tr '\n' '|' | sed 's/|$//')
+  [[ -z "$alt" ]] && return 0
+  if echo "$head_window" | grep -qiE "(${alt})"; then
+    return 1
+  fi
+  return 0
+}
+
+# §8 Faux-specific vagueness — phrases like "several key" / "a number of"
+# that hedge where a specific count would commit. Fires when the phrase is
+# NOT followed by a digit on the same line (commitment would be "3 key" or
+# "seven important").
+_check_faux_vague() {
+  local file="$1"
+  local phrase_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/faux-vague.txt"
+  [[ -f "$phrase_file" ]] || return 1
+  # Strip code blocks
+  local prose
+  prose=$(awk '/^```/{in_cb=!in_cb; next} !in_cb{print}' "$file")
+  local fail=0
+  while IFS= read -r phrase; do
+    [[ -z "$phrase" || "$phrase" =~ ^# ]] && continue
+    # Find lines containing the phrase, but not followed by a digit within same line
+    if echo "$prose" | grep -iE "${phrase}" | grep -ivE "${phrase}[[:space:]]*[0-9]" > /dev/null; then
+      fail=1
+      break
+    fi
+  done < "$phrase_file"
+  [[ "$fail" -eq 0 ]]
+}
+
+@test "§8 self-congratulatory close: artifact ending with 'To recap what we've accomplished' FAILS" {
+  local d="$FIXTURES/congrat-close"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Report"
+    echo
+    echo "*A research memo.*"
+    echo
+    echo "## Findings"
+    echo "Three findings."
+    echo
+    echo "## Close"
+    echo "To recap what we've accomplished today, we shipped the campaign."
+  } > "$d/close.md"
+  run _check_self_congratulatory_close "$d/close.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§8 self-congratulatory close: artifact ending with action handoff PASSES" {
+  local d="$FIXTURES/congrat-clean"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Report"
+    echo
+    echo "*A research memo.*"
+    echo
+    echo "## Findings"
+    echo "Three findings."
+    echo
+    echo "## Next action"
+    echo "Run the backtest on Q2 data before deciding."
+  } > "$d/clean.md"
+  run _check_self_congratulatory_close "$d/clean.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§8 meta-about-meta: artifact opening with 'This document sets out to' FAILS" {
+  local d="$FIXTURES/meta-open"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Report"
+    echo
+    echo "This document sets out to describe the system's architecture."
+    echo
+    echo "## Overview"
+    echo "Three components."
+  } > "$d/meta.md"
+  run _check_meta_about_meta "$d/meta.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§8 meta-about-meta: artifact opening with mechanism PASSES" {
+  local d="$FIXTURES/meta-clean"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Report"
+    echo
+    echo "*A research memo produced to identify where the auth refresh flow races.*"
+    echo
+    echo "## Overview"
+    echo "The race happens because..."
+  } > "$d/clean.md"
+  run _check_meta_about_meta "$d/clean.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§8 faux-vague: artifact with 'several key insights' (no count) FAILS" {
+  local d="$FIXTURES/faux-vague"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Report"
+    echo
+    echo "*A memo.*"
+    echo
+    echo "## Findings"
+    echo "The research surfaced several key insights about the system."
+  } > "$d/vague.md"
+  run _check_faux_vague "$d/vague.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§8 faux-vague: artifact with concrete count PASSES" {
+  local d="$FIXTURES/faux-specific"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Report"
+    echo
+    echo "*A memo.*"
+    echo
+    echo "## Findings"
+    echo "Three concrete findings came out of the research."
+  } > "$d/specific.md"
+  run _check_faux_vague "$d/specific.md"
+  [ "$status" -eq 0 ]
+}
+
 @test "meta-check: FAILS when bats defines a helper missing from Enforcement" {
   local d="$FIXTURES/meta-missing"
   rm -rf "$d" && mkdir -p "$d"

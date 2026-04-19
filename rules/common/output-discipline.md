@@ -237,6 +237,9 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 | Signal calibration (decision records) | `_check_signal_calibration` | `decisive` / `suggestive` tags present on cited signals |
 | Rule-form H2 (decision records) | `_check_rule_form` | `## Selection Rule` or `## Aggregation Rule` H2 present |
 | Em-dash density · padding-phrase frequency (artifacts) | `_check_em_dash_density` · `_check_padding_phrase_frequency` | Voice warn caps |
+| Self-congratulatory close (artifacts) | `_check_self_congratulatory_close` | Last 15 lines must not restate / congratulate / announce conclusion |
+| Meta-about-meta opener (artifacts) | `_check_meta_about_meta` | First 20 lines after H1 must not describe the document's own purpose (starts substantive, not meta) |
+| Faux-specific vagueness (artifacts) | `_check_faux_vague` | Phrases like "several key" / "a number of" flagged when not followed by a specific count |
 | Artifact discipline overall | `/refine` 8-dim rubric (dim 6 structural + dim 8 voice) | A cycle that regresses either dim fails convergence |
 | Style drift (all) | `/evolve audit` | `rework` signal with `output-discipline` context |
 
@@ -246,7 +249,7 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 - Describe-before-index prose rule (§7.3) — index-code-in-prose flagged by reviewer, not regex
 - Prose-table weave (§7.7) — rhythm is judgment
 - Action-anchor minimum lines (§7.8) — final-section operability is judgment
-- Eight of twelve voice anti-patterns (§8) — em-dash density, padding-opener frequency, and pivot-cluster are mechanical; the remaining eight patterns (symmetric triples, "not X but Y," over-qualification, self-congratulatory close, meta-about-meta, faux-specific vagueness, symmetric section intros, bulleted-over-prose) are judgment
+- Five of twelve voice anti-patterns (§8) — em-dash density, padding-opener frequency, pivot-cluster, self-congratulatory close, meta-about-meta, and faux-specific vagueness are mechanical (six patterns total with mechanical coverage); the remaining six patterns (symmetric triples, "not X but Y," over-qualification, symmetric section intros, bulleted-over-prose, and summary-announcement openers via padding-opener overlap) are judgment
 - Visuals (§7.9) — reach-for rule and tool selection are 100% judgment by design
 
 **Meta-check:** `tests/hooks/artifact-discipline.bats` includes `_check_enforcement_table_matches_bats` which diffs the Enforcement table above against the actual `_check_*` helpers in both bats files. A table that claims a gate not present in bats, or a bats helper missing from the table, fails the meta-check. This keeps the Enforcement table honest.

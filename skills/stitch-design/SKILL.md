@@ -38,7 +38,7 @@ Use this skill when generating, editing, or exploring design variants via Google
 
 After Gate -1 (Reference Research), before Gate 0 (State Matrix):
 
-1. Formulate the feel target from `specs/Arx_4-3_Design_Taste.md` §3 as a Stitch prompt
+1. Formulate the feel target from `specs/Arx_4-3_Design_Taste.md` feel-target section as a Stitch prompt
 2. Open stitch.withgoogle.com and generate 3-5 variants (EXPLORE mode)
 3. Pull screenshots via `get_screen_image` MCP tool
 4. Use variants as VISUAL REFERENCE — note what Stitch got right and wrong
@@ -92,7 +92,7 @@ After every Stitch generation, before using the code:
 - [ ] Verify touch targets are 44px minimum
 - [ ] Check border-radius: 14px outer cards, 12px inner elements
 - [ ] Replace Stitch color values with Arx CSS custom properties (`var(--color-primary)`, etc.)
-- [ ] Run 5 Premium Litmus Tests from `specs/Arx_4-3_Design_Taste.md` §2
+- [ ] Run 5 Premium Litmus Tests from `specs/Arx_4-3_Design_Taste.md` litmus-test section
 
 ## DESIGN.md Sync Protocol
 
@@ -116,7 +116,7 @@ For best results, structure Stitch prompts as:
 ```
 [WHAT] A {screen type} for {app name}
 [WHO] Used by {persona description}
-[FEEL] Should feel like {feel target from 4-3 §3}
+[FEEL] Should feel like {feel target from Arx_4-3 feel-target section}
 [CONSTRAINT] Dark mode, mobile-first (390x844), {key design rules}
 
 Design System:

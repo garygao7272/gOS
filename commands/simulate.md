@@ -17,11 +17,11 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll simulate [type] for [target], parameters: [key params]. Proceed?"
 
-**Output discipline.** Every prose artifact this command produces (simulation narratives, scenario reports, flow walkthroughs under `outputs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and §7 Voice and AI smell (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency). Data tables, charts, and CSV/JSON outputs are exempt — §6 and §7 apply only to the prose sections that frame them.
+**Output discipline.** Every prose artifact this command produces (simulation narratives, scenario reports, flow walkthroughs under `outputs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) the artifact discipline rules (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and the voice-and-AI-smell rules (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency). Data tables, charts, and CSV/JSON outputs are exempt — artifact and voice rules apply only to the prose sections that frame them.
 
-**Doc-type contract (§6.8).** Every prose output declares frontmatter:
+**Doc-type contract (doc-type ordering).** Every prose output declares frontmatter:
 
-| Sub-command | Doc-type | First three H2s (§6.8 order) |
+| Sub-command | Doc-type | First three H2s (doc-type ordering) |
 |-------------|----------|------------------------------|
 | `market` | `research-memo` | Regime Assessment (What/Finding) → Why it matters (Why) → How (scenarios + opportunities) |
 | `scenario` | `research-memo` | Projected Outcomes (What/Finding) → Why it matters (precedents + second-order) → How (decision matrix + assumptions) |
@@ -95,7 +95,7 @@ The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-dis
 4. `pev-validator` checks: factual disagreements across agents, unsourced claims, time-staleness. Disputed facts → ITERATE with `fact-checker`.
 5. **CONVERGED** → `adjudicator` writes: Projected Outcomes (best 20th / expected 50th / worst 80th / black-swan 95th percentile + probabilities + Arx impact), Decision Matrix (actions × timeframe × likelihood), Key Assumptions that must hold.
 
-**Output sections:** **Boundaries (IN/OUT/NEVER)** → Current State → Historical Precedents → Projected Outcomes table → Second-Order Effects → **Decision Matrix (with signal_class column)** → **Selection Rule (§I rule-form)** → Key Assumptions.
+**Output sections:** **Boundaries (IN/OUT/NEVER)** → Current State → Historical Precedents → Projected Outcomes table → Second-Order Effects → **Decision Matrix (with signal_class column)** → **Selection Rule (rule-form primitive)** → Key Assumptions.
 
 **Boundaries section (mandatory first H2 after positioning):**
 
@@ -109,16 +109,16 @@ The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-dis
 
 **Why boundaries are mandatory for scenarios.** A what-if without IN/OUT/NEVER drifts into adjacent what-ifs during the PEV round (bull-case broadens to bull-regime, scenario expands to strategy). Worst case: the reader applies a scenario answer to a question it wasn't designed for. Boundary contract prevents this at scenario birth.
 
-**Decision Matrix schema (mandatory columns — per FP-OS §3.3 + §4):**
+**Decision Matrix schema (mandatory columns — per FP-OS design protocol + signal-calibration primitive):**
 
 | Action | Agency | Timeframe | Likelihood | Signal Class | Notes |
 |--------|--------|-----------|------------|--------------|-------|
 
-- **Agency** tags each row as `real` (action is actually executable given current regulatory / platform / capital constraints) or `phantom` (labelled-as-choice but blocked upstream). Phantom rows MUST name the blocking constraint in Notes — otherwise the Decision Matrix surfaces actions the operator can't take. FP-OS §3.3 Q3 ("real degrees of freedom vs phantom").
+- **Agency** tags each row as `real` (action is actually executable given current regulatory / platform / capital constraints) or `phantom` (labelled-as-choice but blocked upstream). Phantom rows MUST name the blocking constraint in Notes — otherwise the Decision Matrix surfaces actions the operator can't take. FP-OS design protocol Q3 ("real degrees of freedom vs phantom").
 - **Signal Class** tags each row as `decisive` (one firing alone flips which action to take) or `suggestive` (accumulates with others). Without this column, the Decision Matrix is a menu without a selection mechanism.
 - **Rows with Agency = phantom are excluded from the Selection Rule's maximand.** The rule operates on the real-agency subset; phantoms feed an optional Upstream Constraints section listing what would need to change.
 
-**Selection Rule section (mandatory H2 — `## Selection Rule` or `## Rule`):** Name the rule-form per FP-OS §I Layer 1 primitive 7, in the form **"maximise X subject to invariants Y"**. Example: *"Select the action that maximises expected return (variant) subject to no decisive downside signal firing (invariant) AND portfolio drawdown < 20% (invariant)."* Without the rule, the reader sees the matrix but not how to pick from it — which is the default failure mode of forecasting outputs.
+**Selection Rule section (mandatory H2 — `## Selection Rule` or `## Rule`):** Name the rule-form per FP-OS rule-form primitive Layer 1 primitive 7, in the form **"maximise X subject to invariants Y"**. Example: *"Select the action that maximises expected return (variant) subject to no decisive downside signal firing (invariant) AND portfolio drawdown < 20% (invariant)."* Without the rule, the reader sees the matrix but not how to pick from it — which is the default failure mode of forecasting outputs.
 
 **Output to:** `outputs/think/research/{slug}.md`
 

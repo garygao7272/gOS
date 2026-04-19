@@ -87,4 +87,4 @@ All design tokens are defined in `DESIGN.md` (auto-generated from `specs/Arx_4-2
 - Section gap: 24px between groups
 
 ## Feel Tokens
-Screens reference feel tokens (see DESIGN.md §6.9): `feel:home`, `feel:trade`, `feel:discovery`, etc. Each defines target feel, motion choreography, density mode, and color temperature budget.
+Screens reference feel tokens (see DESIGN.md DESIGN tokens section): `feel:home`, `feel:trade`, `feel:discovery`, etc. Each defines target feel, motion choreography, density mode, and color temperature budget.

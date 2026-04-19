@@ -66,7 +66,7 @@ Six specialist agents in `.claude/agents/`. Each has persistent memory and a con
  4. SPAWN    — Agent(name="{role}", team_name=..., subagent_type="{roster-agent}")
  5. ASSIGN   — TaskCreate() per work item, with blockedBy dependencies
  6. EXECUTE  — Agents work; SendMessage for handoffs and questions
- 7. RESOLVE  — Conflict resolution if agents disagree (see §4)
+ 7. RESOLVE  — Conflict resolution if agents disagree (see Conflict resolution)
  8. COLLECT  — Conductor reads task results + agent outputs
  9. SHUTDOWN — SendMessage(to="*", message={type:"shutdown_request"}) → TeamDelete
 10. PERSIST  — Agents save learnings to their memory scope before exit
