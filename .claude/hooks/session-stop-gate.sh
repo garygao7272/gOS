@@ -61,11 +61,12 @@ fi
 # (c) clear Mode line if TRIGGER=gos-save — otherwise this re-fires.
 cat <<EOF
 [persist-trigger=$TRIGGER] Run the persist + signal pass now:
-1) Scan this conversation for unlogged signals (Gary's response to prior suggested action → accept/rework/reject/love/repeat/skip) → append to sessions/evolve_signals.md
+1) Scan this conversation for unlogged signals (Gary's response to prior suggested action → accept/rework/reject/love/repeat/skip) → append to sessions/evolve_signals.md.
+   IMPORTANT: if there are NO new signals from Gary's responses, SKIP step 1 entirely. Do NOT write a placeholder "session-end" entry — those are noise and pollute every future /evolve audit. Activity markers (session-end, session-start, compact) are not signals. Only the 6 named types (accept/rework/reject/love/repeat/skip) belong in evolve_signals.md. See memory/feedback_signal_log_hygiene.md.
 2) Update memory/L1_essential.md if decisions/feedback/state changed
 3) Update sessions/state.json with phase + recovery
 4) Touch sessions/.scratchpad_timestamp to now (required to clear this trigger)
 5) If trigger was gos-save: clear or update the ## Mode line in sessions/scratchpad.md (required to clear this trigger)
-Report one line: '[N] signals logged, L1 [updated|unchanged], state.json [updated|unchanged]'.
+Report one line: '[N] signals logged, L1 [updated|unchanged], state.json [updated|unchanged]'. If N=0 that means no new signals were captured — that's correct and expected when the session had no explicit feedback moments.
 EOF
 exit 0

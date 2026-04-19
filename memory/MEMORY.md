@@ -42,6 +42,9 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 - [feedback_workflow_docs.md](feedback_workflow_docs.md) — Pipeline over process, decompose don't duplicate, templates separate, verb-centric
 - [feedback_self_inflicted_regression.md](feedback_self_inflicted_regression.md) — Smoke-test evolve changes before commit; MCP servers need disabled:true without tokens; UserPromptSubmit hooks must be lightweight
 - [feedback_orientation_after_gaps.md](feedback_orientation_after_gaps.md) — When Gary signals confusion, give ONE recommendation — not an open menu of options
+- [feedback_scout_verify_premise.md](feedback_scout_verify_premise.md) — Scout-type agents must verify premise with direct file read/command run before recommending (decisive: 3/4 false positives on 2026-04-15)
+- [feedback_signal_log_hygiene.md](feedback_signal_log_hygiene.md) — session-end auto-entries go to sessions/activity.log, not evolve_signals.md (2026-04-19)
+- [feedback_stop_hook_compliance.md](feedback_stop_hook_compliance.md) — Stop hook default-skips; full persist only on /gos save or >4h stale (SUPERSEDES 2026-04-15 "never skip" version)
 
 ### Projects
 
@@ -50,8 +53,9 @@ L3: Deep Search           — claude-mem (349MB) + spec-rag. Semantic query.
 
 ### Evolve
 
-- [evolve_audit_2026-04-08.md](evolve_audit_2026-04-08.md) — Latest audit: 0 new signals, all commands ≥80%, Phase 1 auto-signal hooks landed — watch next run
-- [evolve_audit_2026-04-07.md](evolve_audit_2026-04-07.md) — Prior audit: 12 signals from 2026-04-06, /design still zero coverage
+- [evolve_audit_2026-04-19.md](evolve_audit_2026-04-19.md) — Latest audit: 27 real signals (67% noise ratio from session-end auto-entries), 87 commits shipped, 4 decisive signals acted on inline (scout verify-premise, signal log hygiene, Stop hook override, phase-gate scratchpad drift fired live during audit)
+- [evolve_audit_2026-04-08.md](evolve_audit_2026-04-08.md) — Prior audit: 0 new signals, all commands ≥80%, Phase 1 auto-signal hooks landed
+- [evolve_audit_2026-04-07.md](evolve_audit_2026-04-07.md) — 12 signals from 2026-04-06, /design still zero coverage
 
 ### References
 

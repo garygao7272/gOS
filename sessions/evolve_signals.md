@@ -224,41 +224,5 @@
 | 2026-04-15 | 13:47 | Stop hook enforcement | repeat | Stop hook caught me skipping mandatory auto-persist after briefing — signal scan, L1 check, state.json update. `feedback_stop_hook_compliance.md` memory exists exactly to prevent this. Regression: briefing output felt "done" → brain skipped hook tasks. Fix: treat Stop hook checklist as non-skippable regardless of turn content (even briefing-only). |
 | 2026-04-15 | 13:50 | /review (signal policy) | rework | Gary reframed: don't log signals every turn — default to Plan-Gate confidence + next-move. Formal signal scan only on /gos save or stale resume (>4h). "evolve signals capture only happens with stale sessions after 4 hours, or after gos save". Invalidates prior feedback_stop_hook_compliance rule. Plan proposed, awaiting "Proceed?" |
 | 2026-04-15 | 13:51 | Stop hook fire (plan turn) | repeat | Stop hook forced auto-persist after a pure planning turn (no changes landed, awaiting Gary approval). Proves Gary's point live — current hook is noise generator. Plan to rewrite hook is the fix. |
-| 2026-04-17 | 01:32 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 01:33 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 01:42 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:06 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:07 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:09 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:18 | gOS | /design card | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:26 | gOS | /think discover (Conductor) | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:28 | gOS | /think discover (Conductor) | session-end | Auto-captured at session stop |
-| 2026-04-17 | 14:37 | gOS | /think discover (Conductor) | session-end | Auto-captured at session stop |
-| 2026-04-17 | 15:08 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 15:15 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 15:17 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:46 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:48 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:52 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:53 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:56 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:58 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:58 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 20:59 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:01 | gOS | /build feature precompact-signal-hook | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:03 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:08 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:08 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:09 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:10 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:10 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:11 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:12 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:15 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:21 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:27 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:32 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:36 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:47 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:49 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
-| 2026-04-17 | 21:52 | gOS | /build refactor tier-2-cleanup | session-end | Auto-captured at session stop |
+
+--- AUDITED 2026-04-19 ---

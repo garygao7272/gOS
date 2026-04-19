@@ -307,6 +307,33 @@ if [[ "$MODE" == "global" ]]; then
         echo -e "    ${WARN} claws/ dir not found in gOS repo"; ((WARNINGS++))
     fi
 
+    # Launchd plists — actually SCHEDULE the claws (cp + launchctl load).
+    # Fixes 2026-04-15 "install.sh ships claws but doesn't run them" gap
+    # and the 2026-04-15 CronCreate --durable:true silent-degradation.
+    echo -e "  ${CYAN}Launchd (scheduled claws)${NC}"
+    if [[ -d "$GOS_DIR/launchd" ]]; then
+        LAUNCHAGENTS_DIR="$HOME/Library/LaunchAgents"
+        mkdir -p "$LAUNCHAGENTS_DIR"
+        for plist in "$GOS_DIR"/launchd/*.plist; do
+            [[ -f "$plist" ]] || continue
+            name=$(basename "$plist")
+            target="$LAUNCHAGENTS_DIR/$name"
+            # Unload existing to pick up changes, then copy + load.
+            if launchctl list 2>/dev/null | grep -q "${name%.plist}"; then
+                launchctl unload "$target" 2>/dev/null || true
+            fi
+            cp "$plist" "$target"
+            if launchctl load "$target" 2>/dev/null; then
+                echo -e "    ${PASS} scheduled $name"
+            else
+                echo -e "    ${WARN} $name copied but launchctl load failed (check logs)"
+                ((WARNINGS++))
+            fi
+        done
+    else
+        echo -e "    ${WARN} launchd/ dir not found in gOS repo"; ((WARNINGS++))
+    fi
+
     # Settings — MERGE hooks into existing settings.json (don't overwrite plugins/env)
     echo -e "  ${CYAN}Settings${NC}"
     if [[ -f "$GOS_DIR/settings/settings.json" ]]; then
