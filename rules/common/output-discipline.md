@@ -13,6 +13,21 @@ Lead with the *why*, not the *what*. First sentence names the cause.
 
 Test: if the first sentence is deletable without losing the answer, delete it. Gary reads top-down and stops when satisfied — a topic-first opener forces a second read.
 
+### 1.1 Outline after mechanism (non-atomic responses)
+
+For any response covering **≥2 distinct topics** OR running **≥8 lines**, the second line after the mechanism sentence names the shape of what follows. One line, scannable.
+
+- **Form:** `**Covers:** <topic a> · <topic b> · <topic c>` — or a short bulleted outline when the sections are deeper.
+- **Placement:** immediately after the mechanism sentence, before any table or drill-down.
+- **Purpose:** Gary decides in one glance whether to read through or jump to a section. Mirrors §6.1 (artifact positioning + outline) for responses.
+
+**Exempt:** Atomic (yes/no / single fact / status check) and Q&A responses ≤ 7 lines — mechanism sentence is the whole answer, outline would inflate it.
+
+**Action responses** also get this opener: TL;DR mechanism at top, SUMMARY (DONE/TESTED/REMAINING/NEXT MOVE) at bottom. The opener tells Gary *what* happened; the summary tells him *what was verified and what's next*.
+
+- WRONG (Advisory, 20 lines, no outline): drills straight into section 1, Gary must read all 20 lines to know the shape.
+- RIGHT (Advisory, 20 lines): mechanism sentence, then `**Covers:** cause · three fix options ranked by leverage · rollback plan`, then drill down.
+
 ## 2. Invariants surface before variants
 
 Hard constraints first, weighted trade-offs second. Never mixed in one table.
