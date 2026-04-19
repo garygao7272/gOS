@@ -91,6 +91,24 @@ Close with something the reader can operate on — a quick-reference card, a wor
 
 **Minimum acceptable close:** three to five lines naming how the document gets used, by whom, and what they produce after reading.
 
+### 6.8 Order substance by document type
+
+Every prose artifact names why, what, and how. All three are always present; the **order** serves the reader's first question, which differs by document type.
+
+| Document type | Reader's first question | Typical order |
+|---|---|---|
+| Research memo | What did we find? | **What** → Why → How |
+| Discovery / product concept | What problem matters? | **Why** → What → How (deferred to later) |
+| Product spec | What are we building, and where does it stop? | **What** → Why → How |
+| Design spec | What does it look like and how does it behave? | **What** → How → Why |
+| Decision record | Why this call, and what are we committing to? | **Why** → What → How → Consequences |
+| Build card / engineering design | What changes, and how? | **What** → How → Why |
+| Strategy / vision | Why now, and what's the move? | **Why** → What → How |
+
+**How to apply.** The positioning sentence at the top (§6.1) still leads — it names what the document is regardless of type. The *drill-down ordering below* the summary follows the table. A decision record that puts Consequences before Rationale buries the lede; a product spec that opens with mechanism before scope loses the reader.
+
+**When the type is ambiguous**, pick the document's *primary reader need*. A hybrid strategy-plus-spec document prioritizes by whichever reader is load-bearing for the next action.
+
 ---
 
 ## 7. Voice and AI smell
