@@ -2,25 +2,25 @@
 
 > Single source of truth for prose output rules across gOS. Extends [coding-style.md](./coding-style.md). Derived from FP-OS K3, K5, K6, K8. The style file [`output-styles/direct-response.md`](../../output-styles/direct-response.md) is a projection — it points here.
 
-**Covers:** situation-to-rule index · response prose (§1–§5 + §5.5) · artifact prose (§6) · voice + AI smell (§7) · enforcement (§Enforcement).
+**Covers:** situation-to-rule index · response prose (sections 1 through 5.5) · artifact prose (section 6) · voice and AI smell (section 7) · enforcement.
 
-## §0 Situation → rule index (start here)
+## 0. Situation → rule index (start here)
 
 | Situation | Rule that fires |
 |---|---|
-| Writing a chat reply (yes/no, explanation, status) | §1 Mechanism-first |
-| Reply covers ≥ 2 topics or ≥ 8 lines | §1 + §1.1 Outline after mechanism |
-| Reply lists options or tradeoffs | §2 Invariants before variants |
-| Reply answers a decision question | §3 DEFER valid · §4 Signal calibration |
-| Reply reports on completed action (edits / commits / tool runs) | §5 SUMMARY block |
-| Reply presents ≥ 3 ranked picks + asks for a decision | §5.5 Multi-option advisory close |
-| Producing a file (spec / memo / decision / build card / strategy) | §6 Artifact discipline (all 9 subsections) |
-| Checking drift, AI smell, voice | §7 Voice and AI smell |
-| Wiring a new rule into tests / hooks / CI | §Enforcement |
+| Writing a chat reply (yes/no, explanation, status) | Mechanism-first |
+| Reply covers ≥ 2 topics or ≥ 8 lines | Mechanism-first + Outline after mechanism |
+| Reply lists options or tradeoffs | Invariants before variants |
+| Reply answers a decision question | DEFER is a valid close · Signal calibration |
+| Reply reports on completed action (edits / commits / tool runs) | SUMMARY block |
+| Reply presents ≥ 3 ranked picks + asks for a decision | Multi-option advisory close |
+| Producing a file (spec / memo / decision / build card / strategy) | Artifact discipline (all subsections) |
+| Checking drift, AI smell, voice | Voice and AI smell |
+| Wiring a new rule into tests / hooks / CI | Enforcement |
 
-Atomic replies (one-line yes/no / single fact / status check) skip §1.1, §5, §5.5. One-off scratch files skip §6.
+Atomic replies (one-line yes/no / single fact / status check) skip Outline, SUMMARY, and Multi-option close. One-off scratch files skip Artifact discipline.
 
-**Sections 1–5.5 govern *response prose* (agent replies).** **Section 6 governs *artifact prose* (files gOS produces).** Apply where they bite.
+**Sections 1 through 5.5 govern *response prose* (agent replies).** **Section 6 governs *artifact prose* (files gOS produces).** Apply where they bite.
 
 ## 1. Mechanism-first
 
@@ -37,7 +37,7 @@ For any response covering **≥2 distinct topics** OR running **≥8 lines**, th
 
 - **Form:** `**Covers:** <topic a> · <topic b> · <topic c>` — or a short bulleted outline when the sections are deeper.
 - **Placement:** immediately after the mechanism sentence, before any table or drill-down.
-- **Purpose:** Gary decides in one glance whether to read through or jump to a section. Mirrors §6.1 (artifact positioning + outline) for responses.
+- **Purpose:** Gary decides in one glance whether to read through or jump to a section. Mirrors the positioning-and-outline rule for artifacts.
 
 **Exempt:** Atomic (yes/no / single fact / status check) and Q&A responses ≤ 7 lines — mechanism sentence is the whole answer, outline would inflate it.
 
@@ -50,7 +50,7 @@ For any response covering **≥2 distinct topics** OR running **≥8 lines**, th
 
 Hard constraints first, weighted trade-offs second. Never mixed in one table.
 
-Mixing invariants and variants is FP-OS §3.1's most common decision failure: lets you rationalise past a deal-breaker, or kill a good option for missing a nice-to-have. Applies to `/review` findings, `/think decide` options, `/design card` acceptance criteria, `/build` DoD lists.
+Mixing invariants and variants is the most common decision failure in the FP-OS decision protocol: lets you rationalise past a deal-breaker, or kill a good option for missing a nice-to-have. Applies to `/review` findings, `/think decide` options, `/design card` acceptance criteria, `/build` DoD lists.
 
 ## 3. DEFER is a valid close
 
@@ -109,7 +109,7 @@ Reply with `A`, `B`, or `C: <your list>`.
 
 ## 6. Artifact discipline (files gOS produces)
 
-Every artifact — spec, build card, refine output, synthesis doc — must follow seven rules. Reference target: [first_principles_operating_system_lean.md](../../../../first_principles_operating_system_lean.md) — table-first, narrative-stitched, plain-English, outline on top, action-anchor at the bottom.
+Every artifact — spec, build card, refine output, synthesis doc — must follow the rules in this section. Reference target: [first_principles_operating_system_lean.md](../../../../first_principles_operating_system_lean.md) — table-first, narrative-stitched, plain-English, outline on top, action-anchor at the bottom.
 
 ### 6.1 Open with positioning and outline
 
@@ -128,6 +128,8 @@ In prose, use descriptive names. Index codes belong in tables for cross-referenc
 
 Industry-standard trader terms — volatility, funding, basis, drawdown, leverage, stop, target — stay as-is. Internal index systems (P1–P13, A1–A14, T-parameters) are for engineering traceability, not reader comprehension.
 
+**Section-sigil ban.** Do not use the `§` section-sign in reader-facing artifacts under `specs/` or `outputs/think/`. It is legal/academic shorthand that reads as jargon to the retail audience and forces the reader to map a number to a heading. Use the heading name directly — the heading carries the reference. The mechanical linter rejects any `§\d` pattern in spec prose (see Enforcement).
+
 ### 6.3 Cap meta-content at five percent of lines
 
 Changelog, version-delta, red-team log, cycle history, process artifact pointers — useful for traceability, corrosive in the main body. Consolidate into one appendix at the end. No parallel history sections.
@@ -138,7 +140,7 @@ The 5% cap applies to the main body. A document whose *subject* is version histo
 
 No "(NEW in vX.Y)" or "(was vX.Y Step N)" annotations inside substantive sections. These are notes for the author reviewing their diff, not for the reader.
 
-Version context lives in the single appendix from §6.3. A main-body reader should not need to know what changed between versions to understand the current version.
+Version context lives in the single appendix from the meta-content cap rule above. A main-body reader should not need to know what changed between versions to understand the current version.
 
 ### 6.5 Keep version metadata internally consistent
 
@@ -178,116 +180,31 @@ reader-output: <what the reader produces after reading — one phrase>
 | `build-card` | What changes, and how? | **What** → How → Why |
 | `strategy` | Why now, and what's the move? | **Why** → What → How |
 
-**How to apply.** The positioning sentence at the top (§6.1) still leads — it names what the document is regardless of type. The *drill-down ordering below* the summary follows the table. A decision record that puts Consequences before Rationale buries the lede; a product spec that opens with mechanism before scope loses the reader.
+**How to apply.** The positioning sentence at the top still leads — it names what the document is regardless of type. The *drill-down ordering below* the summary follows the table. A decision record that puts Consequences before Rationale buries the lede; a product spec that opens with mechanism before scope loses the reader.
 
 **When the type is ambiguous**, pick the document's *primary reader need* and commit. A hybrid strategy-plus-spec document declares whichever type is load-bearing for the next action; the other concerns are cross-referenced, not merged.
 
 **Mechanical check:** `tests/hooks/artifact-discipline.bats` reads `doc-type:` from frontmatter and verifies the first three H2s match the expected order keywords for that type. Files ≤ 300 lines are exempt from the frontmatter requirement.
 
-### 6.9 Visual and structural aids
+### 6.9 Visual and structural aids (summary)
 
-Reading fatigue comes from dense prose carrying load that a visual aid would carry better. Every artifact longer than fifty lines has opportunities where structure compresses what prose would belabour. This section names the available tools, when each one earns its place, and the reach-for rule.
+Reading fatigue comes from dense prose carrying load that a visual aid would carry better. The available tools — tables, numbered lists, ASCII flow diagrams, Mermaid flowcharts / sequence / state / mindmap diagrams, two-by-two matrices, admonitions, code blocks, status markers, footnotes — each earn their place under specific conditions. gOS supports Mermaid in modern viewers; keep a one-line ASCII fallback for legacy renderers.
 
-#### 6.9.1 The catalog
+**Reach-for rule:** if a reader would grasp something faster from a visual than a paragraph, and the visual fits in ten ASCII lines, include the ASCII version. If the visual needs more than ten lines of structure, use Mermaid with a one-line ASCII summary alongside.
 
-| Tool | What it carries | Use when | Avoid when |
-|---|---|---|---|
-| **Table** | Parallel comparison across shared columns | Rows have shared attributes; columns earn their width | Every cell in column 1 is a label for column 2 — rewrite as key-value prose |
-| **Numbered list** | Sequence where order matters | Process steps, ranked priorities, ordered dependencies | Items are parallel but unordered (use bullets or table) |
-| **Bulleted list** | Truly parallel items, order-agnostic | Three to seven items of the same kind | Items differ in kind (use table); order matters (number them) |
-| **Definition list** | Term-to-definition pairs | Glossaries, primitive names, acronym expansions | Prose would flow (use sentences) |
-| **ASCII flow diagram** | Lightweight process, decision tree, branching | Three to ten nodes, must render in any viewer | Ten-plus nodes (move to Mermaid) |
-| **Mermaid flowchart** | Process with branches, rendered in-viewer | Modern viewer renders it; logic has more than ten nodes | Legacy viewer strips the code block (keep ASCII fallback) |
-| **Mermaid sequence diagram** | Interactions between two or more parties over time | Protocol, handshake, API call flow between actors | Single-actor process (use flowchart) |
-| **Mermaid state diagram** | States and transitions | Finite state machines, workflow states, session lifecycle | Continuous process (use flowchart) |
-| **Mermaid mindmap** | Hierarchical decomposition of a topic | Discovery brainstorm, domain decomposition | Linear narrative (use prose) |
-| **Two-by-two matrix** | Categorization by two dimensions | Impact × effort, invariant × variant, decisive × suggestive, urgency × importance | One dimension dominates (use list or score) |
-| **Tree / hierarchy** | Top-down decomposition | Org charts, file trees, dependency stacks | Lateral relations (use graph) |
-| **Admonition (NOTE / WARN / TIP)** | Exceptional callout inline | Cross-cutting warning, reader trap, important caveat | Routine information (integrate as prose) |
-| **Code block (triple-backtick)** | Exact syntax, commands, config | Shell commands, JSON, YAML, file excerpts, sample output | Prose example (use inline backticks) |
-| **Inline code (backticks)** | File paths, variables, keywords | Single-token references in running prose | Multi-line content (use code block) |
-| **Bold emphasis** | Scan anchors for first-read | Key terms, final verdicts, "load-bearing" names | Every paragraph (noise) |
-| **Status markers (✓ ✗ ⚠ 🔴 🟠 🟡 🟢)** | Binary or tiered state in tables | Scorecards, compliance tables, severity columns | Body prose (distracting) |
-| **Footnotes and appendix** | Sources, deep detail, trace material | Research citations, cycle-by-cycle history | Content the main reader needs (move up) |
-
-#### 6.9.2 The reach-for rule
-
-If a reader would grasp something faster from a visual than a paragraph, and the visual fits in ten ASCII lines, include the ASCII version. If the visual needs more than ten lines of structure, use Mermaid and keep a one-line ASCII summary alongside as a fallback for renderers that strip the code block.
-
-A concrete example of the reach-for test: a decision with three branches and five terminal outcomes is faster read as a small ASCII tree than as three paragraphs of "if X, then Y; if not X and Z, then W." A decision with two branches is faster read as prose.
-
-#### 6.9.3 Mermaid support in gOS
-
-gOS artifacts can use Mermaid code blocks. Modern viewers render them — GitHub, GitLab, VSCode, most IDEs, Claude Code. For the viewer-strips-it case, include a short ASCII or prose summary alongside the Mermaid block so readers without rendering still understand the shape.
-
-**Preferred Mermaid types for gOS artifacts:**
-
-| Type | Use for |
-|---|---|
-| `flowchart` | Decision logic, branching processes, pipelines |
-| `sequenceDiagram` | Actor interactions, API call sequences, protocol handshakes |
-| `stateDiagram-v2` | State machines, workflow states, session lifecycle |
-| `mindmap` | Discovery brainstorms, domain decomposition, concept maps |
-
-Avoid `gantt` (over-structured for spec prose), `pie` (data belongs in a real chart), `er` (entity relations belong in a schema file).
-
-#### 6.9.4 Anti-patterns
-
-- **Table of tables.** Nested tables are unreadable; split into parallel sections instead.
-- **Emoji decoration.** One or two scan markers per document is fine; emoji in every heading is noise.
-- **Images and PNGs in specs.** Can't lint, can't diff, break in plain-text viewers. Use Mermaid or ASCII.
-- **Animated GIFs.** Distraction from spec content. If a visual demo matters, link to a video file in an appendix.
-- **Flowchart where prose would flow.** A three-step process is prose; a ten-step branching process is a flowchart.
-- **Bullets where a table earns columns.** If every bullet has the same sub-structure, it wants to be a table.
+**Full catalog and anti-patterns** (tables, Mermaid preferences, anti-patterns like table-of-tables, emoji decoration, images-in-specs): [`output-discipline-visuals.md`](./output-discipline-visuals.md). Load the companion when planning the visual shape of a section.
 
 ---
 
-## 7. Voice and AI smell
+## 7. Voice and AI smell (summary)
 
-Writing produced or heavily edited by large language models tends to carry a specific set of tells. They aren't always wrong in isolation, but at density they mark the text as machine-generated and trigger the reader's lowered-trust reflex. Section 7 codifies the tells as a lint surface so that gOS prose — both response and artifact — stays on the human side of the line.
+LLM-authored or LLM-edited prose carries specific tells that at density trigger the reader's lowered-trust reflex. Twelve named anti-patterns: em-dash sandwich, padding openers ("It's worth noting that…"), bulleted lists where prose would flow, symmetric triples, "not X but Y" crutch, summary-announcement openers ("In essence,"), over-qualification, pivot clusters, self-congratulatory close, meta-about-meta, faux-specific vagueness, symmetric section intros/outros.
 
-### 7.1 Twelve named anti-patterns
+**Underlying pattern:** every tell is padding that masquerades as structure. The test: read the sentence without the announcing phrase — if it still makes sense, the phrase was smell.
 
-| # | Pattern | Why it reads as machine |
-|---|---|---|
-| 1 | **Em-dash sandwich** — phrases offset by em-dashes at high density | Models reach for em-dashes because they're grammatically flexible; humans vary punctuation more |
-| 2 | **Padding openers** — "It's worth noting that…", "Importantly…", "Let's dive into…" | Announce the next sentence rather than writing it |
-| 3 | **Bulleted lists where prose would flow** | Bullets look structured; they hide missing logic |
-| 4 | **Symmetric triples** — "X, Y, and Z" at every abstraction level | Training data is heavy on three-member lists; humans vary list length more |
-| 5 | **"Not X but Y" rhetorical crutch** | Once per document is insight; four times is tic |
-| 6 | **Summary-announcement openers** — "In essence,", "Ultimately,", "At its core," | Announce a summary instead of summarizing |
-| 7 | **Over-qualification** — "This might be considered a form of X" instead of "This is X" | Models hedge to reduce embarrassment; humans commit |
-| 8 | **Pivot cluster** — "However, on the other hand, that said…" | Hedging without commitment; often signals no chosen side |
-| 9 | **Self-congratulatory close** — "To recap what we've accomplished…" | Readers trust themselves to have read the document |
-| 10 | **Meta-about-meta** — "This document sets out to document…" | Starts a level above the substance |
-| 11 | **Faux-specific vagueness** — "several key insights" with no number | Specificity requires commitment; hedging stays safe |
-| 12 | **Symmetric section intros and outros** — "In this section we examine…" paired with "Having established…" | Feels structured; reads as filler |
+**Quantitative caps (warn-level):** em-dash density > 1 per 25 words; any padding-opener phrase appearing ≥ 3 times outside quoted lists; ≥ 3 consecutive bullet-only sections with no prose between.
 
-### 7.2 The underlying pattern
-
-Every tell above is padding that masquerades as structure. The model is uncertain about the shape of the next sentence, so it reaches for a phrase that signals "structure is coming." Real human writing compresses — when the structure is clear, it doesn't need announcing.
-
-**Test:** read the sentence without the announcing phrase. If it still makes sense, the phrase was smell.
-
-### 7.3 Quantitative caps (warn-level)
-
-Voice is harder to mechanize than structure, so these caps warn rather than block. They flag drift; human judgment decides whether the instance is smell or craft.
-
-| Metric | Warn threshold | Rationale |
-|---|---|---|
-| Em-dash density | > 1 per 25 words across the whole document | Calibrated against the lean First Principles OS reference (1 per 44 words — intentional stylistic compression). Genuine em-dash sandwich abuse runs at 1 per 15 words or worse. Threshold set to 25 so reference-style prose passes and abuse fails clearly |
-| Padding-opener frequency | Any single phrase from §7.1 row 2 or 6 appearing ≥ 3 times outside quoted lists | Once is voice; three times is tic |
-| Consecutive bulleted sections | ≥ 3 consecutive sections that are bullet-only, no prose | Prose-table weave (§6.6) requires narrative between structure |
-
-### 7.4 What doesn't count as smell
-
-Long sentences aren't AI smell. Technical vocabulary isn't AI smell. Tables aren't AI smell. Repetition for emphasis, carefully chosen, isn't AI smell. Em-dashes used deliberately for parenthetical asides aren't smell — the cap in §7.3 fires only at density that indicates reach-for-convenience use.
-
-The twelve patterns in §7.1 are specifically moves that *substitute for* the harder work of thinking through a sentence's shape.
-
-### 7.5 Exemption: when naming the pattern is the point
-
-A document that *lists* the anti-patterns (like this section, or a spec-writing guide) will mention the phrases to avoid. Linter implementations must exclude lines inside quoted lists, tables of anti-patterns, or code blocks from the padding-frequency count.
+**Full catalog, rationale per pattern, and linter exemptions** (lists of anti-patterns in spec-writing guides are exempt from the padding-frequency count): [`output-discipline-voice.md`](./output-discipline-voice.md). Load the companion when auditing voice drift or wiring a new voice-related lint.
 
 ---
 
@@ -295,15 +212,17 @@ A document that *lists* the anti-patterns (like this section, or a spec-writing 
 
 | Rule surface | Test / gate | What it checks |
 |---|---|---|
-| §1 Mechanism-first, §1.1 Outline, §5 SUMMARY, §5 NEXT MOVE format, §7.3 em-dash density | [`tests/hooks/response-discipline.bats`](../../tests/hooks/response-discipline.bats) | Greps fixture response turns for preamble openers, Covers line, full SUMMARY block (DONE/TESTED/REMAINING/NEXT MOVE), NEXT MOVE ≤25 words + `?`, em-dash density ≥ 1 per 25 words |
-| §6.1 Positioning opener (positive + negative) | [`tests/hooks/artifact-discipline.bats`](../../tests/hooks/artifact-discipline.bats) `_check_opens_with_positioning` | Rejects changelog-first; requires either italic positioning sentence OR ≥40-char prose line with positioning keyword |
-| §6.3 Meta-content cap | `artifact-discipline.bats` `_check_meta_content_cap` | ≤ 5% of main-body lines in changelog/version/red-team sections |
-| §6.4 No version markers in main body | `artifact-discipline.bats` `_check_no_main_body_version_markers` | `(NEW in vX.Y)` and `(was vX.Y Step N)` markers must live only in Appendix |
-| §6.5 Metadata consistent | `artifact-discipline.bats` `_check_metadata_consistent` | Filename version == H1 version |
-| §6.8 Doc-type ordering | `artifact-discipline.bats` `_check_doc_type_ordering` | Artifacts >300 lines must declare `doc-type:` frontmatter; first three H2s must match expected keywords for that type |
-| §7.3 Em-dash density, padding-phrase frequency (artifacts) | `artifact-discipline.bats` `_check_em_dash_density`, `_check_padding_phrase_frequency` | Warn caps on voice drift |
-| §2 invariants/variants split, §3 DEFER valid, §4 signal calibration, PASS/KILL/DEFER | `/review` terminal verdicts, `/think decide` 4-question gate | LLM self-check against rule wording (no mechanical linter yet — see §Enforcement gaps) |
-| §6 overall | `/refine` dimension 6 (reader friction) of 6-dim rubric | A cycle that regresses dim 6 fails convergence |
+| Mechanism-first, Outline-after-mechanism, SUMMARY, NEXT MOVE format, em-dash density (responses) | [`tests/hooks/response-discipline.bats`](../../tests/hooks/response-discipline.bats) | Greps fixture response turns for preamble openers, Covers line, full SUMMARY block (DONE/TESTED/REMAINING/NEXT MOVE), NEXT MOVE ≤25 words + `?`, em-dash density ≥ 1 per 25 words |
+| Positioning opener (artifacts) | [`tests/hooks/artifact-discipline.bats`](../../tests/hooks/artifact-discipline.bats) `_check_opens_with_positioning` | Rejects changelog-first; requires either italic positioning sentence OR ≥40-char prose line with positioning keyword |
+| Meta-content cap | `artifact-discipline.bats` `_check_meta_content_cap` | ≤ 5% of main-body lines in changelog/version/red-team sections |
+| No version markers in main body | `artifact-discipline.bats` `_check_no_main_body_version_markers` | `(NEW in vX.Y)` and `(was vX.Y Step N)` markers must live only in Appendix |
+| Metadata consistent | `artifact-discipline.bats` `_check_metadata_consistent` | Filename version == H1 version |
+| Doc-type ordering | `artifact-discipline.bats` `_check_doc_type_ordering` | Artifacts >300 lines must declare `doc-type:` frontmatter; first three H2s must match expected keywords for that type |
+| Section-sigil ban in specs | `artifact-discipline.bats` `_check_no_section_sigils` | Artifacts under `specs/` or `outputs/think/` must not contain `§\d` patterns. Forces descriptive cross-references over legal-style numbering. |
+| AC invariants/variants split | `artifact-discipline.bats` `_check_ac_invariants_variants_split` | Specs with Acceptance Criteria must split it into distinct Invariants (binary) and Variants (weighted) subsections. Promotes the invariants-before-variants rule from LLM self-judgment to a mechanical gate. |
+| Em-dash density, padding-phrase frequency (artifacts) | `artifact-discipline.bats` `_check_em_dash_density`, `_check_padding_phrase_frequency` | Warn caps on voice drift |
+| DEFER valid, signal calibration, PASS/KILL/DEFER (non-AC decisions) | `/review` terminal verdicts, `/think decide` 4-question gate | LLM self-check against rule wording (no mechanical linter yet — see enforcement gaps) |
+| Artifact discipline overall | `/refine` reader-friction dimension of the quality rubric | A cycle that regresses reader-friction fails convergence |
 | Style drift (all) | `/evolve audit` | `rework` signal with `output-discipline` context |
 
-**Enforcement gaps (tracked):** §2 invariants/variants mix, §3 DEFER substitution for KILL, §4 signal mis-tagging, §6.2 index-code-in-prose, and §6.6 prose-table weave are currently LLM self-judgment only. Promote to mechanical checks when a `/evolve audit` surfaces recurring drift in any of them.
+**Enforcement gaps (tracked):** DEFER substitution for KILL, signal mis-tagging, index-code-in-prose, and prose-table weave are currently LLM self-judgment only. The AC invariants/variants mix was promoted to mechanical on 2026-04-19. Promote the remaining gaps to mechanical checks when an `/evolve audit` surfaces recurring drift in any of them.

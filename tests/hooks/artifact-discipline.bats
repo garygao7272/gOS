@@ -939,3 +939,195 @@ _check_rule_form() {
   } > "$d/synthesis-rule.md"
   _check_rule_form "$d/synthesis-rule.md"
 }
+
+# Check section-sigil ban — artifacts under specs/ or outputs/think/ must not
+# contain §\d patterns. Forces descriptive cross-references over legal-style
+# numbering. Internal rule files, commands, and tests are exempt (author-facing).
+_check_no_section_sigils() {
+  local file="$1"
+  # Only enforce on reader-facing artifact paths
+  case "$file" in
+    */specs/*|*/outputs/think/*) ;;
+    *) return 0 ;;
+  esac
+  # Fail if any §<digit> pattern appears in the file
+  if grep -qE '§[0-9]' "$file"; then
+    return 1
+  fi
+  return 0
+}
+
+@test "section-sigil ban: spec with section sigil cross-reference FAILS" {
+  local d="$FIXTURES/sigil-fail/specs"
+  rm -rf "$FIXTURES/sigil-fail" && mkdir -p "$d"
+  {
+    echo "# Test Spec"
+    echo
+    echo "*A product spec that produces an engineer handoff and exists because the upstream decision landed.*"
+    echo
+    echo "## Overview"
+    echo "Per §6.1 the positioning sentence is required."
+  } > "$d/test-spec.md"
+  run _check_no_section_sigils "$d/test-spec.md"
+  [ "$status" -eq 1 ]
+}
+
+@test "section-sigil ban: spec without section sigils PASSES" {
+  local d="$FIXTURES/sigil-pass/specs"
+  rm -rf "$FIXTURES/sigil-pass" && mkdir -p "$d"
+  {
+    echo "# Test Spec"
+    echo
+    echo "*A product spec that produces an engineer handoff and exists because the upstream decision landed.*"
+    echo
+    echo "## Overview"
+    echo "The positioning sentence is required. See the positioning-and-outline rule."
+  } > "$d/test-spec.md"
+  run _check_no_section_sigils "$d/test-spec.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "section-sigil ban: rule files and commands are EXEMPT" {
+  local d="$FIXTURES/sigil-exempt/rules/common"
+  rm -rf "$FIXTURES/sigil-exempt" && mkdir -p "$d"
+  {
+    echo "# Output Discipline"
+    echo
+    echo "Authors reference §1 through §7 here — internal shorthand OK."
+  } > "$d/output-discipline.md"
+  run _check_no_section_sigils "$d/output-discipline.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "section-sigil ban: outputs/think/ research artifacts fail on section sigil" {
+  local d="$FIXTURES/sigil-think-fail/outputs/think/research"
+  rm -rf "$FIXTURES/sigil-think-fail" && mkdir -p "$d"
+  {
+    echo "# Research Memo"
+    echo
+    echo "*A research memo that produces a ranked decision and exists because of the recent Arx forensics.*"
+    echo
+    echo "## Findings"
+    echo "Per §6.1, the opener must..."
+  } > "$d/memo.md"
+  run _check_no_section_sigils "$d/memo.md"
+  [ "$status" -eq 1 ]
+}
+
+# Check AC invariants/variants split — any spec with an Acceptance Criteria
+# section must split it into distinct Invariants and Variants subsections.
+# Promotes the "invariants before variants" rule from LLM self-judgment to a
+# mechanical gate. Applies to product-spec / design-spec / build-card / strategy.
+_check_ac_invariants_variants_split() {
+  local file="$1"
+  # Only applies to specs and design outputs
+  case "$file" in
+    */specs/*|*/outputs/think/decide/*) ;;
+    *) return 0 ;;
+  esac
+  # Detect Acceptance Criteria section (case-insensitive H2 or H3)
+  if ! grep -qiE '^#{2,3}[[:space:]]+(acceptance criteria|acceptance|success criteria)' "$file"; then
+    return 0  # no AC section, nothing to enforce
+  fi
+  # AC section exists — require both Invariants and Variants subsections (case-insensitive,
+  # any heading depth, or bold emphasis as subsection anchor)
+  local has_invariants=0
+  local has_variants=0
+  if grep -qiE '(^#{2,4}[[:space:]]+invariants?\b|^\*\*invariants?\*\*)' "$file"; then
+    has_invariants=1
+  fi
+  if grep -qiE '(^#{2,4}[[:space:]]+variants?\b|^\*\*variants?\*\*)' "$file"; then
+    has_variants=1
+  fi
+  if [[ "$has_invariants" -eq 1 && "$has_variants" -eq 1 ]]; then
+    return 0
+  fi
+  return 1
+}
+
+@test "AC split: spec with AC but no invariants/variants split FAILS" {
+  local d="$FIXTURES/ac-flat/specs"
+  rm -rf "$FIXTURES/ac-flat" && mkdir -p "$d"
+  {
+    echo "# Test Spec"
+    echo
+    echo "*A product spec.*"
+    echo
+    echo "## Acceptance Criteria"
+    echo "- User can log in"
+    echo "- Page loads in under 2 seconds"
+    echo "- Error messages are friendly"
+  } > "$d/flat-ac.md"
+  run _check_ac_invariants_variants_split "$d/flat-ac.md"
+  [ "$status" -eq 1 ]
+}
+
+@test "AC split: spec with AC split into Invariants + Variants PASSES" {
+  local d="$FIXTURES/ac-split/specs"
+  rm -rf "$FIXTURES/ac-split" && mkdir -p "$d"
+  {
+    echo "# Test Spec"
+    echo
+    echo "*A product spec.*"
+    echo
+    echo "## Acceptance Criteria"
+    echo
+    echo "**Invariants** (binary pass/fail):"
+    echo "- User can log in"
+    echo "- No data loss on refresh"
+    echo
+    echo "**Variants** (weighted):"
+    echo "- Page loads in under 2 seconds"
+    echo "- Error messages are friendly"
+  } > "$d/split-ac.md"
+  run _check_ac_invariants_variants_split "$d/split-ac.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "AC split: spec with no AC section is EXEMPT" {
+  local d="$FIXTURES/ac-none/specs"
+  rm -rf "$FIXTURES/ac-none" && mkdir -p "$d"
+  {
+    echo "# Test Spec"
+    echo
+    echo "*A research memo with no acceptance criteria.*"
+    echo
+    echo "## Findings"
+    echo "Three things matter."
+  } > "$d/no-ac.md"
+  run _check_ac_invariants_variants_split "$d/no-ac.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "AC split: AC section with H3 Invariants/Variants headings PASSES" {
+  local d="$FIXTURES/ac-h3/specs"
+  rm -rf "$FIXTURES/ac-h3" && mkdir -p "$d"
+  {
+    echo "# Test Spec"
+    echo
+    echo "*A design spec.*"
+    echo
+    echo "## Acceptance Criteria"
+    echo
+    echo "### Invariants"
+    echo "- Deterministic output"
+    echo
+    echo "### Variants"
+    echo "- Sub-50ms response time target"
+  } > "$d/h3-ac.md"
+  run _check_ac_invariants_variants_split "$d/h3-ac.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "AC split: files outside specs/ are EXEMPT" {
+  local d="$FIXTURES/ac-outside"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "# Commands doc"
+    echo
+    echo "## Acceptance Criteria"
+    echo "- Flat list — OK because not in specs/"
+  } > "$d/commands.md"
+  run _check_ac_invariants_variants_split "$d/commands.md"
+  [ "$status" -eq 0 ]
+}

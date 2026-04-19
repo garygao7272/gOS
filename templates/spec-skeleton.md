@@ -103,4 +103,4 @@ generated: <YYYY-MM-DD>
 
 ## Appendix — version history and provenance
 
-<All meta-content lives here: changelog, upstream research links, cycle history. Keep main body clean per §6.3 (≤5% meta-content cap).>
+<All meta-content lives here: changelog, upstream research links, cycle history. Keep main body clean per the meta-content cap rule (≤5% of lines).>
