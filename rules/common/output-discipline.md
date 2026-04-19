@@ -1,8 +1,26 @@
 # Output Discipline
 
-> Extends [coding-style.md](./coding-style.md) for prose output — command responses, verdicts, and the files gOS produces (specs, build cards, refine outputs, synthesis docs). Derived from FP-OS K3, K5, K6, K8.
+> Single source of truth for prose output rules across gOS. Extends [coding-style.md](./coding-style.md). Derived from FP-OS K3, K5, K6, K8. The style file [`output-styles/direct-response.md`](../../output-styles/direct-response.md) is a projection — it points here.
 
-**Sections 1–5 govern *response prose* (agent replies).** **Section 6 governs *artifact prose* (files gOS produces).** Apply where they bite; atomic yes/no answers skip 1–5; one-off scratch files skip 6.
+**Covers:** situation-to-rule index · response prose (§1–§5 + §5.5) · artifact prose (§6) · voice + AI smell (§7) · enforcement (§Enforcement).
+
+## §0 Situation → rule index (start here)
+
+| Situation | Rule that fires |
+|---|---|
+| Writing a chat reply (yes/no, explanation, status) | §1 Mechanism-first |
+| Reply covers ≥ 2 topics or ≥ 8 lines | §1 + §1.1 Outline after mechanism |
+| Reply lists options or tradeoffs | §2 Invariants before variants |
+| Reply answers a decision question | §3 DEFER valid · §4 Signal calibration |
+| Reply reports on completed action (edits / commits / tool runs) | §5 SUMMARY block |
+| Reply presents ≥ 3 ranked picks + asks for a decision | §5.5 Multi-option advisory close |
+| Producing a file (spec / memo / decision / build card / strategy) | §6 Artifact discipline (all 9 subsections) |
+| Checking drift, AI smell, voice | §7 Voice and AI smell |
+| Wiring a new rule into tests / hooks / CI | §Enforcement |
+
+Atomic replies (one-line yes/no / single fact / status check) skip §1.1, §5, §5.5. One-off scratch files skip §6.
+
+**Sections 1–5.5 govern *response prose* (agent replies).** **Section 6 governs *artifact prose* (files gOS produces).** Apply where they bite.
 
 ## 1. Mechanism-first
 
@@ -59,6 +77,36 @@ When a response takes action (ran tools, edited files, shipped commits), close w
 
 **Supersedes** the prior DID / VERIFIED / REMAINING schema from the base output style. Legacy labels map: DID → DONE, VERIFIED → TESTED.
 
+## 5.5 Multi-option advisory close (ranked picks + decision ask)
+
+When a response presents ≥ 3 ranked options AND asks Gary to decide, close with three H2s in this order:
+
+```
+## The deliverable — <N> ranked <picks/options/improvements>
+| # | Pick | What it changes | Leverage | Effort | (optional: Source) |
+
+## Why I suggested <the subset I did>   ← only if recommending a subset rather than all
+<sequencing, coverage, leverage-cliff reasoning — 2-4 sentences>
+
+## The decision you need to make
+- **A.** <option A — full or default>
+- **B.** <option B — recommended subset>
+- **C.** <free-form / custom>
+
+Reply with `A`, `B`, or `C: <your list>`.
+```
+
+**Why this shape:** a research/advisory response fails when Gary has to re-read to separate *the output* from *my opinion* from *what I need from him*. Three H2s force the separation: deliverable is neutral, rationale is opinion, decision is explicit. The lettered options collapse decision latency to one keystroke.
+
+**Rules:**
+
+- Full ranked list is the neutral deliverable. Don't hide options by recommending only the top N in the table itself.
+- If you recommend a subset, say so in its own H2 with explicit sequencing / coverage / leverage-cliff reasoning — not a parenthetical after the table.
+- Decision options always include a "free form" C so Gary can override without inventing a new format.
+- Atomic advisory (one recommendation, one decision) skips this shape — use standard SOLUTIONS instead.
+
+**Triggers:** `/think research` synthesis, `/review` verdicts with ranked findings, `/refine` multi-cycle recommendations, any advisory response where the user needs to pick from a ranked set before work proceeds.
+
 ## 6. Artifact discipline (files gOS produces)
 
 Every artifact — spec, build card, refine output, synthesis doc — must follow seven rules. Reference target: [first_principles_operating_system_lean.md](../../../../first_principles_operating_system_lean.md) — table-first, narrative-stitched, plain-English, outline on top, action-anchor at the bottom.
@@ -110,19 +158,31 @@ Close with something the reader can operate on — a quick-reference card, a wor
 
 Every prose artifact names why, what, and how. All three are always present; the **order** serves the reader's first question, which differs by document type.
 
-| Document type | Reader's first question | Typical order |
+**Every artifact >300 lines declares its type in frontmatter.** Missing `doc-type:` fails the quality gate — it forces the author to choose before writing, and it lets mechanical linters check the ordering.
+
+```yaml
+---
+doc-type: research-memo | discovery | product-spec | design-spec | decision-record | build-card | strategy
+audience: <primary reader — one phrase>
+reader-output: <what the reader produces after reading — one phrase>
+---
+```
+
+| `doc-type:` value | Reader's first question | Typical order |
 |---|---|---|
-| Research memo | What did we find? | **What** → Why → How |
-| Discovery / product concept | What problem matters? | **Why** → What → How (deferred to later) |
-| Product spec | What are we building, and where does it stop? | **What** → Why → How |
-| Design spec | What does it look like and how does it behave? | **What** → How → Why |
-| Decision record | Why this call, and what are we committing to? | **Why** → What → How → Consequences |
-| Build card / engineering design | What changes, and how? | **What** → How → Why |
-| Strategy / vision | Why now, and what's the move? | **Why** → What → How |
+| `research-memo` | What did we find? | **What** → Why → How |
+| `discovery` | What problem matters? | **Why** → What → How (deferred to later) |
+| `product-spec` | What are we building, and where does it stop? | **What** → Why → How |
+| `design-spec` | What does it look like and how does it behave? | **What** → How → Why |
+| `decision-record` | Why this call, and what are we committing to? | **Why** → What → How → Consequences |
+| `build-card` | What changes, and how? | **What** → How → Why |
+| `strategy` | Why now, and what's the move? | **Why** → What → How |
 
 **How to apply.** The positioning sentence at the top (§6.1) still leads — it names what the document is regardless of type. The *drill-down ordering below* the summary follows the table. A decision record that puts Consequences before Rationale buries the lede; a product spec that opens with mechanism before scope loses the reader.
 
-**When the type is ambiguous**, pick the document's *primary reader need*. A hybrid strategy-plus-spec document prioritizes by whichever reader is load-bearing for the next action.
+**When the type is ambiguous**, pick the document's *primary reader need* and commit. A hybrid strategy-plus-spec document declares whichever type is load-bearing for the next action; the other concerns are cross-referenced, not merged.
+
+**Mechanical check:** `tests/hooks/artifact-discipline.bats` reads `doc-type:` from frontmatter and verifies the first three H2s match the expected order keywords for that type. Files ≤ 300 lines are exempt from the frontmatter requirement.
 
 ### 6.9 Visual and structural aids
 
@@ -233,9 +293,17 @@ A document that *lists* the anti-patterns (like this section, or a spec-writing 
 
 ## Enforcement
 
-- `/review` terminal verdicts checked against PASS/KILL/DEFER schema.
-- `/think spec` outputs checked for 7-primitive skeleton + invariant/variant criteria split + §6 artifact discipline (dimension 6 of the quality gate).
-- `/think decide` outputs checked for 4-question gate (invariants, variants, decisive, suggestive).
-- `/refine` cycles score artifact discipline as dimension 6 of the 6-dim rubric. A cycle that regresses dimension 6 fails convergence.
-- Style drift (topic-first openers, mixed invariant/variant tables, un-tagged signals, bloat in main body, version markers in substantive sections) = `/evolve audit` `rework` signal with `output-discipline` context.
-- Artifact-discipline smoke test: `tests/hooks/artifact-discipline.bats` — checks positioning opener, metadata consistency, meta-content cap, version-marker absence.
+| Rule surface | Test / gate | What it checks |
+|---|---|---|
+| §1 Mechanism-first, §1.1 Outline, §5 SUMMARY, §5 NEXT MOVE format, §7.3 em-dash density | [`tests/hooks/response-discipline.bats`](../../tests/hooks/response-discipline.bats) | Greps fixture response turns for preamble openers, Covers line, full SUMMARY block (DONE/TESTED/REMAINING/NEXT MOVE), NEXT MOVE ≤25 words + `?`, em-dash density ≥ 1 per 25 words |
+| §6.1 Positioning opener (positive + negative) | [`tests/hooks/artifact-discipline.bats`](../../tests/hooks/artifact-discipline.bats) `_check_opens_with_positioning` | Rejects changelog-first; requires either italic positioning sentence OR ≥40-char prose line with positioning keyword |
+| §6.3 Meta-content cap | `artifact-discipline.bats` `_check_meta_content_cap` | ≤ 5% of main-body lines in changelog/version/red-team sections |
+| §6.4 No version markers in main body | `artifact-discipline.bats` `_check_no_main_body_version_markers` | `(NEW in vX.Y)` and `(was vX.Y Step N)` markers must live only in Appendix |
+| §6.5 Metadata consistent | `artifact-discipline.bats` `_check_metadata_consistent` | Filename version == H1 version |
+| §6.8 Doc-type ordering | `artifact-discipline.bats` `_check_doc_type_ordering` | Artifacts >300 lines must declare `doc-type:` frontmatter; first three H2s must match expected keywords for that type |
+| §7.3 Em-dash density, padding-phrase frequency (artifacts) | `artifact-discipline.bats` `_check_em_dash_density`, `_check_padding_phrase_frequency` | Warn caps on voice drift |
+| §2 invariants/variants split, §3 DEFER valid, §4 signal calibration, PASS/KILL/DEFER | `/review` terminal verdicts, `/think decide` 4-question gate | LLM self-check against rule wording (no mechanical linter yet — see §Enforcement gaps) |
+| §6 overall | `/refine` dimension 6 (reader friction) of 6-dim rubric | A cycle that regresses dim 6 fails convergence |
+| Style drift (all) | `/evolve audit` | `rework` signal with `output-discipline` context |
+
+**Enforcement gaps (tracked):** §2 invariants/variants mix, §3 DEFER substitution for KILL, §4 signal mis-tagging, §6.2 index-code-in-prose, and §6.6 prose-table weave are currently LLM self-judgment only. Promote to mechanical checks when a `/evolve audit` surfaces recurring drift in any of them.

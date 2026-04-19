@@ -11,15 +11,85 @@ setup() {
 
 # ─── Helpers ──────────────────────────────────────────────────────────────
 
-# Check §6.1 — first content after H1 is positioning + outline (not changelog)
+# Check §6.1 — first content after H1 is positioning + outline (not changelog).
+# Enforces positive presence: must HAVE a positioning sentence, not just LACK a changelog.
 _check_opens_with_positioning() {
   local file="$1"
   local post_h1
   post_h1=$(awk '/^# /{found=1; next} found{print; if (NR > 20) exit}' "$file" | head -20)
-  # Must NOT start with a changelog header
+  # Negative: must not start with changelog header
   if echo "$post_h1" | grep -qiE '^## (what changed|changelog|version history|deprecated)'; then
     return 1
   fi
+  # Positive: first non-blank, non-frontmatter line after H1 must be either
+  #   (a) italic positioning sentence (*...*, ≥20 chars), or
+  #   (b) a ≥40-char prose line containing a positioning keyword
+  local first_content
+  first_content=$(echo "$post_h1" | awk 'NF{print; exit}')
+  [[ -z "$first_content" ]] && return 1  # empty after H1 — fail
+  # (a) italic line
+  if echo "$first_content" | grep -qE '^\*[^*]{20,}'; then
+    return 0
+  fi
+  # (b) prose line ≥40 chars with positioning keyword
+  local len=${#first_content}
+  if [[ "$len" -ge 40 ]] && echo "$first_content" | grep -qiE '\b(spec|memo|record|produces|outputs|decision|runtime|framework|guide|contract|rule|pipeline|protocol)\b'; then
+    return 0
+  fi
+  return 1
+}
+
+# Check §6.8 — doc-type frontmatter present on artifacts >300 lines,
+# and first three H2s match expected ordering for that type.
+_check_doc_type_ordering() {
+  local file="$1"
+  local total
+  total=$(wc -l < "$file" | tr -d ' ')
+  [[ "$total" -le 300 ]] && return 0  # short files exempt
+
+  # Extract doc-type from frontmatter (between first two --- lines)
+  local doc_type
+  doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file" || true)
+  [[ -z "$doc_type" ]] && return 1  # >300 lines and no doc-type = fail
+
+  # Extract first three H2 headings
+  local h2s
+  h2s=$(grep -m3 '^## ' "$file" | tr '\n' '|')
+
+  # Map doc-type → expected keywords in order (case-insensitive)
+  # Research memo: What (findings/result) → Why → How
+  # Discovery: Why (problem) → What → How
+  # Product-spec: What (scope/boundaries) → Why → How
+  # Design-spec: What (surface) → How (interaction) → Why
+  # Decision-record: Why → What → How → Consequences
+  # Build-card: What → How → Why
+  # Strategy: Why (now) → What → How
+  case "$doc_type" in
+    research-memo|research_memo)
+      echo "$h2s" | grep -qiE '(finding|result|verdict|tldr|summary)' || return 1
+      ;;
+    discovery)
+      echo "$h2s" | grep -qiE '(problem|why|pain|gap|opportunity)' || return 1
+      ;;
+    product-spec|product_spec)
+      echo "$h2s" | grep -qiE '(scope|boundar|what|atoms|primitive)' || return 1
+      ;;
+    design-spec|design_spec)
+      echo "$h2s" | grep -qiE '(surface|screen|interaction|what|state)' || return 1
+      ;;
+    decision-record|decision_record)
+      echo "$h2s" | grep -qiE '(context|why|problem|decision|rationale)' || return 1
+      ;;
+    build-card|build_card)
+      echo "$h2s" | grep -qiE '(change|what|scope|done|acceptance)' || return 1
+      ;;
+    strategy)
+      echo "$h2s" | grep -qiE '(why|now|game|moment|context)' || return 1
+      ;;
+    *)
+      return 1  # unknown doc-type
+      ;;
+  esac
   return 0
 }
 
@@ -117,6 +187,62 @@ Actual content starts here, too late.
 EOF
   run _check_opens_with_positioning "$FIXTURES/changelog-first.md"
   [ "$status" -ne 0 ]
+}
+
+# ─── Fixture: empty opener (fails §6.1 positive check) ────────────────────
+
+@test "FAILS §6.1 when H1 is followed by empty lines straight into H2" {
+  cat > "$FIXTURES/empty-opener.md" <<'EOF'
+# Sample Spec v0.11
+
+
+
+## §1 Boundaries
+
+Content starts without any positioning sentence.
+EOF
+  run _check_opens_with_positioning "$FIXTURES/empty-opener.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "FAILS §6.1 when opener is a short line lacking positioning keywords" {
+  cat > "$FIXTURES/weak-opener.md" <<'EOF'
+# Sample Spec v0.11
+
+Hello world.
+
+## §1 Content
+
+Stuff.
+EOF
+  run _check_opens_with_positioning "$FIXTURES/weak-opener.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "PASSES §6.1 when opener is italic positioning sentence" {
+  cat > "$FIXTURES/italic-opener.md" <<'EOF'
+# Sample Spec v0.11
+
+*A decision runtime for trader onboarding — five atoms, one loop, three protocols.*
+
+## §1 Content
+
+Stuff.
+EOF
+  _check_opens_with_positioning "$FIXTURES/italic-opener.md"
+}
+
+@test "PASSES §6.1 when opener is ≥40 chars and names a positioning keyword" {
+  cat > "$FIXTURES/keyword-opener.md" <<'EOF'
+# Sample Research Memo
+
+Research memo on trader friction — produces a ranked list of improvements to ship.
+
+## Findings
+
+Stuff.
+EOF
+  _check_opens_with_positioning "$FIXTURES/keyword-opener.md"
 }
 
 # ─── Fixture: main-body version marker (fails §6.4) ───────────────────────
@@ -233,6 +359,105 @@ EOF
   _check_no_main_body_version_markers "$ref"
   _check_metadata_consistent "$ref"
   _check_meta_content_cap "$ref"
+}
+
+# ─── §6.8 doc-type ordering ───────────────────────────────────────────────
+
+@test "§6.8 exempts short files (≤300 lines) from doc-type frontmatter" {
+  cat > "$FIXTURES/short.md" <<'EOF'
+# Short Doc
+
+*A one-page explainer.*
+
+## Point
+
+Brief.
+EOF
+  _check_doc_type_ordering "$FIXTURES/short.md"
+}
+
+@test "§6.8 FAILS when long file lacks doc-type frontmatter" {
+  {
+    echo "# Long Doc"
+    echo
+    echo "*A ranked list of improvements to ship.*"
+    echo
+    for i in $(seq 1 350); do echo "line $i"; done
+  } > "$FIXTURES/long-no-type.md"
+  run _check_doc_type_ordering "$FIXTURES/long-no-type.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§6.8 PASSES research-memo with finding-first H2" {
+  {
+    echo "---"
+    echo "doc-type: research-memo"
+    echo "audience: Gary"
+    echo "reader-output: ranked picks"
+    echo "---"
+    echo
+    echo "# Research Memo"
+    echo
+    echo "*Ranked picks for improvement.*"
+    echo
+    echo "## Verdict"
+    echo "Finding first."
+    echo
+    echo "## Why it matters"
+    echo "Cause."
+    echo
+    for i in $(seq 1 320); do echo "line $i"; done
+  } > "$FIXTURES/research-ok.md"
+  _check_doc_type_ordering "$FIXTURES/research-ok.md"
+}
+
+@test "§6.8 FAILS research-memo that opens with unrelated H2" {
+  {
+    echo "---"
+    echo "doc-type: research-memo"
+    echo "---"
+    echo
+    echo "# Research Memo"
+    echo
+    echo "*A memo.*"
+    echo
+    echo "## Overview"
+    echo "Not a finding."
+    echo
+    echo "## Background"
+    echo "Also not a finding."
+    echo
+    echo "## Details"
+    echo "Still no finding."
+    echo
+    for i in $(seq 1 320); do echo "line $i"; done
+  } > "$FIXTURES/research-bad.md"
+  run _check_doc_type_ordering "$FIXTURES/research-bad.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§6.8 PASSES decision-record with context/why first" {
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "---"
+    echo
+    echo "# Decision Record"
+    echo
+    echo "*A commitment made explicit.*"
+    echo
+    echo "## Context"
+    echo "Why this call now."
+    echo
+    echo "## Decision"
+    echo "What we committed to."
+    echo
+    echo "## Consequences"
+    echo "Downstream effects."
+    echo
+    for i in $(seq 1 320); do echo "line $i"; done
+  } > "$FIXTURES/decision-ok.md"
+  _check_doc_type_ordering "$FIXTURES/decision-ok.md"
 }
 
 # ─── §7 Voice and AI smell — warn-level checks ────────────────────────────

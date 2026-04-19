@@ -19,52 +19,35 @@ Every response has this general skeleton. ANSWER is always required; the rest fi
 
 Reading order: Gary reads top-down and stops when satisfied. ANSWER gives the mechanism; OUTLINE tells him the shape of the rest so he can jump or skip; SUMMARY (on action responses) tells him what's verified and what to decide next. Bookending by design.
 
-## 1. ANSWER (always)
+> **This file is a style projection.** The rules live in [rules/common/output-discipline.md](../rules/common/output-discipline.md) — single source of truth. The sections below point at the rule and keep only style-specific content: the Response Shapes decision table, worked examples, and the anti-drift checklist.
 
-- Lead with the **mechanism causing the situation**, not the surface description.
-- No "I'll now…" / "Great question!" / "Let me…" preambles.
-- No restating the question.
-- One sentence ideally; two if the mechanism is complex.
+## 1. ANSWER — see [output-discipline.md §1 Mechanism-first](../rules/common/output-discipline.md)
 
-## 1.5 OUTLINE (non-atomic, ≥8 lines or ≥2 topics)
+One sentence naming the cause. No preambles, no restating the question.
 
-One line immediately after ANSWER, before any table or drill-down. Names the shape of what follows.
+## 1.5 OUTLINE — see [output-discipline.md §1.1 Outline after mechanism](../rules/common/output-discipline.md)
 
-- **Form:** `**Covers:** <topic a> · <topic b> · <topic c>` — or a short bulleted outline when sections are deeper.
-- **Exempt:** Atomic responses (1-liner yes/no, single fact, status). Q&A under 7 lines where the mechanism sentence is the full answer.
-- **Action responses:** OUTLINE at top, SUMMARY at bottom. Not redundant — opener shapes the read, summary carries the verdict.
-
-See [rules/common/output-discipline.md §1.1](../rules/common/output-discipline.md) for the governing rule.
+One `**Covers:** <a> · <b> · <c>` line after ANSWER on any response ≥ 8 lines or covering ≥ 2 topics. Atomic and short Q&A are exempt.
 
 ## 2. DECOMPOSE (conditional)
 
-- Break the answer into its structural parts when useful.
+Break the answer into structural parts when useful.
+
 - Tables when comparing; lists when sequencing; sub-questions when uncertain.
-- **Skip entirely** when the question is atomic: yes/no, single fact lookup, binary status.
-- **Tables earn their columns.** Use a table only when the reader genuinely compares rows across columns. If every cell in column 1 is a label for the value in column 2, write "key: value" prose — faster to read.
+- **Skip entirely** when the question is atomic.
+- **Tables earn their columns.** If every cell in column 1 is a label for column 2, write "key: value" prose instead.
 
 ## 3. SOLUTIONS (conditional)
 
-- Concrete, ordered actions — not "you could consider…".
-- File paths as `[label](path:line)` markdown links.
-- If multiple options, rank by leverage and explain the ranking briefly.
-- Skip when the response is purely informational or when the user didn't ask for actions.
+Concrete, ordered actions — not "you could consider…". File paths as `[label](path:line)` markdown links. If multiple options, rank by leverage.
 
-## 4. SUMMARY (action responses only)
+## 4. SUMMARY — see [output-discipline.md §5 Summary block schema](../rules/common/output-discipline.md)
 
-When Claude has ran tools, edited files, or shipped commits, close with:
+Action responses close with `SUMMARY` block: **DONE / TESTED / REMAINING / NEXT MOVE**. Legacy DID → DONE, VERIFIED → TESTED.
 
-```
-SUMMARY
-  DONE:       what was actually done — 1–2 sentences, not a table
-  TESTED:     how we verified — tests run, diffs checked, output inspected, with results
-  REMAINING:  explicit outstanding items — "none" is a valid answer
-  NEXT MOVE:  single suggested next action with yes/no/modify call to action
-```
+## 5. MULTI-OPTION CLOSE — see [output-discipline.md §5.5 Ranked-picks advisory close](../rules/common/output-discipline.md)
 
-`DONE` is past tense and concrete. `TESTED` names the evidence (test counts, diff=empty, HTTP 200, etc.) — "looks good" is not evidence. `REMAINING` is the honest delta between "asked for" and "shipped". `NEXT MOVE` converts summary into handoff — one action, one call to action, alternates in parens if needed.
-
-Legacy label map (from prior DID/VERIFIED schema): DID → DONE, VERIFIED → TESTED. Rule lives in [rules/common/output-discipline.md §5](../rules/common/output-discipline.md).
+Advisory responses with ≥ 3 ranked options + a decision needed close with three H2s: *The deliverable (ranked table)* → *Why a subset (if recommending one)* → *The decision you need to make (lettered options)*.
 
 # Response shapes (decide this first)
 

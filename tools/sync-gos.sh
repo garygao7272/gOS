@@ -81,7 +81,7 @@ classify_changes() {
       # Per-project state (project_*, episodes, evolve_audit_*, reflection_*) falls through to session.
       memory/L0_*|memory/L1_*|memory/MEMORY.md|memory/user_*|memory/feedback_*|memory/procedure_*)
         FRAMEWORK_FILES+=("$path") ;;
-      commands/*|agents/*|hooks/*|.claude/hooks/*|rules/*|skills/*|tools/*|output-styles/*|evals/*|claws/*|bootstrap/*|docs/*|settings/settings.json|install.sh|CLAUDE.md|README.md|invariants.md|gos-plugin-build/*)
+      commands/*|agents/*|hooks/*|.claude/hooks/*|rules/*|skills/*|tools/*|output-styles/*|evals/*|claws/*|bootstrap/*|docs/*|settings/settings.json|install.sh|CLAUDE.md|README.md|invariants.md|gos-plugin-build/*|tests/hooks/*|.gitignore)
         FRAMEWORK_FILES+=("$path") ;;
       sessions/*|memory/*|.claude/self-model.md)
         SESSION_FILES+=("$path") ;;
