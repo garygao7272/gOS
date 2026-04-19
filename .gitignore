@@ -23,3 +23,6 @@ Archive/
 # gOS commands live globally in ~/.claude/commands/ — never sync per-project
 .claude/commands/
 .claude/_archived-commands-*/
+
+# Bats test fixtures — generated during test runs, not checked in
+tests/fixtures/

@@ -85,7 +85,7 @@ classify_changes() {
         FRAMEWORK_FILES+=("$path") ;;
       sessions/*|memory/*|.claude/self-model.md)
         SESSION_FILES+=("$path") ;;
-      outputs/*|apps/*|specs/*|.claude/scheduled_tasks.lock|*.bak|"* 2"|"* 2.md")
+      outputs/*|apps/*|specs/*|tests/fixtures/*|.claude/scheduled_tasks.lock|*.bak|"* 2"|"* 2.md")
         : # excluded — silently ignore
         ;;
       *)
