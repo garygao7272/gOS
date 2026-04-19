@@ -28,6 +28,8 @@ If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, co
 
 **Output discipline:** Do reasoning inside `<analysis>` tags (private). Produce clean verdict, table, and recommendations inside `<output>` tags.
 
+**Artifact discipline.** Every prose artifact this command writes to disk (findings tables, council synthesis, dashboard reports, under `outputs/review/` or `outputs/gos-jobs/*/synthesis.md`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline and §7 Voice and AI smell. In-chat verdict tables are exempt from §6 (they aren't persisted files); they still follow §7 voice rules.
+
 ---
 
 ## Diagnosis protocol (3-question pattern — FP-OS §3.2)

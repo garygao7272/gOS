@@ -19,6 +19,8 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [topic], covering [scope]. Proceed?"
 
+**Output discipline.** Every prose artifact this command produces (files under `outputs/think/` and `specs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and §7 Voice and AI smell (twelve anti-patterns, quantitative warn caps on em-dash density and padding-phrase frequency). `/think spec` has additional quality-gate dimensions 1–5 plus the 8-primitive skeleton; `discover`, `research`, and `decide` still follow §6 and §7 universally.
+
 **Plan mode by default.** Present approach and wait for approval before executing.
 
 **Swarm execution by default.** Once approved, spawn 3-5 parallel Agent workers with sub-command-specific roles. Each produces an independent artifact with zero file conflicts. Cross-examine contradictions before synthesizing.

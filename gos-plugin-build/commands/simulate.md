@@ -17,6 +17,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll simulate [type] for [target], parameters: [key params]. Proceed?"
 
+**Output discipline.** Every prose artifact this command produces (simulation narratives, scenario reports, flow walkthroughs under `outputs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and §7 Voice and AI smell (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency). Data tables, charts, and CSV/JSON outputs are exempt — §6 and §7 apply only to the prose sections that frame them.
+
 **Plan mode enforced.** Before executing, state: simulation type, parameters (assets, period, scenario), data sources. Wait for confirmation.
 
 > **Sub-commands:** `market` (includes `--backtest` mode), `scenario` (uses Dux engine if available), `flow`. See also the `backtest` and `dux` redirects below for direct invocation details.

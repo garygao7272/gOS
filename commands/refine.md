@@ -6,6 +6,8 @@ description: "Refine — iterative convergence loop: tighten a target until qual
 
 **Purpose:** Iteratively tighten a target until a declared quality bar is met. Canonical entry — there is no `/gos refine` or `/review refine`.
 
+**Output discipline.** Every revision this command writes (files under `outputs/refine/{slug}/cycle-N/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline and §7 Voice and AI smell. The 6-dimension rubric below scores these mechanically via dimension 6 (Reader friction / compression). Cycle that regresses dimension 6 fails convergence — see Stop criteria.
+
 **Three modes, three cost tiers, one contract.**
 
 | Mode | Per-cycle critic | When |
