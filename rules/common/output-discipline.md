@@ -196,6 +196,93 @@ Close with something the reader can operate on — a quick-reference card, a wor
 
 **Minimum acceptable close:** three to five lines naming how the document gets used, by whom, and what they produce after reading.
 
+### 7.9.5 Length budget per doc-type (warn-level cap)
+
+Verbosity is rewarded by additive rubrics — every rule says "ensure X is present"; no rule says "ensure absence of Y where Y is bloat." This budget closes the hole. Caps are warn-level (not block) — judgment can override, but the artifact must justify going over.
+
+| Doc-type | Sweet-spot lines | Warn cap | Trigger |
+|---|---|---|---|
+| `decision-record` | 80–150 | 200 | One PASS/KILL call doesn't need 250 lines of prose |
+| `research-memo` | 150–250 | 350 | Research compresses; 350+ usually means missing synthesis |
+| `discovery` | 100–200 | 300 | Concept docs over 300 lines are usually two concepts |
+| `product-spec` | 200–350 | 500 | Specs over 500 split into siblings |
+| `design-spec` | 250–400 | 600 | Same — split or compress |
+| `strategy` | 150–300 | 400 | Strategy is the bet, not the audit |
+| `build-card` | 80–200 | 300 | Cards over 300 are micro-specs in disguise |
+
+**Mechanical check (warn-only):** `_check_length_budget` reads `doc-type:` and warns if line count > cap. Author can document the override in a frontmatter `length-justification:` field. Three-strikes: if a doc-type's average length runs > cap across 3+ artifacts, the cap is wrong — revisit, don't paper over.
+
+### 7.9.6 Chat-default routing for short outputs
+
+The base inline-default rule (§7) is overridden by command-level routing (every `/think` sub-command names a file path). This sub-rule restores the default for short content.
+
+**Rule:** If the response would be < 50 lines AND < 200 words AND has no future-session retrieval need, default to chat. File write requires explicit "save this" / "promote" / "append to log" follow-up.
+
+**When to override (write the file anyway):** persistent contract (decision record on architectural call) · handoff to another verb · audit trail required · reusable structure > 300 words. The override is the author's call, not the command's default.
+
+**Why this is needed.** Command-level "Output: outputs/think/.../.md" overrides §7's "Default: inline" — the inline default is dead-on-arrival for /think today. The fix isn't to remove the file path (sometimes a file is right) but to gate it on output size. A 30-line advisory should not become a 30-line file; a 200-line decision record should.
+
+### 7.9.6.5 No internal jargon in body prose
+
+A spec or rule that uses internal jargon (PEV, FP-OS, INV-G01, K5, doc-type articulation, AND-aggregated, primitives, atoms-vs-invariants, AC split) without defining it forces the reader to learn the system before reading the content. The rule that bans index codes in artifact prose applies recursively to the gos rule files themselves.
+
+**Banned in body prose** (body = anything that isn't a glossary, footnote, or named code-block):
+- Acronyms without expansion on first use ("PEV" → expand to "plan/execute/validate" once, then reuse).
+- Internal labels that mean nothing to a fresh reader (INV-G01, FP-OS K3/K5/K6/K8, dim 6 / dim 8).
+- "Primitive" / "atom" / "invariant" used as gos-specific vocabulary without naming what they map to in plain English.
+
+**Allowed:**
+- Industry-standard terms (Sharpe, MaxDD, funding, basis, OI, leverage, idempotent, P95, state machine, rate limit) — these are the language, not the jargon.
+- Internal terms used inside the **glossary** (one-page plain-English reference at [glossary.md](./glossary.md)).
+- Internal terms used inside cross-reference tables, code blocks, and frontmatter.
+
+**The test:** could a fresh contributor — someone who joined yesterday with no gos exposure — read this sentence and parse it? If no, the sentence is jargon. Either expand the term inline once, or move the sentence into the glossary as a reference.
+
+**Why this rule applies to gos rule files themselves:** the rule that requires plain-English in artifacts loses credibility if the rule itself is written in jargon. The gos rule files are read by every new contributor and every Claude session loading the rules into context — they are the highest-traffic prose in the system.
+
+### 7.9.7 No interim-process content in final outputs
+
+A spec is a present-tense contract. It is not a diff log of how it got here. The reader needs to know what we're committing to now, not what we considered and rejected, not how this version differs from the last, not which sentence was rewritten in cycle 2.
+
+**Banned in main body:**
+
+- Cross-version delta tables ("what changed from v0.2"), refactor logs, "before / after" comparisons.
+- "Why this section exists" meta-commentary, rationale-for-rationale recursion ("we added this section because the rubric demanded it").
+- Process artifacts: "after cycle 1 we discovered…", "the prior verdict was X, but reframing reveals…", "I was wrong before about Y."
+- "Reframe" or "correction" callouts that reference prior thinking.
+
+**Where these go instead:**
+
+- Cross-version diffs → git log, or a sibling changelog file (`{spec}.changelog.md`), or the audit trail in `outputs/refine/{slug}/synthesis.md`.
+- Interim thinking → `outputs/think/decide/{question}.md` artifacts and the refine cycle scratch — those are workshop artifacts that don't promote.
+- Process narrative → never persists; lives only in conversation context.
+
+**The test:** if a sentence describes the document's own evolution rather than the topic the document is about, delete it. The spec is what it is now. The history is somewhere else.
+
+**Exemption:** a single line under the title noting "(supersedes vX)" is acceptable navigational metadata; a 17-line table cataloging Δ from prior version is not.
+
+### 7.9.8 Descriptive names, not index codes, in narrative prose
+
+Index codes (`[HT4]`, `[2-44]`, `MR4`, `CS1`, `D10`) are scaffolding for cross-reference. They belong in tables, footnotes, and citation appendices. They do not belong in body prose where a reader has to mentally map a code to a heading before the sentence parses.
+
+**Wrong (current pattern):**
+> `[HT4]` Position Heatmap kept on Asset A2; `[HT2]` Cohort tab dropped; `[2-126]` rollup feeds the new M4.
+
+**Right:**
+> Hypertracker's per-instrument liquidation heatmap is kept on the Asset Detail surface. Hypertracker's cohort tab is dropped. The cross-asset cohort heatmap rollup feeds the new Markets cascade view.
+
+**The rule:** in body prose, name the thing in plain English. Use the surface or primitive's descriptive name. If a citation is needed, put the index code in a table cell or footnote, not in the running sentence.
+
+**Industry-standard terms stay** (Sharpe, MaxDD, funding, basis, OI, leverage, liquidation). These are not index codes — they're trader vocabulary. Internal index systems (HT1–HT13, 2-1 through 2-126, MR1–MR7, CS1/CS2/CS3, A1/A2/A3a/A3b, M1/M2/M3/M4, W1–W9, C0–C6) are scaffolding.
+
+**Exception zones (index codes allowed):**
+- Block Contract tables (the Block column).
+- Citation tables and footnote appendices.
+- The "Surfaces" or similar overview tables that establish naming.
+- Code blocks, formulas, technical references where the code IS the identifier.
+
+Everywhere else, write the descriptive name. The reader should not have to scroll back to a key to parse a sentence.
+
 ### 7.9 Visual and structural aids (summary)
 
 Reading fatigue comes from dense prose carrying load that a visual aid would carry better. The available tools — tables, numbered lists, ASCII flow diagrams, Mermaid flowcharts / sequence / state / mindmap diagrams, two-by-two matrices, admonitions, code blocks, status markers, footnotes — each earn their place under specific conditions. gOS supports Mermaid in modern viewers; keep a one-line ASCII fallback for legacy renderers.

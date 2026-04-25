@@ -16,11 +16,25 @@ description: "Refine — iterative convergence loop: tighten a target until qual
 
 | Mode | Per-cycle critic | When |
 |---|---|---|
-| `/refine <target>` | Main context self-critiques against the 8-dim rubric | Cheap. Tighten prose, close known gaps. |
+| `/refine <target>` | Main context self-critiques against the 9-dim rubric | Cheap. Tighten prose, close known gaps. |
 | `/refine fresh <target>` | Fresh-context agent critiques (naive reader each cycle) | Medium. Too close to it; need outside eyes. |
 | `/refine council <target>` | 6-archetype council + synthesizer | Expensive. High-stakes doc where multi-lens matters. |
 
 Pick the cheapest mode that clears the quality bar. Escalate (self → fresh → council) only if the cheaper mode stalls.
+
+**Compression is default in every cycle.** Every revise step in every mode applies the seven distillation rules below as a baseline pass before adding any new content. The aim is to leave each cycle shorter or same-length than it started, never longer, unless the rubric specifically demanded new substance.
+
+**The seven distillation rules (apply to every revise step):**
+
+1. Collapse double tables (per-section IA + field-level → one Block Contract).
+2. Move delta + patches + cross-version diffs to appendix or sibling changelog file.
+3. Strip `(NEW)` / `(unchanged from vX)` / "(was vX.Y)" markers from the main body.
+4. Drop trailing recap sections that restate the body's arguments.
+5. Replace index codes in narrative prose with descriptive English; index codes only in citation tables and footnotes.
+6. Use Day-1 bitmap rows or compact status lines instead of "what ships Day 1" prose paragraphs.
+7. Consolidate Discipline rules + Navigation + How-to-use into one closing section.
+
+Source: codified from the 2026-04-26 Display Architecture v0.2 → v0.2.1 distillation pass that compressed 580 → 311 lines (−46%) with zero content loss. Promoted from a separate `/refine compress` opt-in mode to default cycle behavior because verbose drafts shouldn't pass through any cycle without distillation pressure.
 
 ---
 
@@ -66,8 +80,15 @@ Each cycle scores the current draft (0–2 per dim, total /16). Same rubric as `
 |---|---|---|---|---|
 | 2 | **Edge cases** | None | Some listed | Exhaustive (empty, overflow, error, concurrent, stale) |
 | 3 | **Data model / structure** | Absent | Fields listed, no types | Full schema (types, constraints, defaults, nullability) |
+| 9 | **Compression** | Doc length > 1.5× the doc-type cap in [output-discipline.md §7.9.5](../rules/common/output-discipline.md); double tables, redundant recaps, citation density without value | Within cap but reads dense; borderline meta-content; a few redundant restatements | At or below sweet-spot lines per doc-type cap; lines-per-decision ratio low; no double tables; no trailing recap restating body; meta-content cleanly in appendix |
+| 10 | **Numeric concreteness** | Soft adjectives throughout — "fast", "comfortable", "responsive", "good UX" — none replaced with numbers, states, or contracts | Some numeric targets present but mixed with soft adjectives; key surfaces still under-specified | Every soft adjective replaced with a number, named state, or named contract. UX/UI specs name pixel/dp values, frame rates, tap targets, animation durations. Code specs name P50/P95 latency, payload size, memory budget, idempotency, retry semantics |
+| 11 | **State machine completeness** | Happy path only; loading / empty / error / over-quota / offline / stale / forbidden states absent or hand-waved | Some states named (loading + error) but missing partial / over-quota / offline / stale / forbidden | Every state named with copy + visual or semantics; every transition listed; every edge case (concurrent edit, network partition, expired session, malformed input) has a named handler |
+| 12 | **Performance budget** | No latency, payload, render-cost, or rate-limit numbers anywhere | Numbers present for some surfaces / endpoints but not all consequential ones | Every render surface has cold-paint and interaction-latency targets. Every endpoint has P50 / P95 / payload / RPS targets. Every batch job has time and resource budgets. Targets are realistic and measurable in production |
+| 13 | **Delete-first check** | Spec is additive only — no acknowledgment of what was considered for deletion | Some deletions named but no scope-cut rationale | Spec opens with what we considered deleting and why we kept it. Every section pressure-tested for deletion before optimization |
 
-**Quality bar:** ≥13/16 AND every invariant dim (1, 4, 5, 6, 7, 8) ≥1. A cycle that regresses any invariant dim fails convergence — invariants are AND-aggregated; a draft with one invariant at 0 cannot promote even if it scores 2 on every variant.
+**Why these are variants, not invariants.** A doc can be light on numbers, state machines, performance budgets, or delete-first scoping and still ship — judgment overrides, especially for non-implementation-bound specs (research memos, strategy notes). But each must *score* — without scoring, the rubric rewards soft-adjective specs equally to buildable ones, and the prose-quality-without-buildability failure mode persists.
+
+**Quality bar:** ≥18/26 AND every invariant dim (1, 4, 5, 6, 7, 8) ≥1. A cycle that regresses any invariant dim fails convergence — invariants are AND-aggregated; a draft with one invariant at 0 cannot promote even if it scores 2 on every variant.
 
 **Why the split is load-bearing.** Mixing invariants and variants in one additive table is the most common decision failure in the FP-OS protocol: a weighted-sum lets reviewers rationalise past a deal-breaker ("low on dim 1, high on everything else — ship it") or kill a good option for missing a nice-to-have. Separating them forces the invariant check to bite before the variant score is even computed.
 
