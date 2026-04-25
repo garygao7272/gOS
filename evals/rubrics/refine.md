@@ -31,6 +31,10 @@ The test input MUST contain:
 - Refined topic with no pre-existing spec → should have run `/think discover` first
 - Max iterations > 7 used → diminishing returns ignored
 - Same gap list repeated 3+ cycles unchanged → STUCK not flagged to Gary
+- External `/think` call made for a gap that was rewrite-resolvable → wasted think-budget; resolver-type taxonomy mis-applied
+- CRITICAL/HIGH gap left untagged with resolver type → cycle either over-rewrites or hits STUCK on a fixable gap
+- Cycle stayed `running` while pending external — refine should have transitioned to `waiting-on-X` and waited
+- INVALIDATED draft kept refining instead of routing back to `/think discover` → cycles wasted on a doomed draft
 
 ## Overall Score
 

@@ -75,6 +75,34 @@ Written when Gary approves a /design output (build card, UI spec, system design)
 }
 ```
 
+### refine.json — Spawned by /refine (job-scoped, not in sessions/)
+
+Written when /refine identifies a CRITICAL/HIGH gap requiring external `/think` work. Lives at `outputs/refine/{slug}/cycle-N/pending-think.json` — **job-scoped**, NOT in `sessions/handoffs/`. Refine can spawn N parallel asks per cycle; each is its own file.
+
+```json
+{
+  "phase": "refine",
+  "spawned_for": "research|decide|spec|discover",
+  "gap_question": "<the question /think should answer — must be self-contained>",
+  "acceptance_signal": "<what evidence/decision would close this gap>",
+  "resolver_type": "research|decide|spec|discover",
+  "return_to": {
+    "refine_job": "outputs/refine/{slug}/",
+    "cycle": <N>,
+    "draft_section": "<which section of the draft this informs>"
+  },
+  "deposit_result_at": "outputs/refine/{slug}/external/think-{slug}.md",
+  "wake_signal_at": "outputs/refine/{slug}/external/.ready",
+  "spawned_at": "ISO-8601 timestamp"
+}
+```
+
+**`gap_question`** must be self-contained — the spawned /think runs in fresh context and cannot read the refine job's draft. Writer must extract enough context for /think to act independently.
+
+**`acceptance_signal`** is what closes the gap (e.g., "competitor adoption count with source", "verdict between option A vs B with rationale"). Used by `evidence-merger` to verify the returned /think output actually addresses the question.
+
+**`deposit_result_at` and `wake_signal_at`** are the contract: /think writes its result to the deposit path AND touches the wake-signal file. Refine's cycle state machine watches the wake-signal to transition `waiting-on-X` → `running`.
+
 ### build.json — Output of /build (optional, for /review context)
 
 Written after /build completes. Not a gate input — /review doesn't require it.

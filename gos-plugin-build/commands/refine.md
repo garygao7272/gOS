@@ -6,6 +6,8 @@ description: "Refine — iterative convergence loop: tighten a target until qual
 
 **Purpose:** Iteratively tighten a target until a declared quality bar is met. Canonical entry — there is no `/gos refine` or `/review refine`.
 
+**Covers:** rubric · 3 modes · gap taxonomy · external dispatch · cycle state · stop criteria · synthesis · signal capture · anti-patterns.
+
 **Output discipline.** Every revision this command writes (files under `outputs/refine/{slug}/cycle-N/`) must comply with the artifact-discipline rules in [output-discipline.md](../rules/common/output-discipline.md) and the voice rules in [output-discipline-voice.md](../rules/common/output-discipline-voice.md). The 8-dimension rubric below scores structural compliance via dim 6 (Structural compression) and voice compliance via dim 8 (Voice discipline). A cycle that regresses either dimension fails convergence — see Stop criteria.
 
 **Companion-load bootstrap (mandatory for voice / visuals dimensions).** The main rule file carries summaries; the full catalogs live in companions. Any agent scoring dim 8 (Voice discipline) must read [output-discipline-voice.md](../rules/common/output-discipline-voice.md) before grading — otherwise the twelve-pattern catalog and per-pattern rationale stay invisible and the critic under-catches AI smell. Any agent evaluating visual-aid choices (part of dim 6) must read [output-discipline-visuals.md](../rules/common/output-discipline-visuals.md). For `/refine fresh` and `/refine council`, the prompt template explicitly instructs the spawned agent to load both companions when the rubric dimension is in scope.
@@ -71,16 +73,61 @@ Each cycle scores the current draft (0–2 per dim, total /16). Same rubric as `
 
 **Why dim 8 (voice) is separate from dim 6 (structural).** The 2026-04-19 spec-quality research found that structural rules had one scoring dim while voice rules had none. A spec could nail structure and still read as AI slop — scoring high enough to promote. Splitting voice into its own invariant closes that hole.
 
-**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria — but the author must still name which custom criteria are invariants (must all pass) vs variants (scored). Override does NOT exempt invariants 6, 7, 8 — structural compression, doc-type articulation, and voice discipline always apply to artifacts.
+**Override:** `/refine <target> --bar="every claim has a citation"` replaces the rubric with declared criteria — but the author must still name which custom criteria are invariants (must all pass) vs variants (scored). Invariants 6, 7, 8 (structural compression, doc-type articulation, voice discipline) are **auto-merged** into any custom bar at scoring time — not the author's burden to remember and not skippable.
+
+### Gap taxonomy (resolver-type classification)
+
+Every CRITICAL/HIGH gap surfaced in a critique gets two tags: severity (CRITICAL/HIGH/MEDIUM/LOW) AND **resolver type** — what kind of work closes it. Without resolver typing, refine either blindly rewrites a research-gap or hits STUCK on a gap that an external `/think` call would close in one step.
+
+| Resolver type | Closer | When |
+|---|---|---|
+| `rewrite` | This refine cycle | Internal — needs better wording, restructure, missing example |
+| `research` | Spawn `/think research <gap>` | Requires evidence not in the draft (market data, citation, competitor) |
+| `decide` | Spawn `/think decide <gap>` | Unresolved tradeoff; needs a verdict between options |
+| `spec` | Auto-spawn `/think spec <slug> --section=X` | Missing a primitive section (Consequences, Atoms, Signals) |
+| `discover` | Escalate to `/think discover` | Upstream — atom doesn't trace to a cause; premise itself shaky |
+
+A cycle's critique MUST tag every CRITICAL/HIGH gap with a resolver type. MEDIUM/LOW gaps are assumed `rewrite` unless tagged otherwise.
+
+### External-call budget
+
+Each /refine job has a budget for /think sub-calls (default `--think-budget=3`, max 5, set in plan gate). When budget is hit, refine stops dispatching and either revises with what it has or exits with REMAINING gaps documented.
+
+**Why budget matters.** A 5-cycle refine that spawns a 5-round PEV research per cycle = 25 PEV rounds = blown cost ceiling. The budget caps total external work per refine job, not per cycle.
+
+### Per-cycle loop with external dispatch (revised default)
+
+For each cycle:
+1. Read current draft + any pending external results in `outputs/refine/{slug}/external/`
+2. Score against rubric (or `--bar` override)
+3. Tag each gap with severity AND resolver type
+4. **For non-rewrite gaps** within budget: write `outputs/refine/{slug}/cycle-N/pending-think.json` per the `refine.json` schema in [specs/handoff-schemas.md](../specs/handoff-schemas.md); set cycle state to `waiting-on-{type}`
+5. **For rewrite gaps:** revise inline now
+6. **If any pending:** WAIT for /think to deposit results in `outputs/refine/{slug}/external/<slug>.md` (touches `.ready` file when done)
+7. **Spawn `evidence-merger` agent** to produce `proposed-edits.md`; main context applies the proposed edits
+8. Re-score; check stop criteria
+
+### Cycle state machine
+
+State written to `outputs/refine/{slug}/state.json`. Refine resumes from this on re-invocation.
+
+| State | Meaning | Exit |
+|---|---|---|
+| `running` | Cycle in progress | → `complete` or `waiting-on-X` |
+| `waiting-on-research` | Pending /think research return | → `running` when result deposited |
+| `waiting-on-decision` | Pending /think decide return | → `running` |
+| `waiting-on-spec` | Pending /think spec return | → `running` |
+| `complete` | Cycle done, ready for next | → next cycle or stop criteria |
 
 ### Stop criteria (checked after every cycle)
 
 | Condition | Action |
 |---|---|
 | Quality bar met AND no regression vs previous cycle | **CONVERGED** — exit loop |
-| Same gaps recurring 2+ cycles | **STUCK** — flag to Gary, suggest upstream fix or mode escalation |
+| External /think result invalidates the draft's premise | **INVALIDATED** — exit, route back to `/think discover` with falsified atom flagged |
+| Same gaps recurring 2+ cycles | **STUCK** — flag to Gary; auto-prompt mode escalation (`self → fresh`, `fresh → council`, `council → upstream fix via /think discover or /think spec`) with [y/n/abort] |
 | All remaining gaps MEDIUM/LOW AND cycle ≥ 2 | **GOOD ENOUGH** — exit, note polish items |
-| Cycle cap hit | **CAP HIT** — exit, report remaining gaps |
+| Cycle cap hit OR think-budget exhausted | **CAP HIT** — exit, report remaining gaps + budget usage |
 
 **Gap severity:** 🔴 CRITICAL (blocks promotion) · 🟠 HIGH (degrades quality) · 🟡 MEDIUM (polish) · 🟢 LOW (cosmetic).
 
@@ -88,14 +135,20 @@ Each cycle scores the current draft (0–2 per dim, total /16). Same rubric as `
 
 ```
 outputs/refine/{target-slug}/
-├── plan.md           — approved plan from plan gate
+├── plan.md                — approved plan from plan gate
+├── state.json             — cycle state machine (running / waiting-on-X / complete)
 ├── cycle-1/
-│   ├── critique.md   — mode-specific output (self-critique / fresh-agent / council synthesis)
-│   ├── revision.md   — revised draft
-│   ├── score.md      — rubric score + delta vs baseline
-│   └── verdict.md    — continue / stop + reason
+│   ├── critique.md        — mode-specific output (self / fresh-agent / council)
+│   ├── pending-think.json — refine.json payload(s) for any /think spawned this cycle
+│   ├── proposed-edits.md  — evidence-merger output (only if external returned)
+│   ├── revision.md        — revised draft after merge
+│   ├── score.md           — rubric score + delta vs baseline + resolver-type histogram
+│   └── verdict.md         — continue / stop + reason
 ├── cycle-N/ ...
-└── synthesis.md      — final state + cycle-by-cycle score trend
+├── external/              — deposit dir for /think outputs spawned by this refine job
+│   ├── think-{slug}.md    — research/decide/spec result
+│   └── .ready             — touched when external /think completes (wakes refine)
+└── synthesis.md           — final state + cycle-by-cycle score trend + budget usage
 ```
 
 ---
@@ -132,7 +185,12 @@ outputs/refine/{target-slug}/
 
 ## `/refine council <target> [--mode=arx-behavioral|spec-structural]`
 
-**Mode default:** `arx-behavioral` (backward-compatible — the 6-archetype Arx trader council). Pass `--mode=spec-structural` when refining a spec artifact — the Arx trader pool is the wrong lens for structural drift (positioning, doc-type ordering, invariants/variants split, consequence tracing).
+**Mode default — auto-detected from target path:**
+- Target under `specs/Arx_*` or `apps/Arx*` → `arx-behavioral` (the 6-archetype Arx trader council).
+- Target anywhere else (gOS framework, generic specs, decision records) → `spec-structural` (the structural-drift council).
+- Override either with explicit `--mode=arx-behavioral` or `--mode=spec-structural`.
+
+**Why auto-detect.** Hardcoded `arx-behavioral` default summons the trader council on a gOS framework spec, producing trader-UX critique on structural prose — wrong lens, wasted cycles. Path-based detection picks the right roster without the author having to remember the flag.
 
 **Roster by mode:**
 
@@ -167,6 +225,23 @@ After exit condition fires:
    - **`## Gaps remaining`** — resolved vs remaining, with severity
    - **`## Next action`** — promote / another cycle / hand off / abandon
 2. Present: "Refine complete. {N} cycles, {reason}. Score {start → end}. Selection rule: {one line}. {remaining} gaps remain. Promote to specs/ / hand off to /build / another cycle?"
+
+---
+
+## Signal Capture
+
+After /refine completes (CONVERGED, INVALIDATED, STUCK, GOOD ENOUGH, or CAP HIT), log the outcome to `sessions/evolve_signals.md`:
+
+- **Command:** `/refine`, mode used (`self` / `fresh` / `council:<sub-mode>`)
+- **Target:** path of refined artifact
+- **Cycles:** N completed, exit reason (CONVERGED / INVALIDATED / STUCK / GOOD ENOUGH / CAP HIT)
+- **Score trend:** start → end (e.g., 9/16 → 14/16)
+- **Resolver-type histogram:** count of gaps closed by `rewrite` vs each external resolver (`research`, `decide`, `spec`, `discover`)
+- **External calls used:** N of `--think-budget` (e.g., `2 of 3`)
+- **Mode escalation history:** if STUCK triggered an escalation prompt, log the chain (e.g., `self → fresh → council`)
+- **Signal class:** accept / rework / reject / love / repeat / skip — based on Gary's response to the synthesis
+
+Without this, /refine outcomes stay invisible to `/evolve audit` and `weekly-insights`. The resolver-type histogram is especially load-bearing: a high `research` count across similar refine jobs signals "we keep needing the same evidence; fold it into upstream `/think discover`" — turns refine telemetry into curriculum for upstream verbs.
 
 ---
 

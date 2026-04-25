@@ -73,6 +73,16 @@ Then write `sessions/handoffs/think.json` with the typed primitive payload (sche
 
 `primitives` is required for `decide` and `spec`; set to `null` explicitly for `research` and `discover` where no decision is being committed. /design and /build read these typed primitives rather than re-parsing the prose — this prevents downstream drift where the implementation doesn't match what /think committed. If validate-doc-type.sh fails, the handoff is refused — fix the artifact's frontmatter or ordering before re-approving.
 
+**When spawned from /refine** (a refine cycle dispatches an external /think call to close a gap), check for a `pending-think.json` at `outputs/refine/{slug}/cycle-N/`. If present:
+
+1. Read the JSON — it specifies `gap_question`, `acceptance_signal`, `resolver_type`, `deposit_result_at`, `wake_signal_at`
+2. Run /think with `gap_question` as the input (sub-command = `resolver_type`)
+3. Write the artifact to `deposit_result_at` (NOT the usual `outputs/think/{sub}/` path — the result is job-scoped to the spawning refine cycle)
+4. Touch `wake_signal_at` (`outputs/refine/{slug}/external/.ready`) so refine's state machine transitions `waiting-on-X` → `running`
+5. Skip the "promote to specs/?" prompt — the result feeds back into /refine, not into the standalone outputs tree
+
+This is the inverse direction of the standard handoff: /think normally feeds /design + /build downstream; here it feeds back upstream into the spawning /refine. Schema: [specs/handoff-schemas.md](../specs/handoff-schemas.md) → `refine.json`.
+
 Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
 
 ---
