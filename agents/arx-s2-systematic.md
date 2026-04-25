@@ -2,6 +2,8 @@
 name: arx-s2-systematic
 description: Arx council reviewer — S2 Systematic archetype. Reviews hypotheses, designs, and shipped work through the lens of a rules-based/quantified trader (APIs, backtested edges, funding carry, regime-conditional strategies). Runs in fresh context.
 tools: Read, Grep, Glob
+model: sonnet
+effort: medium
 ---
 
 # Arx S2 Systematic — Council Reviewer

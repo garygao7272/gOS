@@ -7,6 +7,7 @@ INPUT=$(cat)
 
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "default"')
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
+DURATION_MS=$(echo "$INPUT" | jq -r '.duration_ms // 0')
 FILE_PATH=""
 
 case "$TOOL_NAME" in
@@ -20,8 +21,9 @@ esac
 ACCUMULATOR="/tmp/gos-edits-${SESSION_ID}.log"
 TIMESTAMP=$(date +%s)
 
-# Append file path with timestamp (dedup on read, not write — cheaper)
-echo "${TIMESTAMP}|${FILE_PATH}" >> "$ACCUMULATOR"
+# Append file path with timestamp + duration_ms (CC v2.1.119+).
+# Format: timestamp|file_path|duration_ms — duration_ms enables evolve-loop tool-cost analysis.
+echo "${TIMESTAMP}|${FILE_PATH}|${DURATION_MS}" >> "$ACCUMULATOR"
 
 # Rotate: keep last 200 entries
 if [ "$(wc -l < "$ACCUMULATOR")" -gt 200 ]; then

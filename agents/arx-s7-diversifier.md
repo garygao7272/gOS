@@ -2,6 +2,8 @@
 name: arx-s7-diversifier
 description: Arx council reviewer — S7 Diversifier archetype. Reviews through the lens of a 35+ retail capital-preservation allocator treating crypto as an asset-class allocation (portfolio terms, monthly review, drawdown-first). Runs in fresh context.
 tools: Read, Grep, Glob
+model: sonnet
+effort: medium
 ---
 
 # Arx S7 Diversifier — Council Reviewer

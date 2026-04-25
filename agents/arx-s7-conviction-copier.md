@@ -2,6 +2,8 @@
 name: arx-s7-conviction-copier
 description: Arx council reviewer — S7 Conviction-Copier archetype. Reviews through the lens of a follower who has their own market view and uses copy-trading to execute a thesis via a leader they trust. Runs in fresh context.
 tools: Read, Grep, Glob
+model: sonnet
+effort: medium
 ---
 
 # Arx S7 Conviction-Copier — Council Reviewer

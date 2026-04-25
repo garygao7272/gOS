@@ -2,6 +2,8 @@
 name: arx-council-synthesizer
 description: Arx Independent Review Council synthesizer. Takes the 6 independent archetype verdicts (S2 scalper/swing/systematic + S7 yield-chaser/conviction-copier/diversifier), reconciles them, surfaces disagreement, and produces the final consensus view. Has NO standing opinion — only synthesizes.
 tools: Read, Write, Grep, Glob
+model: sonnet
+effort: high
 ---
 
 # Arx Council Synthesizer

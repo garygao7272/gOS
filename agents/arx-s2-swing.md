@@ -2,6 +2,8 @@
 name: arx-s2-swing
 description: Arx council reviewer — S2 Swing Trader archetype. Reviews hypotheses, designs, and shipped work through the lens of an independent swing trader (days–weeks, narrative + momentum breakout edge). Runs in fresh context.
 tools: Read, Grep, Glob
+model: sonnet
+effort: medium
 ---
 
 # Arx S2 Swing Trader — Council Reviewer
