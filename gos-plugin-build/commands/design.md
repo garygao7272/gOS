@@ -27,8 +27,8 @@ Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind o
 ## Before Designing (always)
 
 1. Read `DESIGN.md` — the complete agent-consumable design language **(read this ONLY for most tasks)**
-2. Consult `specs/Arx_4-3_Design_Taste.md` only for judgment calls not covered by DESIGN.md §6
-3. Consult `specs/Arx_4-2_Design_System.md` only for token details beyond DESIGN.md §1
+2. Consult `specs/Arx_4-3_Design_Taste.md` only for judgment calls not covered by DESIGN.md section 6
+3. Consult `specs/Arx_4-2_Design_System.md` only for token details beyond DESIGN.md section 1
 
 > **Why DESIGN.md first:** 380 lines synthesizing 2800+320 lines. Go to sources only for edge cases.
 
@@ -67,7 +67,7 @@ For `/design add` and `/design sync`: boundary is the token set being added/modi
 
 ### Gate -1: REFERENCE RESEARCH (before visual decisions)
 
-1. Read `specs/Arx_4-3_Design_Taste.md` §1 for reference floor
+1. Read `specs/Arx_4-3_Design_Taste.md` reference-floor section for reference floor
 2. Search 3+ reference implementations of the pattern
 3. For each: what they do well, where they fall short, what Arx surpasses
 4. Present findings. Gary picks direction before spec writing.
@@ -76,7 +76,7 @@ For `/design add` and `/design sync`: boundary is the token set being added/modi
 
 ### Gate 0: STATE MATRIX (before spec writing)
 
-Generate the complete state matrix: `{screen} × {journey-state} × {data-state} × {edge-case} = all scenarios`. Use template from Arx_4-3 §8. Present for approval — this is the scenario contract.
+Generate the complete state matrix: `{screen} × {journey-state} × {data-state} × {edge-case} = all scenarios`. Use template from Arx_4-3 section 8. Present for approval — this is the scenario contract.
 
 ### Gate 3c: FEEL PASS (after functional spec, before shipping)
 
@@ -88,7 +88,7 @@ Score each dimension 1-5. **Fix any ≤ 2.**
 4. TYPOGRAPHY HIERARCHY — readable from weight/size alone?
 5. MOTION NARRATIVE — choreography tells a story?
 
-Then run **5 Premium Litmus Tests** from Arx_4-3 §2. Fix failures before proceeding.
+Then run **5 Premium Litmus Tests** from Arx_4-3 section 2. Fix failures before proceeding.
 
 **Gate enforcement checklist:**
 ```
@@ -116,9 +116,9 @@ Then run **5 Premium Litmus Tests** from Arx_4-3 §2. Fix failures before procee
 2. **If new:** Use template from `specs/Arx_0-1_Workflow_Workbook.md`
 3. **Run Gate -1** (Reference Research)
 4. **Run Gate 0** (State Matrix)
-5. **Write REFERENCE section:** 2-3 specific screens from Arx_4-3 §1 tiers. Per reference: app, screen, what to adopt, where to surpass.
+5. **Write REFERENCE section:** 2-3 specific screens from Arx_4-3 section 1 tiers. Per reference: app, screen, what to adopt, where to surpass.
 6. **Write PRODUCT half:** Why (trace to JTBD), What the User Does (3-7 steps with S7/S2 variants), Data (API source + computation), States (empty/loading/error/populated), Acceptance (EARS), Navigate (from/to with transitions), Verify
-7. **Write VISUAL half:** Feel (token from DESIGN.md §6.9), Layout (ASCII wireframe with auto-layout annotations), Components (from Arx_4-2), Visual Spec (fixture pointer, icons, embellishments, interactions)
+7. **Write VISUAL half:** Feel (token from DESIGN.md DESIGN tokens section), Layout (ASCII wireframe with auto-layout annotations), Components (from Arx_4-2), Visual Spec (fixture pointer, icons, embellishments, interactions)
 8. **Create/update mock data fixture** in `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
 9. **Run Build Card QA** checklist from Arx_0-1
 10. **Run Gate 3c** on the Layout section
@@ -149,7 +149,7 @@ Spawn `pev-planner` with task_class=synthesis, pool hint:
 Planner writes roster. Execute in parallel. `pev-validator` checks the two artifacts are consistent (fixtures match components referenced). Output feeds Step 2.
 
 ### Step 2: Generate HTML Prototype
-Dispatch subagent to write self-contained HTML file. Include: full build card content, ALL design tokens from DESIGN.md §1, Apple craft specs (animation curves, springs, glass tiers, micro-interactions), Inter + JetBrains Mono from CDN, 390×844 viewport, fixture data. Apply mandatory features from Apple Craft Reference: loading skeleton, price tick flash, list stagger-in, card tap feedback, glass cards, sparkline draw, all state transitions animated.
+Dispatch subagent to write self-contained HTML file. Include: full build card content, ALL design tokens from DESIGN.md section 1, Apple craft specs (animation curves, springs, glass tiers, micro-interactions), Inter + JetBrains Mono from CDN, 390×844 viewport, fixture data. Apply mandatory features from Apple Craft Reference: loading skeleton, price tick flash, list stagger-in, card tap feedback, glass cards, sparkline draw, all state transitions animated.
 
 **Output:** `apps/web-prototype/{screen-slug}.html`
 
@@ -247,7 +247,7 @@ Use after manually editing Arx_4-2 outside of `/design add`, or after a Figma-fi
 
 ---
 
-## `--innovate` modifier (FP-OS §3.6) — on top of `card` / `ui`
+## `--innovate` modifier (FP-OS innovation protocol) — on top of `card` / `ui`
 
 Invoke when the inherited problem space itself is the bottleneck. Base protocol still runs in full (Gates -1/0/3c, litmus, feel pass). Modifier adds two moves:
 

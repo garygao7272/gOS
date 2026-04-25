@@ -1,10 +1,10 @@
 {
   "current_command": "gOS > /build refactor tier-2-cleanup",
   "phase": "COMMITTED",
-  "step": 11,
+  "step": 14,
   "total_steps": 5,
   "started_at": "2026-04-15T13:32:00",
-  "last_checkpoint": "2026-04-17T21:47:29.678292",
+  "last_checkpoint": "2026-04-17T22:34:25.081442",
   "pending_approval": null,
   "files_modified": [
     "evals/rubrics/refine.md",
@@ -19,7 +19,9 @@
     "launchd/com.gos.evolve-sources.plist",
     "launchd/com.gos.evolve-specs.plist",
     "cd \"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS\" && git commit -m \"$(cat <",
-    "cd \"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS\" && git add CLAUDE.md comm"
+    "cd \"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS\" && git add CLAUDE.md comm",
+    "cd \"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS\" && git add .claude/hooks/",
+    "cd \"/Users/garyg/Documents/Documents - SG-LT674/Claude Working Folder/gOS\" && git add output-styles/"
   ],
   "last_commit": "69ff48e fix(gos): strip deprecated effort: frontmatter from commands",
   "evolve_persistence": {
@@ -54,5 +56,5 @@
       "hook-utils.sh missing from .claude/hooks/ \u2014 broke security-gate and freeze-guard"
     ]
   },
-  "recovery_instructions": "Resume at step 11: phase=COMMITTED, mode=gOS > /build refactor tier-2-cleanup"
+  "recovery_instructions": "Resume at step 14: phase=COMMITTED, mode=gOS > /build refactor tier-2-cleanup"
 }

@@ -65,7 +65,7 @@ DEFINITION OF DONE:
 
 Gary confirms → write contract to `outputs/build/{slug}/contract.md`. This is the **single source of truth** for the build session. Every later step (tests, code, verify) checks against this contract.
 
-### Build protocol (5-question pre-build gate — FP-OS §3.4)
+### Build protocol (5-question pre-build gate — FP-OS build protocol)
 
 Answer before writing code. Each shapes the contract or its sequencing; missing answers produce rework, not progress.
 
@@ -210,7 +210,7 @@ HTML prototypes live at `apps/web-prototype/` and are authored via `/design ui`,
 
 ---
 
-## `--innovate` modifier (FP-OS §3.6) — on top of `feature`
+## `--innovate` modifier (FP-OS innovation protocol) — on top of `feature`
 
 Invoke only when the standard implementation pattern provably fails to meet an invariant. Base protocol still runs in full (boundary contract, TDD, 80% coverage, compliance matrix, assumption log). Modifier adds two moves:
 

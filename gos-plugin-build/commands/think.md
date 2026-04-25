@@ -10,7 +10,7 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 **Output routing:**
 
-| Sub-command | Output To | Doc-type | First three H2s (§6.8 order) | Then |
+| Sub-command | Output To | Doc-type | First three H2s (doc-type ordering) | Then |
 |-------------|-----------|----------|------------------------------|------|
 | `discover` | `outputs/think/discover/{topic}.md` | `discovery` | Problem → Concept → Composition (Why → What → How) | "Promote to `specs/Arx_3-X`?" |
 | `research` | `outputs/think/research/{topic}.md` | `research-memo` | Findings/Verdict → Why it matters → How we found it (What → Why → How) | "Promote to `specs/Arx_2-X`?" |
@@ -28,11 +28,11 @@ generated: <ISO date>
 ---
 ```
 
-The first three H2s after the positioning sentence must match the §6.8 ordering keywords for that doc-type. The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies this on every output ≥100 lines.
+The first three H2s after the positioning sentence must match the doc-type orderinging keywords for that doc-type. The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies this on every output ≥100 lines.
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [topic], covering [scope]. Proceed?"
 
-**Output discipline.** Every prose artifact this command produces (files under `outputs/think/` and `specs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and §7 Voice and AI smell (twelve anti-patterns, quantitative warn caps on em-dash density and padding-phrase frequency). `/think spec` has additional quality-gate dimensions 1–5 plus the 8-primitive skeleton; `discover`, `research`, and `decide` still follow §6 and §7 universally.
+**Output discipline.** Every prose artifact this command produces (files under `outputs/think/` and `specs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) the artifact discipline rules (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and the voice-and-AI-smell rules (twelve anti-patterns, quantitative warn caps on em-dash density and padding-phrase frequency). `/think spec` has additional quality-gate dimensions 1–5 plus the 8-primitive skeleton; `discover`, `research`, and `decide` still follow artifact and voice rules universally.
 
 **Plan mode by default.** Present approach and wait for approval before executing.
 
@@ -83,7 +83,7 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 
 **Input:** 1-2 sentence seed idea
 
-### Design protocol (4-question lens — FP-OS §3.3)
+### Design protocol (4-question lens — FP-OS design protocol)
 
 `discover` lives at the Atoms + Degrees-of-freedom layers. Invariants (platform, regulation, business model, trust thresholds) are inputs. Every discover output must answer:
 
@@ -121,7 +121,7 @@ Skill: `anthropic-skills:design-discovery` (run inside this lens). Failure mode:
 
 **Purpose:** Deep research grounded in evidence.
 
-### Strategy protocol (5-question lens — FP-OS §3.5)
+### Strategy protocol (5-question lens — FP-OS strategy protocol)
 
 If the question has adversaries, feedback loops, or game-reshaping potential (competitor dynamics, market structure, venue economics), research through this lens. Pure fact-finding skips this.
 
@@ -158,7 +158,7 @@ Skill: `anthropic-skills:product-strategy` (run inside this lens). Failure mode:
 
 **Input:** Decision question (e.g., "should copy trading show full P&L transparency?")
 
-### Decision protocol (4-question gate — FP-OS §3.1)
+### Decision protocol (4-question gate — FP-OS decision protocol)
 
 The output MUST answer these four, in order. The PEV pool exists to gather evidence for them — not to replace them.
 
@@ -185,7 +185,7 @@ The output MUST answer these four, in order. The PEV pool exists to gather evide
    - **ITERATE** → planner refines contracts for unresolved dimension → round N+1 (max 3).
    - **STUCK** → escalate with options for Gary.
 
-**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, **Options table (mandatory — real/phantom tagged per FP-OS §3.3 Q3)**, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per §4)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, **Options table (mandatory — real/phantom tagged per FP-OS design protocol Q3)**, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per the signal-calibration primitive)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
 
 **Options table schema (mandatory for every `/think decide` artifact):**
 
@@ -195,7 +195,7 @@ The output MUST answer these four, in order. The PEV pool exists to gather evide
 - **Agency = real** — this option is actually available; a decisive signal either way moves the call. List in the decision set.
 - **Agency = phantom** — this option is labelled-as-choice but fixed by an upstream constraint (regulation, platform policy, contract, physics). Name the blocking constraint in column 3 and the upstream resolver (the command / decision / artifact that could relax it) in column 4. A phantom option is not in the decision set — it's a candidate for a separate upstream `/think decide` or strategy spec.
 
-**Why the tag matters.** Presenting phantoms alongside real options lets the decision run against an illusory freedom. The verdict picks a "winner" that cannot execute ("works on paper, won't execute"). Phantom classification either removes the option from the decision set or escalates it to the upstream constraint. FP-OS §3.3 Q3 is the source.
+**Why the tag matters.** Presenting phantoms alongside real options lets the decision run against an illusory freedom. The verdict picks a "winner" that cannot execute ("works on paper, won't execute"). Phantom classification either removes the option from the decision set or escalates it to the upstream constraint. FP-OS design protocol Q3 is the source.
 
 **Signals table schema (mandatory for every `/think decide` artifact):**
 
@@ -294,11 +294,11 @@ Specs are the highest-leverage artifact in gOS — a single spec cascades into b
 
 1. Spawn `pev-planner` with: task = spec topic, task_class = synthesis, pool hint:
    - **Meta:** `first-principles` (verify every atom traces to a cause, not precedent — INV-G01), `contrarian` (stress-test the rule under adversarial conditions)
-   - **Structural:** `architect` (check altitude, cascade direction, cross-references), `doc-type-auditor` (verify §6.1 positioning, §6.8 ordering, 8-primitive skeleton integrity, invariants/variants split in AC)
+   - **Structural:** `architect` (check altitude, cascade direction, cross-references), `doc-type-auditor` (verify positioning opener rule, doc-type orderinging, 8-primitive skeleton integrity, invariants/variants split in AC)
    - **Upstream:** `upstream-synthesizer` (map research/decide outputs into Atoms + Invariants + Signals — kills the prose re-interpretation failure mode from the research memo)
    - **Memory:** `episode-recaller` (check `specs/INDEX.md` and prior spec commits for orphans, duplicates, conflicts)
 2. Planner writes `roster.json`. Present to Gary. Wait for approval.
-3. Execute roster in parallel. Each agent writes to `artifacts/{agent}.md` + appends to `blackboard.md`. `doc-type-auditor` can VETO — a spec that fails §6.1 / §6.8 / 8-primitive / AC-split cannot proceed to promotion regardless of other verdicts.
+3. Execute roster in parallel. Each agent writes to `artifacts/{agent}.md` + appends to `blackboard.md`. `doc-type-auditor` can VETO — a spec that fails positioning opener or doc-type ordering / 8-primitive / AC-split cannot proceed to promotion regardless of other verdicts.
 4. `pev-validator` (fresh context) scores convergence → `verdict.md`.
 5. Decide:
    - **CONVERGED** → `adjudicator` synthesizes final spec (using the skeleton from step 3 of Process above) → run inline quality gate → PROMOTE if ≥11 AND all invariant dims ≥1.

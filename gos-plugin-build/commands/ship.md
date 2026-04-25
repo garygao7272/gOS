@@ -35,7 +35,7 @@ If any agent reports failures → STOP and report before committing. If all clea
 
 1. **Review gate:** Check if `/review` (code-reviewer agent) has been run on this work.
    - If review dashboard exists and is NOT CLEARED (has unresolved CRITICAL or HIGH issues): warn Gary and ask "Review has unresolved issues. Proceed anyway?"
-   - If no review was run: warn "No review on record. Want to run /review first or ship anyway?"
+   - If no review was run: check diff size with `git diff --stat <base>...HEAD | tail -1`. If ≥10 files OR ≥500 LOC, suggest `/ultrareview` (cloud parallel multi-agent, native CC v2.1.111+). Otherwise suggest `/review code`. Format: "No review on record. Diff is {N} files / {M} LOC — recommend `/ultrareview` (large diff) [or `/review code` (small diff)]. Run review or ship anyway?"
    - If review is CLEARED: proceed silently.
 
 2. **Final test run:** Run the project's test suite one last time.

@@ -162,8 +162,8 @@ Track progress in `outputs/gos-jobs/{job-id}/status.md`. Update state.json at ph
 
 ### Phase 5 — Reporting
 
-1. Write consolidated report to `outputs/gos-jobs/{job-id}/report.md`. The report must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline (positioning opener + outline at top, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor at end) and §7 Voice and AI smell (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency).
-2. Summarize to Gary: job complete, issues found, actions taken, remaining items. In-chat summary follows §7 voice rules but is exempt from §6 (not a persisted artifact).
+1. Write consolidated report to `outputs/gos-jobs/{job-id}/report.md`. The report must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) the artifact discipline rules (positioning opener + outline at top, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor at end) and the voice-and-AI-smell rules (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency).
+2. Summarize to Gary: job complete, issues found, actions taken, remaining items. In-chat summary follows the voice rules but is exempt from the artifact rules (not a persisted artifact).
 3. Capture evolve signals
 4. Confidence score on every output: high (>80%) / medium (60-80%) / low (<60% → STOP and flag)
 5. Update state.json: phase → "completed"

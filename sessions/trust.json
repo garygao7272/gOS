@@ -1,54 +1,10 @@
 {
   "version": "4.3",
-  "last_updated": "2026-04-17T21:52:21.793769+08:00",
+  "last_updated": "2026-04-17T22:35:51.218524+08:00",
   "domains": {
     "architecture": {
       "level": 0,
       "history": [
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T12:58:15Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T12:58:41Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T12:59:59Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:01:16Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:03:39Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:08:14Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:08:51Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:09:56Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:10:16Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:10:56Z"
-        },
-        {
-          "signal": "session-end",
-          "timestamp": "2026-04-17T13:11:28Z"
-        },
         {
           "signal": "session-end",
           "timestamp": "2026-04-17T13:12:16Z"
@@ -84,6 +40,50 @@
         {
           "signal": "session-end",
           "timestamp": "2026-04-17T13:52:21Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:04:10Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:06:25Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:08:07Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:17:50Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:20:38Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:23:37Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:24:48Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:26:13Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:29:42Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:34:33Z"
+        },
+        {
+          "signal": "session-end",
+          "timestamp": "2026-04-17T14:35:50Z"
         }
       ],
       "consecutive_accepts": 0,

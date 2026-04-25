@@ -28,11 +28,11 @@ If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, co
 
 **Output discipline:** Do reasoning inside `<analysis>` tags (private). Produce clean verdict, table, and recommendations inside `<output>` tags.
 
-**Artifact discipline.** Every prose artifact this command writes to disk (findings tables, council synthesis, dashboard reports, under `outputs/review/` or `outputs/gos-jobs/*/synthesis.md`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) §6 Artifact Discipline and §7 Voice and AI smell. In-chat verdict tables are exempt from §6 (they aren't persisted files); they still follow §7 voice rules.
+**Artifact discipline.** Every prose artifact this command writes to disk (findings tables, council synthesis, dashboard reports, under `outputs/review/` or `outputs/gos-jobs/*/synthesis.md`) must comply with the artifact discipline rules in [output-discipline.md](../rules/common/output-discipline.md) and the voice rules in [output-discipline-voice.md](../rules/common/output-discipline-voice.md). In-chat verdict tables are exempt from artifact rules (they aren't persisted files); they still follow the voice rules.
 
-**Doc-type contract (§6.8).** Persisted review artifacts declare frontmatter:
+**Doc-type contract.** Persisted review artifacts declare frontmatter:
 
-| Output | Doc-type | First three H2s (§6.8 order) |
+| Output | Doc-type | First three H2s (by doc-type ordering) |
 |--------|----------|------------------------------|
 | `outputs/gos-jobs/*/synthesis.md` (council) | `decision-record` | Context (Why the review ran) → Verdict (What we decided: PASS/KILL/DEFER) → Rationale + Disagreements (How we got here) → Consequences (downstream effects of the verdict) |
 | `outputs/review/ultra/*.md` | `research-memo` | Findings (What) → Why it matters (severity reasoning) → How to fix (ordered remediations) |
@@ -51,9 +51,11 @@ generated: <ISO date>
 
 The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies frontmatter + ordering.
 
+**Companion-load bootstrap (mandatory for voice / visuals critique).** When spawning a critic agent (council lane, persona, contrarian, design-auditor), the spawn prompt must explicitly instruct the agent to read [output-discipline-voice.md](../rules/common/output-discipline-voice.md) before flagging voice drift and [output-discipline-visuals.md](../rules/common/output-discipline-visuals.md) before flagging visual anti-patterns. Without the companion, the critic sees only the twelve-pattern summary and under-catches specific anti-patterns like pivot-cluster or table-of-tables that require the per-row rationale to cite correctly.
+
 ---
 
-## Diagnosis protocol (3-question pattern — FP-OS §3.2)
+## Diagnosis protocol (3-question pattern — FP-OS Diagnosis)
 
 When reviewing something **broken** (activation dropped, performance regressed, spec-vs-code diverged, test flaking, feature underperforming), run this *before* categorising findings by severity. Applies inside `code`, `gate`, `fresh`, and any ad-hoc diagnostic review.
 
@@ -166,11 +168,11 @@ Agent(
 | Severity | File:Line | Issue | Signal Class | Mechanism chain | Fix |
 |----------|-----------|-------|--------------|-----------------|-----|
 
-**Signal Class** tags each finding per FP-OS §4 and the output-discipline rule's signal-calibration section:
+**Signal Class** tags each finding per the FP-OS signal-calibration primitive and the output-discipline rule's signal-calibration section:
 - **decisive** — this finding alone flips the verdict (falsifier). One decisive signal = BLOCK regardless of count.
 - **suggestive** — accumulates; no single finding flips the call, but N suggestive findings compose into CONCERN.
 
-**Mechanism chain** traces the finding from symptom back to root cause per the FP-OS Diagnosis protocol (§3.2). Format: `symptom ← intermediate ← root-cause-atom`. Examples:
+**Mechanism chain** traces the finding from symptom back to root cause per the FP-OS Diagnosis protocol. Format: `symptom ← intermediate ← root-cause-atom`. Examples:
 - `null deref in user.ts:42 ← unchecked return from getProfile() ← API contract drift not caught by types`
 - `test flake in auth.spec ← race condition in session init ← mock clock not reset between suites`
 
@@ -200,7 +202,7 @@ Spec quality scoring runs inline inside `/think spec` before promoting to `specs
 
 ## gate
 
-**Purpose:** Pre-ship quality gate. Binary PASS/FAIL. Any failure blocks `/ship`. Checklist is split into **INVARIANTS** (AND-aggregated — every one must pass) and **VARIANTS** (scored — partial acceptable with explicit justification) per FP-OS §3.1 and `rules/common/output-discipline.md` §2. Mixing the two in one flat list lets a weighted-sum rationalise past a deal-breaker — the split prevents that.
+**Purpose:** Pre-ship quality gate. Binary PASS/FAIL. Any failure blocks `/ship`. Checklist is split into **INVARIANTS** (AND-aggregated — every one must pass) and **VARIANTS** (scored — partial acceptable with explicit justification) per the FP-OS decision protocol and the invariants-before-variants rule in [output-discipline.md](../rules/common/output-discipline.md). Mixing the two in one flat list lets a weighted-sum rationalise past a deal-breaker — the split prevents that.
 
 **Invariants (AND-aggregated — failing any single row BLOCKS ship):**
 
@@ -266,9 +268,9 @@ Plus: `arx-council-synthesizer` — reconciles all 7 lanes, surfaces disagreemen
 5. Spawn `arx-council-synthesizer` with all 7 outputs. Produces `outputs/gos-jobs/{job-id}/synthesis.md`.
 6. Gary sees: synthesis + raw per-archetype verdicts + ultra findings + disagreement map.
 
-**Verdict escalation rules — the Aggregation Rule (FP-OS §I rule-form, mandatory `## Aggregation Rule` H2 in synthesis):**
+**Verdict escalation rules — the Aggregation Rule (FP-OS rule-form primitive, mandatory `## Aggregation Rule` H2 in synthesis):**
 
-The synthesizer MUST state the aggregation rule explicitly in the synthesis, in §I form **"overall verdict = <verdict> iff <condition>"**. Default rules (may be overridden per target with a named justification):
+The synthesizer MUST state the aggregation rule explicitly in the synthesis, in rule-form **"overall verdict = <verdict> iff <condition>"**. Default rules (may be overridden per target with a named justification):
 
 - **BLOCK (decisive falsifiers, any one fires):**
   - Any S2 agent BLOCK on a mechanical issue (latency, API, order primitives) → overall BLOCK.
@@ -322,7 +324,7 @@ Any persona name can be invoked directly: `/review s2-jake`, `/review trader-ux`
 
 1. **Load Persona** — adopt the specialist's expertise, vocabulary, and focus from the council table above
 2. **Research** — launch a background research agent for current best practices relevant to the persona's lens
-3. **Evaluate** — review through persona's lens. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, location (file:line or spec:section), **signal class** (decisive / suggestive — per FP-OS §4), **mechanism chain** (symptom ← intermediate ← root-cause-atom — per FP-OS §3.2), fix. CRITICAL/HIGH severity MUST reach an atomic root cause in the chain; single-link findings demote to suggestive.
+3. **Evaluate** — review through persona's lens. Each finding: severity (CRITICAL/HIGH/MEDIUM/LOW), evidence, location (file:line or spec:section), **signal class** (decisive / suggestive — per the FP-OS signal-calibration primitive), **mechanism chain** (symptom ← intermediate ← root-cause-atom — per the FP-OS Diagnosis protocol), fix. CRITICAL/HIGH severity MUST reach an atomic root cause in the chain; single-link findings demote to suggestive.
 4. **Verdict** — APPROVE / CONCERN / BLOCK. Always include: Steel Man ("strongest argument FOR"), Kill Shot ("single biggest risk"), Recommendation
 5. **Output** — code fixes → `apps/`, spec corrections → `specs/`, decisions → `specs/Arx_9-1_Decision_Log.md`
 
