@@ -129,10 +129,31 @@ matches_bypass() {
     return 1
 }
 
+# Auto Mode: when the user has opted into continuous autonomous execution,
+# Plan Gate is friction. Two signals (either suffices):
+#   1. Sentinel file at sessions/.auto-mode (Claude touches it on session entry
+#      when it sees the auto-mode system-reminder).
+#   2. Auto-mode reminder text in the current prompt (defensive fallback).
+auto_mode_active() {
+    local p
+    p="$(lowercase "$1")"
+    [ -f "$PROJECT_DIR/sessions/.auto-mode" ] && return 0
+    case "$p" in
+        *"auto mode active"*|*"auto mode is active"*) return 0 ;;
+    esac
+    return 1
+}
+
 FIRST_TOKEN_RAW="$(printf '%s' "$PROMPT" | awk '{print $1}')"
 FIRST_TOKEN="$(lowercase "$FIRST_TOKEN_RAW")"
 REST="$(printf '%s' "$PROMPT" | awk '{$1=""; print substr($0,2)}')"
 STATE_NOW="$(current_state)"
+
+# Auto Mode: if user opted into autonomous execution, skip gate entirely.
+# Auto mode IS explicit consent — re-confirming every turn defeats the mode.
+if auto_mode_active "$PROMPT"; then
+    exit 0
+fi
 
 # Case 1: prompt starts with a plan-gated verb → open a new gate.
 if requires_plan_gate "$FIRST_TOKEN" "$REST"; then

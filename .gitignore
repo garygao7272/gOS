@@ -11,6 +11,7 @@ node_modules/
 toolkit/*/node_modules/
 tools/sources-env/
 sessions/scratchpad.md
+sessions/.auto-mode
 __pycache__/
 *.pyc
 .claude/middleware/__pycache__/
