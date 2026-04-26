@@ -226,23 +226,24 @@ The base inline-default rule (§7) is overridden by command-level routing (every
 
 **Why this is needed.** Command-level "Output: outputs/think/.../.md" overrides §7's "Default: inline" — the inline default is dead-on-arrival for /think today. The fix isn't to remove the file path (sometimes a file is right) but to gate it on output size. A 30-line advisory should not become a 30-line file; a 200-line decision record should.
 
-### 7.9.6.5 No internal jargon in body prose
+### 7.9.6.5 No internal jargon in body prose (retail / external audience only)
 
-A spec or rule that uses internal jargon (PEV, FP-OS, INV-G01, K5, doc-type articulation, AND-aggregated, primitives, atoms-vs-invariants, AC split) without defining it forces the reader to learn the system before reading the content. The rule that bans index codes in artifact prose applies recursively to the gos rule files themselves.
+**Scope (narrowed 2026-04-26):** This rule fires only when the artifact's frontmatter `audience:` field names a **retail-facing**, **external-distribution**, or **end-user** reader (e.g., "Arx retail trader", "external partner", "investor", "customer", "end user"). For internal-audience artifacts (Gary, Claude session, builder, contributor, gOS maintainer), internal precision is allowed — internal vocabulary is sometimes the most accurate signal, and forcing it into a glossary trades clarity for accessibility we don't actually need. The original rule over-applied this gate; today's narrowing restores judgment to internal artifacts.
 
-**Banned in body prose** (body = anything that isn't a glossary, footnote, or named code-block):
+**Banned in retail/external body prose** (body = anything that isn't a glossary, footnote, or named code-block):
 - Acronyms without expansion on first use ("PEV" → expand to "plan/execute/validate" once, then reuse).
-- Internal labels that mean nothing to a fresh reader (INV-G01, FP-OS K3/K5/K6/K8, dim 6 / dim 8).
-- "Primitive" / "atom" / "invariant" used as gos-specific vocabulary without naming what they map to in plain English.
+- Internal labels that mean nothing to a retail reader (INV-G01, FP-OS K3/K5/K6/K8, dim 6 / dim 8).
+- "Primitive" / "atom" / "invariant" used as gOS-specific vocabulary without naming what they map to in plain English.
 
-**Allowed:**
+**Allowed (always):**
 - Industry-standard terms (Sharpe, MaxDD, funding, basis, OI, leverage, idempotent, P95, state machine, rate limit) — these are the language, not the jargon.
 - Internal terms used inside the **glossary** (one-page plain-English reference at [glossary.md](./glossary.md)).
 - Internal terms used inside cross-reference tables, code blocks, and frontmatter.
+- **All internal vocabulary in internal-audience artifacts.** A spec written for a builder can use "PEV" / "primitives" / "AC split" without the glossary detour.
 
-**The test:** could a fresh contributor — someone who joined yesterday with no gos exposure — read this sentence and parse it? If no, the sentence is jargon. Either expand the term inline once, or move the sentence into the glossary as a reference.
+**The test (retail/external only):** could a fresh retail reader — someone who has never opened gOS — parse this sentence? If no, expand the term inline once or move to the glossary.
 
-**Why this rule applies to gos rule files themselves:** the rule that requires plain-English in artifacts loses credibility if the rule itself is written in jargon. The gos rule files are read by every new contributor and every Claude session loading the rules into context — they are the highest-traffic prose in the system.
+**Why this rule applies to gOS rule files themselves:** the rule files are read by every contributor and every Claude session. Their audience is internal, so internal vocabulary is allowed — but the test for whether vocabulary is *load-bearing* still applies. If a sentence uses "AC split" only because it's shorter than spelling out "splitting Acceptance Criteria into Invariants and Variants subsections," and the spelled-out version is clearer, prefer the spelled-out version. Use jargon when it carries precision; expand when it only carries brevity.
 
 ### 7.9.7 No interim-process content in final outputs
 
@@ -329,7 +330,6 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 | Rule-form H2 (decision records) | `_check_rule_form` | `## Selection Rule` or `## Aggregation Rule` H2 present |
 | Em-dash density · padding-phrase frequency (artifacts) | `_check_em_dash_density` · `_check_padding_phrase_frequency` | Voice warn caps |
 | Self-congratulatory close (artifacts) | `_check_self_congratulatory_close` | Last 15 lines must not restate / congratulate / announce conclusion |
-| Meta-about-meta opener (artifacts) | `_check_meta_about_meta` | First 20 lines after H1 must not describe the document's own purpose (starts substantive, not meta) |
 | Faux-specific vagueness (artifacts) | `_check_faux_vague` | Phrases like "several key" / "a number of" flagged when not followed by a specific count |
 | Process-narrative leakage (execution-spec) | `_check_process_narrative_leakage` | "we considered" / "originally" / "after reflection" etc. banned from execution-spec body prose; phrase list at `tests/fixtures/ai-smell-phrases/process-narrative.txt` |
 | Soft adjective without numeric (execution-spec) | `_check_soft_adjective_without_numeric` | "fast" / "responsive" / "comfortable" without a number in operational sections (Contract / Edges / Targets / State / Open questions); phrase list at `tests/fixtures/ai-smell-phrases/soft-adjectives.txt` |
@@ -342,7 +342,7 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 - Describe-before-index prose rule (§7.3) — index-code-in-prose flagged by reviewer, not regex
 - Prose-table weave (§7.7) — rhythm is judgment
 - Action-anchor minimum lines (§7.8) — final-section operability is judgment
-- Five of twelve voice anti-patterns (§8) — em-dash density, padding-opener frequency, pivot-cluster, self-congratulatory close, meta-about-meta, and faux-specific vagueness are mechanical (six patterns total with mechanical coverage); the remaining six patterns (symmetric triples, "not X but Y," over-qualification, symmetric section intros, bulleted-over-prose, and summary-announcement openers via padding-opener overlap) are judgment
+- **Voice anti-patterns (§8) — five mechanical, seven judgment.** Mechanical (still lint-enforced): em-dash density, padding-opener frequency, pivot-cluster, self-congratulatory close, faux-specific vagueness. Judgment (guidance only — flagged by reviewer when load-bearing, not by regex): symmetric triples, "not X but Y," over-qualification, symmetric section intros, bulleted-over-prose, summary-announcement openers, **meta-about-meta opener** (demoted 2026-04-26 — over-fit; opening with "this document" is sometimes the cleanest framing for an internal-audience artifact)
 - Visuals (§7.9) — reach-for rule and tool selection are 100% judgment by design
 
 **Meta-check:** `tests/hooks/artifact-discipline.bats` includes `_check_enforcement_table_matches_bats` which diffs the Enforcement table above against the actual `_check_*` helpers in both bats files. A table that claims a gate not present in bats, or a bats helper missing from the table, fails the meta-check. This keeps the Enforcement table honest.

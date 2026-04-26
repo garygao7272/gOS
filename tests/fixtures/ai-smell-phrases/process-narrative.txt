@@ -1,30 +1,18 @@
+# Process-narrative phrases — banned in execution-spec body prose only.
+# Consumed by tests/hooks/artifact-discipline.bats _check_process_narrative_leakage.
+# Referenced by rules/common/output-discipline.md §7.1 (execution-spec rubric).
+#
+# Pruned 2026-04-26 from 30 → 10 — kept well-attested process-narrative
+# leaks; dropped speculative variants and dual-purpose phrases ("turns out",
+# "looking back", "in retrospect", "on further thought") that fire on
+# legitimate retrospective analysis as often as on process narrative.
 we considered
-we originally
 originally we
 after reflection
-upon reflection
-it's worth noting
 having established
-having considered
-on further thought
-in retrospect
-looking back
+this document sets out to
 we previously
-we thought
 we initially
-we then realized
-we discovered that
 in earlier versions
 the prior version
-this used to be
-we used to
-turned out to be
-turns out
 as we discussed earlier
-as mentioned above
-as noted previously
-revisiting this
-on second thought
-to revisit
-this section was
-this document sets out to

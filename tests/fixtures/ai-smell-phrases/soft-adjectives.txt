@@ -1,30 +1,19 @@
+# Soft adjectives — banned in execution-spec operational sections without
+# a number within 30 chars. Consumed by tests/hooks/artifact-discipline.bats
+# _check_soft_adjective_without_numeric. Referenced by output-discipline.md §7.1.
+#
+# Pruned 2026-04-26 from 30 → 10 — kept high-frequency unquantified-perf
+# adjectives; dropped dual-purpose words ("clean", "heavy", "elegant"),
+# semantic synonyms ("nimble", "swift", "zippy", "buttery", "silky", "crisp"),
+# and rarely-used variants. The 10 that remain catch real specs-without-numbers
+# regressions.
 fast
 slow
-quick
 responsive
-unresponsive
-comfortable
-uncomfortable
 smooth
+performant
 snappy
 sluggish
-performant
-lightweight
-heavy
-clean
-dirty
 robust
-fragile
 scalable
-flexible
 intuitive
-seamless
-graceful
-elegant
-nimble
-swift
-zippy
-laggy
-crisp
-buttery
-silky

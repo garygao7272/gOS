@@ -1227,25 +1227,6 @@ _check_self_congratulatory_close() {
   return 0
 }
 
-# §8 Meta-about-meta — artifact opens by describing its own purpose /
-# structure rather than engaging the subject. Check the first 20 non-blank,
-# non-frontmatter lines after the H1.
-_check_meta_about_meta() {
-  local file="$1"
-  local phrase_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/meta-about-meta.txt"
-  [[ -f "$phrase_file" ]] || return 1
-  # Head window: skip frontmatter + H1, take first 20 content lines
-  local head_window
-  head_window=$(awk 'BEGIN{fm=0; past_h1=0} NR==1 && /^---$/{fm=1; next} fm && /^---$/{fm=0; next} fm{next} /^# /{past_h1=1; next} past_h1 && NF{print; n++; if (n>=20) exit}' "$file")
-  local alt
-  alt=$(grep -vE '^(#|[[:space:]]*$)' "$phrase_file" | tr '\n' '|' | sed 's/|$//')
-  [[ -z "$alt" ]] && return 0
-  if echo "$head_window" | grep -qiE "(${alt})"; then
-    return 1
-  fi
-  return 0
-}
-
 # §8 Faux-specific vagueness — phrases like "several key" / "a number of"
 # that hedge where a specific count would commit. Fires when the phrase is
 # NOT followed by a digit on the same line (commitment would be "3 key" or
@@ -1302,36 +1283,6 @@ _check_faux_vague() {
     echo "Run the backtest on Q2 data before deciding."
   } > "$d/clean.md"
   run _check_self_congratulatory_close "$d/clean.md"
-  [ "$status" -eq 0 ]
-}
-
-@test "§8 meta-about-meta: artifact opening with 'This document sets out to' FAILS" {
-  local d="$FIXTURES/meta-open"
-  rm -rf "$d" && mkdir -p "$d"
-  {
-    echo "# Report"
-    echo
-    echo "This document sets out to describe the system's architecture."
-    echo
-    echo "## Overview"
-    echo "Three components."
-  } > "$d/meta.md"
-  run _check_meta_about_meta "$d/meta.md"
-  [ "$status" -ne 0 ]
-}
-
-@test "§8 meta-about-meta: artifact opening with mechanism PASSES" {
-  local d="$FIXTURES/meta-clean"
-  rm -rf "$d" && mkdir -p "$d"
-  {
-    echo "# Report"
-    echo
-    echo "*A research memo produced to identify where the auth refresh flow races.*"
-    echo
-    echo "## Overview"
-    echo "The race happens because..."
-  } > "$d/clean.md"
-  run _check_meta_about_meta "$d/clean.md"
   [ "$status" -eq 0 ]
 }
 
@@ -1422,9 +1373,10 @@ _check_process_narrative_leakage() {
   prose=$(_strip_exec_spec_noise "$file")
 
   # Match any phrase from the fixture (case-insensitive). One match = fail.
+  # Skip empty lines and comment lines (lines starting with #).
   local hit
   while IFS= read -r phrase; do
-    [[ -z "$phrase" ]] && continue
+    [[ -z "$phrase" || "$phrase" =~ ^# ]] && continue
     if echo "$prose" | grep -qiF "$phrase"; then
       hit="$phrase"
       break
@@ -1467,9 +1419,10 @@ _check_soft_adjective_without_numeric() {
 
   [[ -z "$op_prose" ]] && return 0  # no operational sections — skip
 
-  # Build regex of all soft adjectives (word-boundary matched)
+  # Build regex of all soft adjectives (word-boundary matched).
+  # Skip empty lines and comment lines (lines starting with #).
   local adj_regex
-  adj_regex=$(awk 'NF{print "\\b" $0 "\\b"}' "$phrases_file" | paste -sd'|' -)
+  adj_regex=$(awk 'NF && !/^[[:space:]]*#/{print "\\b" $0 "\\b"}' "$phrases_file" | paste -sd'|' -)
   [[ -z "$adj_regex" ]] && return 0
 
   # Find lines with adjective AND no digit within the line

@@ -1,18 +1,14 @@
 # AI-smell faux-specific vagueness phrases — single source of truth.
-# Checked across the whole document. The check fires when these phrases appear
-# WITHOUT a specific number. "Several" is vague; "three" is concrete. The helper
-# flags phrases followed by a vague noun rather than a digit.
+# Checked across the whole document. Fires when phrases appear WITHOUT a
+# specific number. "Several" is vague; "three" is concrete.
 # Consumed by tests/hooks/artifact-discipline.bats _check_faux_vague.
 # Referenced by rules/common/output-discipline-voice.md (row 11).
 #
-# Pattern: specificity requires commitment; hedging stays safe. The fix is to
-# replace with an actual count — or rewrite the sentence to not need one.
+# Pruned 2026-04-26 — kept well-attested phrases that have caught real
+# regressions; dropped speculative variants ("a variety of", "a range of
+# different", "numerous factors", "various aspects") that fire on
+# legitimate use as often as on smell.
 several key insights
 several important
-a number of key
-a number of important
+a number of
 multiple important
-various aspects
-numerous factors
-a variety of
-a range of different

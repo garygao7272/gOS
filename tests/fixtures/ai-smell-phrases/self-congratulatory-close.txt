@@ -3,16 +3,12 @@
 # Consumed by tests/hooks/artifact-discipline.bats _check_self_congratulatory_close.
 # Referenced by rules/common/output-discipline-voice.md (row 9).
 #
-# Pattern: the document announces that it has finished, summarizes what it did,
-# or congratulates the reader/author at the close. Readers trust themselves to
-# have read the document — restating is padding.
+# Pruned 2026-04-26 from 10 → 5 — kept the strongest tells; dropped
+# "as we've seen" / "as discussed above" / "having established" / "we've
+# now covered" — these fire on legitimate cross-references as often as on
+# self-congratulatory close.
 To recap what we've accomplished
 In closing
-As we've seen
-As discussed above
 In conclusion
 To summarize what we've covered
-Having established
-To recap
-We've now covered
 That concludes our
