@@ -8,6 +8,8 @@ description: "Ship — deliver: commit, push, pr, gos, deploy, docs, fundraise �
 
 Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, run the full ship sequence.
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: inline (status lines only; git/CI does the persistent work). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 ---
 
 ## (no args) — Full Ship Sequence

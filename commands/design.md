@@ -22,6 +22,8 @@ Parse the first word of `$ARGUMENTS` to route. If no match → ask: "What kind o
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] for [target], using [key constraints]. Proceed?"
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: file (cards + UI persist). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 ---
 
 ## Before Designing (always)

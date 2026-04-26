@@ -6,6 +6,8 @@ description: "Save session state + learning loop: files changed, signals, memory
 
 **Purpose:** End-of-block persistence. Captures what changed, scans for evolve signals, updates memory, writes state.json. Canonical entry — there is no `/gos save`.
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: file (always — that's the verb's purpose; `--inline` is rejected). Override: `--file=<path>` only. Print one-line routing decision before execution.
+
 Save session state to `~/.claude/sessions/{date}-{slug}.md`. Capture: task, decisions, dead ends, branch, files, next steps.
 
 ## Learning Loop (mandatory on save)

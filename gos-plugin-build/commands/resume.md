@@ -6,6 +6,8 @@ description: "Restore most recent saved session — read state.json + L1 + lates
 
 **Purpose:** Re-enter a session with the right context loaded. Canonical entry — there is no `/gos resume`.
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: inline (briefing is always chat-shaped). `--file` is rejected (resume is a state-restore, not an artifact). Print one-line routing decision before execution.
+
 ## Process
 
 1. Read `sessions/state.json` — check for incomplete work (`phase`, `pending_approval`, `recovery_instructions`).

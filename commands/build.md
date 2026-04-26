@@ -28,6 +28,8 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What are we building?
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll [sub-command] [target] based on [spec/handoff]. Proceed?"
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: file (contract.md + code; persists for /ship). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 **Plan mode by default.** Present approach (files to change, test strategy, commit plan) and wait for approval before writing code. Skip only for trivial single-file fixes.
 
 > **Sub-command map:** `feature` (full TDD build, covers `component` + `tdd`), `prototype` (see redirect below — authored via `/design ui`), `fix`, `refactor`, `model`. For planning, use Claude Code's native Plan Mode rather than a `/build plan` sub-command.

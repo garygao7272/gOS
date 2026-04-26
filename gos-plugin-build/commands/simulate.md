@@ -17,6 +17,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If no sub-command
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll simulate [type] for [target], parameters: [key params]. Proceed?"
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: file (sim runs persist for replay/audit; short scenarios may go inline). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 **Output discipline.** Every prose artifact this command produces (simulation narratives, scenario reports, flow walkthroughs under `outputs/`) must comply with [rules/common/output-discipline.md](../rules/common/output-discipline.md) the artifact discipline rules (positioning opener + outline, meta-content ≤5%, no main-body version markers, metadata consistent, prose-table weave, action anchor) and the voice-and-AI-smell rules (twelve anti-patterns, warn caps on em-dash density and padding-phrase frequency). Data tables, charts, and CSV/JSON outputs are exempt — artifact and voice rules apply only to the prose sections that frame them.
 
 **Doc-type contract (doc-type ordering).** Every prose output declares frontmatter:

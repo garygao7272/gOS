@@ -25,7 +25,9 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 - `--inline` / `--brief` — chat-only output for this invocation; no file write. Equivalent to the chat-default override fired by hand.
 - `--lean` — applies to `spec` only. Uses the 4-section lean template (Boundaries · Atoms · Rule · Consequences) instead of the full 8-primitive skeleton. For specs whose target length is < 300 lines.
 
-**Length budgets — see [output-discipline.md §7.9.5](../rules/common/output-discipline.md).** Warn-level caps per doc-type: decision-record 200 · research-memo 350 · discovery 300 · product-spec 500 · design-spec 600 · strategy 400 · build-card 300.
+**Length budgets — see [output-discipline.md §7.9.5](../rules/common/output-discipline.md).** Warn-level caps per doc-type: decision-record 200 · research-memo 350 · discovery 300 · product-spec 500 · design-spec 600 · execution-spec 400 · strategy 400 · build-card 300.
+
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: per sub-command (`research` short can be inline; `decide`/`discover`/`spec` always file). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
 
 **Frontmatter contract (every sub-command, every output).** The adjudicator writes `synthesis.md` with YAML frontmatter that declares:
 

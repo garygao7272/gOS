@@ -24,6 +24,8 @@ If no sub-command given, ask: "What kind of review? fresh, ultra, code, gate, co
 
 **Intent confirmation** — see [rules/common/intent-confirmation.md](../rules/common/intent-confirmation.md). Template: "I'll review [target] as [sub-command], covering [files/scope]. Proceed?"
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: per sub-command (`fresh`/`code`/`gate` can be inline if short; `ultra`/`council` always file). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 **Plan mode enforced.** Before executing any review, state: what's being reviewed, which sub-command, what files/specs are in scope. Wait for confirmation unless Gary said "just do it."
 
 **Output discipline:** Do reasoning inside `<analysis>` tags (private). Produce clean verdict, table, and recommendations inside `<output>` tags.

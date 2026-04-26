@@ -38,6 +38,8 @@ Pick the cheapest mode that clears the quality bar. Escalate (self → fresh →
 
 Source: codified from the 2026-04-26 Display Architecture v0.2 → v0.2.1 distillation pass that compressed 580 → 311 lines (−46%) with zero content loss. Promoted from a separate `/refine compress` opt-in mode to default cycle behavior because verbose drafts shouldn't pass through any cycle without distillation pressure.
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: file (cycles persist as audit trail). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 ---
 
 ## Shared contract (all three modes)

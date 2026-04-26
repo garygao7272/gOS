@@ -10,6 +10,8 @@ Parse the first word of `$ARGUMENTS` to determine sub-command. If none given, ru
 
 **Plan mode by default.** For `audit` and `upgrade`: present scope (what signals/commands to examine, what changes to propose) and wait for approval. Skip for `learn` (single-pass, low risk).
 
+**Output routing** — see [rules/common/output-routing.md](../rules/common/output-routing.md). Default: file (audits persist to `memory/evolve_audit_*.md`; upgrade outputs land in command files). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 **Output discipline (two-phase pattern):** For audit, upgrade, and reflect sub-commands, use the analysis/output separation pattern. Do your reasoning and evidence gathering inside `<analysis>` tags (private working space — not shown to Gary). Then produce the concise, actionable result inside `<output>` tags. This keeps Gary's view clean while preserving thorough analysis.
 
 ---

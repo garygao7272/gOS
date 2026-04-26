@@ -22,6 +22,8 @@ Parse the first word of `$ARGUMENTS`:
 - Scan: `outputs/think/research/scan-{topic}-{date}.md`
 - Sources: updates to `~/.claude/config/intake-sources.md` in-place
 
+**Override** — see [rules/common/output-routing.md](../rules/common/output-routing.md) for the universal flag spec. Default: file (intake outputs persist for downstream `/think` consumption; short summaries can be inline). Override: `--inline` / `--file` / `--file=<path>`. Print one-line routing decision before execution.
+
 ---
 
 ## Execution
