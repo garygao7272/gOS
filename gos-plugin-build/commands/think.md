@@ -12,10 +12,20 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 
 | Sub-command | Output To | Doc-type | First three H2s (doc-type ordering) | Then |
 |-------------|-----------|----------|------------------------------|------|
+| `advise` | **Chat only — no file** | n/a | Mechanism · ranked options · decision call | One follow-up: "save as decide?" if Gary commits |
 | `discover` | `outputs/think/discover/{topic}.md` | `discovery` | Problem → Concept → Composition (Why → What → How) | "Promote to `specs/Arx_3-X`?" |
 | `research` | `outputs/think/research/{topic}.md` | `research-memo` | Findings/Verdict → Why it matters → How we found it (What → Why → How) | "Promote to `specs/Arx_2-X`?" |
 | `decide` | `outputs/think/decide/{topic}.md` | `decision-record` | Context → Decision → Rationale → Consequences (Why → What → How → Consequences) | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
 | `spec` | **Direct to `specs/`** | `product-spec` (or `design-spec` / `strategy` per altitude) | Boundaries → Atoms → Relations (8-primitive skeleton below) | No staging |
+
+**Chat-default override** — see [output-discipline.md §7.9.6](../rules/common/output-discipline.md). If the output would be < 50 lines AND < 200 words AND has no future-session retrieval need, return inline; do not write the file. Applies to `discover`, `research`, `decide` outputs that come back short. `advise` is always chat. `spec` always writes.
+
+**Brevity flags (apply to any sub-command):**
+
+- `--inline` / `--brief` — chat-only output for this invocation; no file write. Equivalent to the chat-default override fired by hand.
+- `--lean` — applies to `spec` only. Uses the 4-section lean template (Boundaries · Atoms · Rule · Consequences) instead of the full 8-primitive skeleton. For specs whose target length is < 300 lines.
+
+**Length budgets — see [output-discipline.md §7.9.5](../rules/common/output-discipline.md).** Warn-level caps per doc-type: decision-record 200 · research-memo 350 · discovery 300 · product-spec 500 · design-spec 600 · strategy 400 · build-card 300.
 
 **Frontmatter contract (every sub-command, every output).** The adjudicator writes `synthesis.md` with YAML frontmatter that declares:
 
@@ -83,7 +93,28 @@ Then write `sessions/handoffs/think.json` with the typed primitive payload (sche
 
 This is the inverse direction of the standard handoff: /think normally feeds /design + /build downstream; here it feeds back upstream into the spawning /refine. Schema: [specs/handoff-schemas.md](../specs/handoff-schemas.md) → `refine.json`.
 
-Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
+Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? advise (chat-only), discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
+
+---
+
+## advise <question>
+
+**Purpose:** Chat-only thinking. Mechanism, ranked options, decision call — all inline. No file. No frontmatter. No PEV swarm.
+
+**When to pick:** Quick advisory, meta-tooling questions, gOS-internal asks, "just talk it through" moments where the user wants the thinking, not the artifact. The litmus test: would the file get re-read in a future session? If no, this is `advise`.
+
+**Output shape (chat only):**
+
+1. **Mechanism** — one sentence naming the cause (per output-discipline §1).
+2. **Outline** — `**Covers:** a · b · c` (per §1.1, when ≥ 8 lines).
+3. **Body** — ranked options table OR direct prose, whichever fits.
+4. **Decision close** — if asking the user to pick, use the multi-option three-H2 shape (§6); if recommending one path, close with a single suggestion.
+
+**Length cap:** ≤ 200 lines of chat output. Over cap → escalate to `/think decide` or `/think research`.
+
+**No file written.** No `outputs/think/advise/` directory. The thinking lives in the conversation. If Gary commits and wants persistence, follow up with `/think decide --save` to promote the chat thread into a decision record.
+
+**Why this exists.** /think previously had no chat-only path — every invocation produced a file even when the question was "talk me through this." Verbosity-by-default was structural, not stylistic. `advise` restores the chat default for thinking-not-artifact.
 
 ---
 
@@ -195,7 +226,9 @@ The output MUST answer these four, in order. The PEV pool exists to gather evide
    - **ITERATE** → planner refines contracts for unresolved dimension → round N+1 (max 3).
    - **STUCK** → escalate with options for Gary.
 
-**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, **Options table (mandatory — real/phantom tagged per FP-OS design protocol Q3)**, per-agent positions, **Signals table (mandatory — decisive/suggestive tagged per the signal-calibration primitive)**, decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+**Output:** `outputs/think/decide/{question_slug}.md` (promoted from `synthesis.md`). Include: question, context, **Options table** (mandatory when ≥3 options — real/phantom tagged per FP-OS design protocol Q3; for 1–2 options, prose suffices), per-agent positions, **Signals table** (mandatory when ≥3 signals OR a decisive cut is named — decisive/suggestive tagged per the signal-calibration primitive; for sparse signals, prose suffices), decision + rationale, confidence, review date. Suggest appending to `specs/Arx_9-1_Decision_Log.md`.
+
+**Tables relaxation rule (≤2 options).** A two-option decision can be prose: "Option A vs option B; here's why A wins. Decisive cut: X." The Options/Signals tables exist to prevent decision drift across many options — they're overhead when the call is binary. The decisive/suggestive *tagging* still applies in prose form (the linter checks for the keywords, not the table).
 
 **Options table schema (mandatory for every `/think decide` artifact):**
 
@@ -234,20 +267,21 @@ NEVER: [what this spec refuses to cover — and why]
 
 **First-principles self-check (INV-G01):** Before finalizing, verify every claim traces to a mechanism, not an analogy. If any section leans on "like X" without naming the underlying cause, rewrite from primitives.
 
-**Seven FP-OS primitives plus one Consequences section — eight mandatory sections.** Every spec written via `/think spec` must contain these eight sections in order. Empty or unknown is allowed — write "UNKNOWN — resolver: <what would fill it>". Missing sections fail the quality gate. Sections 1–7 are the FP-OS Layer 1 primitives; section 8 is a documentation primitive specific to specs, drawn from the Architecture Decision Record and Shape Up traditions.
+**Spec skeleton — five sections, PM-native (Problem · Users · Solution · Success criteria · Risks).** Every spec opens with these five sections, in order. The five questions a CEO and product lead would ask of any commitment. Mental model carries from any company; no gos vocabulary required to read or write.
 
-| # | Section | What goes here |
-|---|---|---|
-| 1 | **Boundaries** | IN / OUT / NEVER — scope contract (reuses synthesis boundary above) |
-| 2 | **Atoms** | Irreducible units this spec operates on. Each atom traced to a cause, not precedent (INV-G01). |
-| 3 | **Relations** | How atoms connect — mechanisms, causality, flows. "A causes B by mechanism X." |
-| 4 | **Invariants** | Hard constraints (binary, AND-aggregated). Classify each: *physical* (immutable) or *conventional* (industry habit — candidate for relaxation under `--innovate`). |
-| 5 | **Degrees of freedom** | What can actually vary. For each: is this real agency, or phantom (labelled-as-choice but fixed)? |
-| 6 | **Signals** | Observables that reveal state. Tag each: **decisive** (flips the call alone) or **suggestive** (accumulates). Reference FP-OS decision protocol. |
-| 7 | **Rule** | How we combine / select / optimise. Form: "maximise X subject to invariants Y." Must be reproducible by a reader given the primitives above. |
-| 8 | **Consequences** | If we commit to this rule, what becomes true downstream, what becomes harder, and what is foreclosed until revisited? Three bullets minimum, each naming a concrete downstream effect. |
+| # | Section | What goes here | Question it answers |
+|---|---|---|---|
+| 1 | **Problem** | What hurts. The constraints that can't be relaxed (regulatory, platform, business-model, trust thresholds). What we considered deleting and why we kept it. | What's broken, what's fixed about the world we operate in, and is this even worth doing? |
+| 2 | **Users** | The specific person and moment. One named persona, one job-to-be-done. Not a demographic. Open with the worst user case (most confused, lowest context) so the design has to handle them | Who has the pain, in what moment, with what context? |
+| 3 | **Solution** | The rule we're committing to. What we operate on, how we combine / select, why this beats alternatives. State machine completeness if UX/UI; type signatures and contracts if code | What are we shipping, and how does it work? |
+| 4 | **Success criteria** | How we'll know it shipped right. Decisive signals (must fire) vs suggestive signals (accumulate). Numeric targets (P95 latency, payload size, error rate, cold-paint time, cognitive load). Acceptance test as a concrete user-flow pass/fail | What's the proof we built it, and how do we measure it in production? |
+| 5 | **Risks** | What we're accepting, what becomes harder, what's hard to reverse. Reversibility tag on every consequential action. Named one-way doors. Failure modes upfront with recovery paths | What could break, what's the worst case, and what becomes impossible to undo? |
 
-**Why Consequences is required.** A decision without named consequences is a wish. Readers who don't see consequences either derive them privately (most won't) or act without them (and get surprised). Nygard's Architecture Decision Record template and Basecamp's Shape Up pitch both require this section for the same reason — the link between decision and reality has to be on the page, not implicit.
+**The five sections fold every constraint of the prior 8-primitive system without requiring the reader to learn the system.** Hard constraints live in Problem. Atomic units, relations, and the rule live in Solution. Degrees of freedom are implicit in Solution (what we could have varied but chose not to). Decisive vs suggestive signals live in Success criteria. Consequences live in Risks. The mental checklist is preserved; the academic vocabulary is gone.
+
+**Lean variant for short specs (`/think spec --lean`)** — for specs under ~150 lines, Solution and Success criteria can merge ("Solution + how we'll know it works"); Problem and Risks can compress. Five sections is the floor, not the ceiling — sub-headings are fine; section omission is not.
+
+**Why every section is required.** Skip Problem → spec optimizes a part that shouldn't exist. Skip Users → solution looks elegant on paper, fails the actual user. Skip Success criteria → "shipped" becomes ambiguous. Skip Risks → we discover one-way doors after walking through them. Each section forces a question the writer would otherwise dodge.
 
 **Criteria taxonomy (required for specs with acceptance criteria).** Split into:
 - **Invariants** — binary pass/fail, AND-aggregated, no partial credit (hard constraints).
@@ -287,10 +321,15 @@ Mixing the two is the single most common spec failure (per FP-OS decision protoc
 |---|-----------|---|---|---|
 | 2 | **Edge Cases** | None mentioned | Some listed | Exhaustive: empty, overflow, error, concurrent, stale |
 | 3 | **Data Model** | No data defined | Fields listed but no types/constraints | Full schema: types, constraints, defaults, nullability |
+| 9 | **Compression** | Doc length > 1.5× the doc-type cap in [output-discipline.md §7.9.5](../rules/common/output-discipline.md); double tables, redundant recaps, citation density without value | Within cap but reads dense; borderline meta-content | At or below sweet-spot; no double tables; no trailing recap restating body; meta-content cleanly in appendix |
+| 10 | **Numeric concreteness** | Soft adjectives throughout — "fast", "comfortable", "responsive", "good UX" — none replaced with numbers, states, or contracts | Some numeric targets present but mixed with soft adjectives; key surfaces still under-specified | Every soft adjective replaced with a number, named state, or named contract. UX/UI specs name pixel/dp values, frame rates, tap targets, animation durations. Code specs name P50/P95 latency, payload size, memory budget, idempotency, retry semantics |
+| 11 | **State machine completeness** | Happy path only; loading / empty / error / over-quota / offline / stale / forbidden states are absent or hand-waved | Some states named (loading + error) but missing partial / over-quota / offline / stale / forbidden | Every state named with copy + visual or semantics; every transition listed; every edge case (concurrent edit, network partition, expired session, malformed input) has a named handler |
+| 12 | **Performance budget** | No latency, payload, render-cost, or rate-limit numbers anywhere | Numbers present for some surfaces / endpoints but not all consequential ones | Every render surface has cold-paint and interaction-latency targets. Every endpoint has P50 / P95 / payload / RPS targets. Every batch job has time and resource budgets. Targets are realistic and measurable in production |
+| 13 | **Delete-first check** | Spec is additive only — no acknowledgment of what was considered for deletion | Some deletions named but no scope-cut rationale | Spec opens with what we considered deleting and why we kept it. Includes the Musk test: "if shipping this in 18 months wouldn't embarrass me, I didn't cut enough." Every section has been pressure-tested for deletion before optimization |
 
-**Before scoring:** run `bash tools/spec-freshness.sh` on the spec's directory to populate dimension 5 with evidence.
+**Before scoring:** run `bash tools/spec-freshness.sh` on the spec's directory to populate the freshness dim with evidence.
 
-**Verdict:** 13–16 AND every invariant (1, 4, 5, 6, 7, 8) ≥1 → **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 9–12 OR any invariant at 0 → **REFINE** → list gaps (any invariant-zero is a MUST-FIX), rescore (max 2 cycles). 0–8 → **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Invariants are AND-aggregated** — a spec with one invariant at 0 cannot promote even if every variant scores 2.
+**Verdict:** 18–26 AND every invariant (1, 4, 5, 6, 7, 8) ≥1 → **PROMOTE** → write to `specs/` and update `specs/INDEX.md`. 13–17 OR any invariant at 0 → **REFINE** → list gaps (any invariant-zero is a MUST-FIX), rescore (max 2 cycles). 0–12 → **REWORK** → too incomplete, list required additions and return to `/think discover` or `/think research` first. **Invariants are AND-aggregated** — a spec with one invariant at 0 cannot promote even if every variant scores 2.
 
 **Why dim 8 (voice) is separate from dim 6 (structural).** Prior rubric lumped voice into "Reader friction / compression" — structural rules got most of the signal, voice drift stayed invisible in the score. Splitting them makes a spec that nails structure but reads like AI slop ineligible for PROMOTE. The split was triggered by the 2026-04-19 spec-quality research: structural rules had one scoring dim; voice rules had zero.
 

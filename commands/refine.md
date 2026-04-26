@@ -22,6 +22,8 @@ description: "Refine — iterative convergence loop: tighten a target until qual
 
 Pick the cheapest mode that clears the quality bar. Escalate (self → fresh → council) only if the cheaper mode stalls.
 
+**Execution-spec auto-overlay.** When the target file's frontmatter declares `doc-type: execution-spec`, the cycle automatically swaps the convergence criterion to [evals/rubrics/execution-spec.md](../evals/rubrics/execution-spec.md) and spawns [`agents/implementer-test.md`](../agents/implementer-test.md) as a per-cycle critic alongside the chosen mode's critic. The implementer-test critic runs in fresh context, reads the spec cold, and returns a ranked list of "questions I'd have to ask to code this." Stop criterion: density ≥70% AND rationale ≤6 lines AND implementer-test ≤2 questions AND zero anti-pattern flags. Empirical convergence target: 2-3 cycles for first draft (vs the 10-20 cycles seen when /refine scored against structural-completeness on execution-specs).
+
 **Compression is default in every cycle.** Every revise step in every mode applies the seven distillation rules below as a baseline pass before adding any new content. The aim is to leave each cycle shorter or same-length than it started, never longer, unless the rubric specifically demanded new substance.
 
 **The seven distillation rules (apply to every revise step):**
