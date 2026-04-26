@@ -1593,3 +1593,109 @@ _check_soft_adjective_without_numeric() {
   run _check_soft_adjective_without_numeric "$d/spec.md"
   [ "$status" -eq 0 ]
 }
+
+# ─── §7.9.5 length budget per doc-type ────────────────────────────────────
+
+# Reads `doc-type:` from frontmatter and compares total line count against
+# the per-type warn cap. Over-cap fails (returns 1) so /refine cycles see
+# the violation. A `length-justification:` frontmatter field overrides the
+# cap (returns 0 with a "warn-only override" message). Unknown or missing
+# doc-type is exempt (returns 0).
+_check_length_budget() {
+  local file="$1"
+  [[ -f "$file" ]] || return 1
+
+  local doc_type
+  doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file")
+  [[ -z "$doc_type" ]] && return 0
+
+  local cap
+  case "$doc_type" in
+    decision-record) cap=200 ;;
+    research-memo)   cap=350 ;;
+    discovery)       cap=300 ;;
+    product-spec)    cap=500 ;;
+    design-spec)     cap=600 ;;
+    execution-spec)  cap=400 ;;
+    strategy)        cap=400 ;;
+    build-card)      cap=300 ;;
+    *) return 0 ;;
+  esac
+
+  local line_count
+  line_count=$(wc -l < "$file" | tr -d '[:space:]')
+
+  if (( line_count <= cap )); then
+    return 0
+  fi
+
+  local justification
+  justification=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^length-justification:/{sub(/^length-justification:[[:space:]]*/,""); print; exit}' "$file")
+
+  if [[ -n "$justification" ]]; then
+    echo "warn-only override: doc-type=$doc_type cap=$cap lines=$line_count justification=\"$justification\""
+    return 0
+  fi
+
+  echo "length budget exceeded: doc-type=$doc_type cap=$cap lines=$line_count"
+  return 1
+}
+
+@test "§7.9.5 length budget: under-cap decision-record PASSES" {
+  local d="$FIXTURES/length-under"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "---"
+    echo "# Decision: pick X"
+    echo
+    echo "*A decision record committing to X over Y.*"
+    echo
+    echo "## Why"
+    echo "X scales; Y does not. Decisive signal: throughput at 10x load."
+    echo
+    echo "## What"
+    echo "Adopt X across the pipeline."
+    echo
+    echo "## Consequences"
+    echo "Migration cost is one sprint."
+  } > "$d/dec.md"
+  run _check_length_budget "$d/dec.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§7.9.5 length budget: over-cap decision-record FAILS" {
+  local d="$FIXTURES/length-over"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "---"
+    echo "# Decision"
+    echo
+    # 250 filler lines — well over the 200 cap for decision-record
+    for i in $(seq 1 250); do echo "Line $i of decision rationale prose."; done
+  } > "$d/dec.md"
+  run _check_length_budget "$d/dec.md"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"length budget exceeded"* ]]
+  [[ "$output" == *"decision-record"* ]]
+}
+
+@test "§7.9.5 length budget: over-cap with length-justification PASSES" {
+  local d="$FIXTURES/length-justified"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "length-justification: bundles three subsidiary decisions; splitting would lose cross-references"
+    echo "---"
+    echo "# Decision bundle"
+    echo
+    for i in $(seq 1 250); do echo "Line $i of decision rationale prose."; done
+  } > "$d/dec.md"
+  run _check_length_budget "$d/dec.md"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"warn-only override"* ]]
+}
