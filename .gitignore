@@ -15,6 +15,7 @@ sessions/.auto-mode
 __pycache__/
 *.pyc
 .claude/middleware/__pycache__/
+.claude/worktrees/
 Archive/
 
 # macOS iCloud Drive conflict duplicates
