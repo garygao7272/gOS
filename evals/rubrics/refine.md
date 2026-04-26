@@ -43,3 +43,7 @@ Weighted average: `(gap_resolution * 25 + cycle_rigor * 20 + convergence * 20 + 
 - 8-10 → ready for /build
 - 5-7 → another refine pass or manual spec intervention
 - 0-4 → reset: run /think discover first, or narrow topic
+
+## Doc-type overlay: execution-spec
+
+When the target file's frontmatter declares `doc-type: execution-spec`, swap convergence criterion to [execution-spec.md](execution-spec.md). Three weighted dims (execution density 25%, rationale cap 15%, implementer-test 20%) carry 60% combined weight. Stop the loop when **all four** hold: density ≥70%, rationale ≤6 lines, implementer-test ≤2 questions, zero anti-pattern flags. Spawn `agents/implementer-test.md` as critic during the cycle. Empirical convergence target: **2-3 cycles for first draft, 1-2 for revision** — replaces the 10-20-cycle historical loop driven by structural-completeness scoring against the wrong loss function.

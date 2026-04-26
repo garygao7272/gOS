@@ -129,7 +129,7 @@ Every prose artifact names why, what, and how. All three are always present; the
 
 ```yaml
 ---
-doc-type: research-memo | discovery | product-spec | design-spec | decision-record | build-card | strategy
+doc-type: research-memo | discovery | product-spec | design-spec | execution-spec | decision-record | build-card | strategy
 audience: <primary reader — one phrase>
 reader-output: <what the reader produces after reading — one phrase>
 ---
@@ -141,9 +141,12 @@ reader-output: <what the reader produces after reading — one phrase>
 | `discovery` | What problem matters? | **Why** → What → How (deferred to later) |
 | `product-spec` | What are we building, and where does it stop? | **What** → Why → How |
 | `design-spec` | What does it look like and how does it behave? | **What** → How → Why |
+| `execution-spec` | How do I code this? | **Rationale (≤6 lines)** → Contract → Edge cases → Numeric targets → State transitions → Open questions → Cut for v1 |
 | `decision-record` | Why this call, and what are we committing to? | **Why** → What → How → Consequences |
 | `build-card` | What changes, and how? | **What** → How → Why |
 | `strategy` | Why now, and what's the move? | **Why** → What → How |
+
+**`execution-spec` is the implementer's contract** — distinct from `product-spec` (what + scope) and `design-spec` (look + behaviour). The reader is a competent engineer with no context; the spec passes when they could code it correctly with ≤2 unanswered questions. Three weighted rubric dims bite hardest on this type: **execution density** (≥70% operationally-actionable lines), **rationale cap** (≤6 lines at top), **implementer-test** (fresh-context engineer leaves with ≤2 questions). All "why" compresses into the opening rationale; everything else is "what" and "how." See [evals/rubrics/think.md](../../evals/rubrics/think.md) for the dim weights.
 
 **How to apply.** The positioning sentence at the top still leads — it names what the document is regardless of type. The *drill-down ordering below* the summary follows the table. A decision record that puts Consequences before Rationale buries the lede; a product spec that opens with mechanism before scope loses the reader.
 
@@ -207,6 +210,7 @@ Verbosity is rewarded by additive rubrics — every rule says "ensure X is prese
 | `discovery` | 100–200 | 300 | Concept docs over 300 lines are usually two concepts |
 | `product-spec` | 200–350 | 500 | Specs over 500 split into siblings |
 | `design-spec` | 250–400 | 600 | Same — split or compress |
+| `execution-spec` | 150–300 | 400 | Tight by design — implementer doesn't read past line 400 |
 | `strategy` | 150–300 | 400 | Strategy is the bet, not the audit |
 | `build-card` | 80–200 | 300 | Cards over 300 are micro-specs in disguise |
 
@@ -327,6 +331,8 @@ LLM-authored or LLM-edited prose carries specific tells that at density trigger 
 | Self-congratulatory close (artifacts) | `_check_self_congratulatory_close` | Last 15 lines must not restate / congratulate / announce conclusion |
 | Meta-about-meta opener (artifacts) | `_check_meta_about_meta` | First 20 lines after H1 must not describe the document's own purpose (starts substantive, not meta) |
 | Faux-specific vagueness (artifacts) | `_check_faux_vague` | Phrases like "several key" / "a number of" flagged when not followed by a specific count |
+| Process-narrative leakage (execution-spec) | `_check_process_narrative_leakage` | "we considered" / "originally" / "after reflection" etc. banned from execution-spec body prose; phrase list at `tests/fixtures/ai-smell-phrases/process-narrative.txt` |
+| Soft adjective without numeric (execution-spec) | `_check_soft_adjective_without_numeric` | "fast" / "responsive" / "comfortable" without a number in operational sections (Contract / Edges / Targets / State / Open questions); phrase list at `tests/fixtures/ai-smell-phrases/soft-adjectives.txt` |
 | Artifact discipline overall | `/refine` 8-dim rubric (dim 6 structural + dim 8 voice) | A cycle that regresses either dim fails convergence |
 | Style drift (all) | `/evolve audit` | `rework` signal with `output-discipline` context |
 

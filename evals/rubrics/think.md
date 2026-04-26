@@ -20,3 +20,7 @@
 ## Overall Score
 
 Weighted average: `(completeness * 25 + accuracy * 20 + sources * 20 + synthesis * 20 + actionability * 15) / 100`
+
+## Doc-type overlay: execution-spec
+
+When the artifact declares `doc-type: execution-spec` in frontmatter, score against [execution-spec.md](execution-spec.md) instead of (or layered with) this base rubric. Three dims — execution density, rationale cap, implementer-test — carry 60% combined weight, with hard convergence stop at density ≥70% AND rationale ≤6 lines AND implementer-test ≤2 questions AND zero anti-pattern flags. This replaces the structural-completeness loss function that drives 10-20 refine cycles on the wrong target.

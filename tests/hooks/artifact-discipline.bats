@@ -1385,3 +1385,211 @@ _check_faux_vague() {
   run _check_enforcement_table_matches_bats "$d/rule.md" "$d/a.bats" "$d/b.bats"
   [ "$status" -ne 0 ]
 }
+
+# ─── execution-spec voice lints (§7.1, §7.9.7) ────────────────────────────
+
+# Strip code blocks, frontmatter, and quoted anti-pattern lists from prose
+# to avoid false positives when a rule file *names* the patterns it bans.
+_strip_exec_spec_noise() {
+  local file="$1"
+  awk '
+    NR==1 && /^---$/ { fm=1; next }
+    fm && /^---$/    { fm=0; next }
+    fm               { next }
+    /^```/           { code = !code; next }
+    code             { next }
+    /^[[:space:]]*[-*][[:space:]]+\*\*/ { next }   # bullet starting with bold (anti-pattern lists)
+    /^[[:space:]]*\|/ { next }                      # table rows (cite anti-patterns)
+    /^[[:space:]]*>/ { next }                       # quoted blocks
+    { print }
+  ' "$file"
+}
+
+# Process-narrative leakage — phrases that announce the document's own evolution.
+# Banned in execution-spec body prose (§7.1 + §7.9.7). Phrase list:
+# tests/fixtures/ai-smell-phrases/process-narrative.txt
+_check_process_narrative_leakage() {
+  local file="$1"
+  local phrases_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/process-narrative.txt"
+  [[ -f "$phrases_file" ]] || return 0
+
+  # Only apply to execution-spec doc-type
+  local doc_type
+  doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file" || true)
+  [[ "$doc_type" != "execution-spec" ]] && return 0
+
+  local prose
+  prose=$(_strip_exec_spec_noise "$file")
+
+  # Match any phrase from the fixture (case-insensitive). One match = fail.
+  local hit
+  while IFS= read -r phrase; do
+    [[ -z "$phrase" ]] && continue
+    if echo "$prose" | grep -qiF "$phrase"; then
+      hit="$phrase"
+      break
+    fi
+  done < "$phrases_file"
+
+  if [[ -n "$hit" ]]; then
+    echo "process-narrative phrase leaked into execution-spec body: \"$hit\""
+    return 1
+  fi
+  return 0
+}
+
+# Soft adjective without numeric — "fast", "responsive", etc. in operational
+# sections (Contract / Edges / Targets / State / Open questions) without a
+# digit within 30 chars. Lint-detectable per §7.1 execution-spec rubric.
+# Phrase list: tests/fixtures/ai-smell-phrases/soft-adjectives.txt
+_check_soft_adjective_without_numeric() {
+  local file="$1"
+  local phrases_file="$BATS_TEST_DIRNAME/../fixtures/ai-smell-phrases/soft-adjectives.txt"
+  [[ -f "$phrases_file" ]] || return 0
+
+  local doc_type
+  doc_type=$(awk 'NR==1 && /^---$/{fm=1; next} fm && /^---$/{exit} fm && /^doc-type:/{sub(/^doc-type:[[:space:]]*/,""); print; exit}' "$file" || true)
+  [[ "$doc_type" != "execution-spec" ]] && return 0
+
+  # Extract operational sections only (between H2 matching keywords and next H2)
+  local op_prose
+  op_prose=$(awk '
+    /^## .*[Cc]ontract/         { in_op=1; next }
+    /^## .*[Ee]dge/             { in_op=1; next }
+    /^## .*[Tt]arget/           { in_op=1; next }
+    /^## .*[Ss]tate/            { in_op=1; next }
+    /^## .*[Oo]pen [Qq]uestion/ { in_op=1; next }
+    /^## /                      { in_op=0; next }
+    /^```/                      { code = !code; next }
+    code                        { next }
+    in_op                       { print }
+  ' "$file")
+
+  [[ -z "$op_prose" ]] && return 0  # no operational sections — skip
+
+  # Build regex of all soft adjectives (word-boundary matched)
+  local adj_regex
+  adj_regex=$(awk 'NF{print "\\b" $0 "\\b"}' "$phrases_file" | paste -sd'|' -)
+  [[ -z "$adj_regex" ]] && return 0
+
+  # Find lines with adjective AND no digit within the line
+  local hit
+  hit=$(echo "$op_prose" | grep -iE "$adj_regex" | grep -v '[0-9]' | head -1)
+
+  if [[ -n "$hit" ]]; then
+    echo "soft adjective without numeric in operational section: \"$hit\""
+    return 1
+  fi
+  return 0
+}
+
+@test "§7.1 process-narrative: execution-spec with 'we considered' in body FAILS" {
+  local d="$FIXTURES/exec-narr"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: execution-spec"
+    echo "---"
+    echo "# Auth handshake"
+    echo
+    echo "Token refresh contract for the session pipeline."
+    echo
+    echo "## Contract"
+    echo "Originally we used JWT but switched to opaque tokens."
+    echo "The endpoint accepts POST /refresh with a session cookie."
+  } > "$d/spec.md"
+  run _check_process_narrative_leakage "$d/spec.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§7.1 process-narrative: clean execution-spec PASSES" {
+  local d="$FIXTURES/exec-narr-ok"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: execution-spec"
+    echo "---"
+    echo "# Auth handshake"
+    echo
+    echo "Token refresh contract for the session pipeline."
+    echo
+    echo "## Contract"
+    echo "POST /refresh accepts a session cookie. Returns a new opaque token."
+    echo "Token TTL is 3600 seconds. Refresh window is the final 300 seconds."
+  } > "$d/spec.md"
+  run _check_process_narrative_leakage "$d/spec.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§7.1 process-narrative: non-execution-spec doc-type is EXEMPT" {
+  local d="$FIXTURES/exec-narr-exempt"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: decision-record"
+    echo "---"
+    echo "# Decision"
+    echo
+    echo "We considered three options before picking the second one."
+  } > "$d/dec.md"
+  run _check_process_narrative_leakage "$d/dec.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§7.1 soft-adj: execution-spec with 'fast' (no number) in Contract FAILS" {
+  local d="$FIXTURES/exec-soft"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: execution-spec"
+    echo "---"
+    echo "# API"
+    echo
+    echo "Endpoint contract."
+    echo
+    echo "## Contract"
+    echo "The endpoint must be fast and responsive under load."
+  } > "$d/spec.md"
+  run _check_soft_adjective_without_numeric "$d/spec.md"
+  [ "$status" -ne 0 ]
+}
+
+@test "§7.1 soft-adj: execution-spec with 'P95 < 200ms' (number present) PASSES" {
+  local d="$FIXTURES/exec-soft-ok"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: execution-spec"
+    echo "---"
+    echo "# API"
+    echo
+    echo "Endpoint contract."
+    echo
+    echo "## Numeric targets"
+    echo "P95 latency under 200ms; cold paint under 800ms."
+    echo "Response payload under 50KB."
+  } > "$d/spec.md"
+  run _check_soft_adjective_without_numeric "$d/spec.md"
+  [ "$status" -eq 0 ]
+}
+
+@test "§7.1 soft-adj: soft adjective in non-operational section is EXEMPT" {
+  local d="$FIXTURES/exec-soft-exempt"
+  rm -rf "$d" && mkdir -p "$d"
+  {
+    echo "---"
+    echo "doc-type: execution-spec"
+    echo "---"
+    echo "# API"
+    echo
+    echo "Endpoint contract."
+    echo
+    echo "## Rationale"
+    echo "We want this to feel fast and responsive to the user."
+    echo
+    echo "## Contract"
+    echo "POST /api accepts JSON. P95 < 200ms. Payload < 50KB."
+  } > "$d/spec.md"
+  run _check_soft_adjective_without_numeric "$d/spec.md"
+  [ "$status" -eq 0 ]
+}
