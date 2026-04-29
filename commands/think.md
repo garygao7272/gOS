@@ -13,6 +13,7 @@ The separation matters: `outputs/think/` is the workshop. `specs/` is the showro
 | Sub-command | Output To | Doc-type | First three H2s (doc-type ordering) | Then |
 |-------------|-----------|----------|------------------------------|------|
 | `advise` | **Chat only — no file** | n/a | Mechanism · ranked options · decision call | One follow-up: "save as decide?" if Gary commits |
+| `brainstorm` | `outputs/think/brainstorm/{pain_slug}.md` | `discovery` | Pain → Primitives → Frames → Idea pool → Pain↔Idea matrix | "Top idea → /think decide?" |
 | `discover` | `outputs/think/discover/{topic}.md` | `discovery` | Problem → Concept → Composition (Why → What → How) | "Promote to `specs/Arx_3-X`?" |
 | `research` | `outputs/think/research/{topic}.md` | `research-memo` | Findings/Verdict → Why it matters → How we found it (What → Why → How) | "Promote to `specs/Arx_2-X`?" |
 | `decide` | `outputs/think/decide/{topic}.md` | `decision-record` | Context → Decision → Rationale → Consequences (Why → What → How → Consequences) | "Append to `specs/Arx_9-1_Decision_Log.md`?" |
@@ -95,7 +96,7 @@ Then write `sessions/handoffs/think.json` with the typed primitive payload (sche
 
 This is the inverse direction of the standard handoff: /think normally feeds /design + /build downstream; here it feeds back upstream into the spawning /refine. Schema: [specs/handoff-schemas.md](../specs/handoff-schemas.md) → `refine.json`.
 
-Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? advise (chat-only), discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
+Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking? advise (chat-only), brainstorm (non-obvious solutions to a pain), discover, research, decide, or spec?" (For URL absorption or source-watchlist management, use `/intake` directly.)
 
 ---
 
@@ -117,6 +118,67 @@ Parse the first word of `$ARGUMENTS`. If none given, ask: "What kind of thinking
 **No file written.** No `outputs/think/advise/` directory. The thinking lives in the conversation. If Gary commits and wants persistence, follow up with `/think decide --save` to promote the chat thread into a decision record.
 
 **Why this exists.** /think previously had no chat-only path — every invocation produced a file even when the question was "talk me through this." Verbosity-by-default was structural, not stylistic. `advise` restores the chat default for thinking-not-artifact.
+
+---
+
+## brainstorm <pain seed>
+
+**Purpose:** Generate non-obvious solutions to a named customer pain. Pain-backwards, first-principles, anti-consensus, autonomous research. Where `discover` explores a topic, `brainstorm` attacks a pain.
+
+**Input:** A pain statement (e.g., "copy-traders follow leaders who blow up after a hot streak"), a persona keyword (`copier`, `pro-trader`, or one of the s-series), or just a topic — the verb extracts pain itself if not given.
+
+**When to pick:**
+- Need non-consensus product moves, not incremental ones.
+- Stuck — solution-space feels exhausted but pain persists.
+- Pre-`/think discover` — when the topic is too vague and you need to surface the *real* pain before exploring concepts.
+
+**When NOT to pick:** if you already know the pain and need to pick between named options → `/think decide`. If you need market evidence on existing solutions → `/think research`. If you want to validate a single concept → `/think discover`.
+
+### Mechanism — five autonomous phases
+
+Each phase runs without user re-entry. The verb consumes pain seed → produces ranked idea pool → hands off to `/think decide`.
+
+| Phase | Engine | Output | Why |
+|---|---|---|---|
+| 1. **Pain extraction** | `arx-trading-intelligence:arx-audience-intelligence` simulates the 8 segments → top 3 unsolved pains per segment, with moment + constraint | Ranked pain list, no solutions | Solutions invented without a named persona-moment-constraint regress to consensus |
+| 2. **First-principles decomposition** | `anthropic-skills:first-principles-decomposition` on top 3 pains → bedrock primitives (what's true, what's assumed) | Primitive map per pain | Strips inherited frame so Phase 4 can violate the right assumption |
+| 3. **Frame-breaking research swarm** | 5 parallel agents, each given an adversarial framing — *(a) Renaissance Medallion · (b) a 12-yr-old · (c) a regulator · (d) a copy-trader who lost everything · (e) an LLM with no priors* — plus autonomous Exa / Context7 / GitHub access | 5 framings × research evidence | Diverse frames + autonomous fact-gathering breaks the consensus attractor |
+| 4. **Anti-convergence ideation** | Generates ≥15 ideas, then **forces** tagging: 5 *consensus would say yes* · 5 *consensus would reject* · 5 *violates an assumption from Phase 2* | Tagged idea pool | Without forced anti-convergence, swarms collapse to the obvious 2–3 answers (FP-OS K3) |
+| 5. **Synthesis: pain ↔ idea matrix** | Maps each idea → which pain it solves + which primitive it leverages + which assumption it breaks | Decision-ready matrix | Hands off to `/think decide` with the agency-tagged option set |
+
+### Execution — PEV (`specs/pev-protocol.md`)
+
+1. Spawn `pev-planner` with: task = pain seed, task_class = exploration, pool hint:
+   - **Pain layer:** `audience-intelligence` (Phase 1 extraction)
+   - **Decomposition:** `first-principles` (Phase 2)
+   - **Frame swarm:** 5 contrarian agents with assigned framings (Phase 3) — each with autonomous research authority
+   - **Anti-convergence:** `contrarian` + `consensus-mapper` (Phase 4 forced tagging)
+   - **Synthesis:** `adjudicator` (Phase 5 matrix)
+2. Planner writes `roster.json`. Present roster + pain extraction summary to Gary. Wait for approval — this is the only re-entry point.
+3. Phases 2–4 execute fully autonomously. Each agent writes to `artifacts/{agent}.md`; research evidence cited inline.
+4. `pev-validator` (fresh context) cross-examines the idea pool — every idea must trace to (a) a named pain, (b) a named primitive, (c) a named broken assumption (for the "violates assumption" tag) or a named research source (for the others). Ideas without traceability are cut.
+5. **CONVERGED** → `adjudicator` writes synthesis with the pain↔idea matrix → present to Gary → offer `/think decide` handoff on top 3 ideas.
+6. **STUCK** → escalate with what was tried + the assumption(s) the swarm couldn't break.
+
+### Anti-consensus rule (the non-negotiable)
+
+The synthesis MUST include ≥5 ideas tagged "consensus would reject" and ≥5 tagged "violates assumption." If the swarm produces fewer, the verdict is REWORK — it means the swarm regressed to consensus. The validator enforces this; the adjudicator cannot promote a synthesis that fails the anti-consensus floor.
+
+### Output
+
+`outputs/think/brainstorm/{pain_slug}.md` — promoted from `synthesis.md`. Doc-type `discovery`, first three H2s: **Pain → Primitives → Frames** (followed by Idea pool + matrix). Suggest:
+
+- Top idea → `/think decide` (full decision protocol on the leading candidate)
+- Cluster of 3 → `/think discover` (validate the most promising as a product concept)
+- Promote pain itself → `specs/Arx_2-1_Audience_Pains.md` (if Phase 1 surfaced an unlogged pain)
+
+### Length budget
+
+`discovery` doc-type: 100–200 lines sweet, 300 warn cap. Brainstorm artifacts skew long because the matrix is structural; the cap holds.
+
+### Brevity flags
+
+`--inline` and `--brief` route the synthesis to chat (matrix collapsed to ranked-table form, no file written) per the chat-default override. Use when iterating quickly and the matrix won't be re-read in a future session. `--file` forces file output even if the synthesis would fit inline.
 
 ---
 
