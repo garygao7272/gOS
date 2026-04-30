@@ -129,6 +129,7 @@ Before decomposition, type the problem. Different protocols weight different pri
 | **Design** | "Specify a new thing" | `/think discover` → `/design card` → `/design ui` | Atoms + Degrees of freedom |
 | **Build** | "Realise an existing spec" | `/build feature` | Relations + Invariants + Signals + Rule (sequencing) |
 | **Strategy** | "Act under uncertainty with adversaries / reshape the game" | `/think research` → `/think decide` → `/simulate scenario` | All seven + game dynamics |
+| **Polish** | "It works but feels one-star / perceived performance is off / Craft is the bottleneck" | `/review` (auto-fires Craft scorecard on UI targets) → `/build` (polish pass) → `/ship` (Craft gate) | Craft sub-dims + Performance budget — see [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md) |
 
 **Rule:** Name the protocol in the intent document ("This is a Diagnosis problem — root cause unknown, symptom is X"). If multiple protocols fit, pick the narrower one first; broaden only if it fails. A problem typed as Diagnosis that turns out to be Design has wasted one round, not the whole job.
 

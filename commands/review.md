@@ -69,6 +69,29 @@ Skill: `engineering:debug`. **Failure mode:** treating a correlated symptom as t
 
 ---
 
+## Loveable Product Craft scorecard (auto-fires on UI targets)
+
+When the review target is a UI surface (any file under `apps/web-prototype/`, `apps/mobile/`, or any `doc-type: design-spec`), the review automatically runs the Craft scorecard from [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md). Score 0–5 on each of the five Craft sub-dimensions:
+
+```
+Visual      [_/5] design-system bound; no hardcoded colors/spacing/radii
+Motion      [_/5] entrance/exit choreographed; timing + easing spec'd
+Voice       [_/5] microcopy specific to context; no AI-default tone
+Feedback    [_/5] every action confirms (visual + haptic where supported)
+Interaction [_/5] ≤2 steps to primary action; tap targets ≥44×44px
+Total: __/25
+```
+
+Plus the Performance Budget check from the spec's `## Performance budget` H2 — verify cold-paint, interaction, transition, CLS, tap-target numbers are present and met (or explicitly justified).
+
+The verdict line includes `Craft: N/25` after the PASS/KILL/DEFER. **Below 18/25 is a ship-blocker** — `/ship` reads the latest review output and refuses if `Craft: <18/25` for the same UI target.
+
+**AI-draft polish check.** If the build card declares `ai-drafted-sections:` frontmatter, verify the diff between AI draft and shipped code is non-trivial — pure AI output ships as PASS-blocked with reason "no human polish pass detected."
+
+This scorecard runs on top of the existing sub-command (fresh/code/gate/council/dashboard) — it does not replace any of them. Non-UI reviews skip the Craft section.
+
+---
+
 ## Terminal verdict (mandatory for every review sub-command)
 
 Every review MUST close with exactly one of three outcomes — no ambiguous "looks good" / "mostly fine" allowed. Derived from FP-OS K6 (defer is real).

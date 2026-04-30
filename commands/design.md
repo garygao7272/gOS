@@ -46,6 +46,8 @@ This unlocks `/build` via the phase gate. See `specs/handoff-schemas.md`.
 - **SAFE vs RISK framing:** Label every decision. Default to RISK unless Gary says otherwise.
 - **Reference floor:** Robinhood/eToro/Bitget/Phantom (S7), Moomoo/Webull/Binance (S2) — MINIMUM. Beat them.
 
+**Loveable Product gate (Usability — perceived performance).** Every `design-spec` for an Arx UI surface must include a required H2 `## Performance budget` populated with the numeric table from [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md): cold paint < 800ms P90, interaction response < 100ms P95, transition 200–400ms with cubic-bezier(0.4, 0, 0.2, 1), CLS < 0.05, skeleton-to-content swap with no flash, tap targets ≥ 44×44px, steps to primary action ≤ 2. Per-surface overrides allowed but must be justified inline. A surface missing two or more numbers without justification fails the `/review` Craft pass and blocks `/ship`.
+
 ---
 
 ## Synthesis boundary (INV-G10)
@@ -121,9 +123,10 @@ Then run **5 Premium Litmus Tests** from Arx_4-3 section 2. Fix failures before 
 5. **Write REFERENCE section:** 2-3 specific screens from Arx_4-3 section 1 tiers. Per reference: app, screen, what to adopt, where to surpass.
 6. **Write PRODUCT half:** Why (trace to JTBD), What the User Does (3-7 steps with S7/S2 variants), Data (API source + computation), States (empty/loading/error/populated), Acceptance (EARS), Navigate (from/to with transitions), Verify
 7. **Write VISUAL half:** Feel (token from DESIGN.md DESIGN tokens section), Layout (ASCII wireframe with auto-layout annotations), Components (from Arx_4-2), Visual Spec (fixture pointer, icons, embellishments, interactions)
-8. **Create/update mock data fixture** in `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
-9. **Run Build Card QA** checklist from Arx_0-1
-10. **Run Gate 3c** on the Layout section
+8. **Write `## Performance budget` H2** with cold-paint, interaction-response, transition, CLS, tap-target numbers per Arx_4-3. Per-surface overrides justified inline.
+9. **Create/update mock data fixture** in `specs/Arx_4-1-1-8_Mock_Data_Fixtures.md`
+10. **Run Build Card QA** checklist from Arx_0-1
+11. **Run Gate 3c** on the Layout section
 
 **Output:** Complete build card at `specs/Arx_4-1-1-{module}_{screen}.md`
 

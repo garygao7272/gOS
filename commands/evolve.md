@@ -128,6 +128,37 @@ Not every signal carries equal force. Before acting on signals in `audit` or `up
 
 ---
 
+## audit --prune (Loveable Product — quarterly vitamin sweep)
+
+**Purpose:** Find and kill vitamin-class accumulation. Bias toward deletion. Implements the Instagram-style pruning ritual from [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md).
+
+**Trigger:** `/evolve audit --prune` manually, or scheduled every 90 days.
+
+**Process:**
+
+1. **Scan candidates** — produce a kill list of:
+   - Specs with `utility-class: vitamin` or `unknown` AND no edit/reference in 90+ days
+   - Surfaces in `apps/` not referenced by any active spec for 90+ days
+   - Build cards untouched and unreferenced for 90+ days
+   - Routes/screens with zero usage signals (when telemetry available)
+
+2. **Rank by deletion safety:**
+   - **SAFE** — vitamin tag, no inbound references, no recent commits
+   - **CAREFUL** — vitamin tag, some references, may have inbound deps
+   - **RISKY** — unknown tag, partial usage, or unclear status
+
+3. **Bias toward deletion.** If the scan returns zero SAFE candidates, the audit failed — the bar is too low or the discovery is incomplete. Lower the staleness window or broaden the scope and re-scan. **Don't ship a prune that kills nothing.**
+
+4. **Present ranked kill list with deletion impact** — Gary picks ≥1 SAFE candidate. Execute deletion (move to `Archive/`, never `rm`). Log to `memory/evolve_prune_{date}.md`.
+
+5. **Schedule next prune** — `mcp__scheduled-tasks__create_scheduled_task` with 90-day cadence on first run; on subsequent runs, confirm the schedule is still active.
+
+**Output:** `memory/evolve_prune_{date}.md` with the kill list, deletions executed, deferred candidates, and next-prune date.
+
+**Why this exists:** without a forced prune ritual, vitamins accumulate silently and bury painkillers. The discipline is organisational, not discretionary — it runs whether or not it feels needed. Eismann's "Instagram quarterly delete" is the reference pattern.
+
+---
+
 ## upgrade <command>
 
 **Purpose:** Rewrite a specific command based on accumulated signals and feedback.

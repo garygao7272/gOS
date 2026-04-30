@@ -132,8 +132,12 @@ Every prose artifact names why, what, and how. All three are always present; the
 doc-type: research-memo | discovery | product-spec | design-spec | execution-spec | decision-record | build-card | strategy
 audience: <primary reader — one phrase>
 reader-output: <what the reader produces after reading — one phrase>
+utility-class: painkiller | vitamin | unknown   # required for product-spec, design-spec, execution-spec, build-card
+utility-justification: <one sentence — what hurts, who has the pain>   # required when utility-class is set
 ---
 ```
+
+**`utility-class` (Loveable Product gate — Utility dimension).** Every spec, design-spec, execution-spec, and build-card declares whether the work is a painkiller (something hurts now, on the primary path) or a vitamin (nice-to-have, not on the primary path). `unknown` is allowed but flagged; `vitamin` is allowed but flagged. Three vitamins shipped without an intervening painkiller triggers a `/evolve audit` warning. The justification is a single sentence naming what hurts and who has the pain — not a feature description. See [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md) for the full rationale and per-Arx-surface application.
 
 | `doc-type:` value | Reader's first question | Typical order |
 |---|---|---|

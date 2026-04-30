@@ -40,6 +40,8 @@ If any agent reports failures → STOP and report before committing. If all clea
    - If no review was run: check diff size with `git diff --stat <base>...HEAD | tail -1`. If ≥10 files OR ≥500 LOC, suggest `/ultrareview` (cloud parallel multi-agent, native CC v2.1.111+). Otherwise suggest `/review code`. Format: "No review on record. Diff is {N} files / {M} LOC — recommend `/ultrareview` (large diff) [or `/review code` (small diff)]. Run review or ship anyway?"
    - If review is CLEARED: proceed silently.
 
+1a. **Loveable Product Craft gate (UI targets only).** If the diff touches `apps/web-prototype/`, `apps/mobile/`, or any `doc-type: design-spec`, parse the latest `/review` output for a `Craft: N/25` line. If `N < 18`: BLOCK with "Craft below ship threshold (N/25, need ≥18). Failing dim(s): <list>. Polish or override with explicit justification logged to evolve signals." If no Craft score on record for a UI target: refuse and instruct Gary to run `/review` against the UI surface first. See [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md).
+
 2. **Final test run:** Run the project's test suite one last time.
    - `npm test` or equivalent for the active app
    - If tests fail: STOP. Report failures. Do not ship broken code.

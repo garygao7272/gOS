@@ -38,8 +38,12 @@ doc-type: <from table above>
 audience: <primary reader — one phrase>
 reader-output: <what the reader produces after reading — one phrase>
 generated: <ISO date>
+utility-class: painkiller | vitamin | unknown   # required for spec sub-command
+utility-justification: <one sentence — what hurts, who has the pain>   # required when utility-class is set
 ---
 ```
+
+**Painkiller-or-vitamin prompt (`/think spec` only).** Before generating the spec frontmatter, ask Gary inline: "Painkiller (something hurts now, on the primary path), vitamin (nice-to-have, off the primary path), or unknown (need more research)?" Use the answer to populate `utility-class:` and request a one-sentence `utility-justification:` naming what hurts and who has the pain. See [Arx_4-3_Loveable_Product_Principles.md](../../../../Arx_4-3_Loveable_Product_Principles.md).
 
 The first three H2s after the positioning sentence must match the doc-type orderinging keywords for that doc-type. The linter at [tests/hooks/artifact-discipline.bats](../tests/hooks/artifact-discipline.bats) verifies this on every output ≥100 lines.
 
